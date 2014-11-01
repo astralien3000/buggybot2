@@ -4,13 +4,16 @@
 # User Configuration
 
 ## The root aversive directory
-AVERSIVE_ROOT=../..
+AVERSIVE_ROOT=/home/astralien3000/aversive--
 
 ## Your project's object .o files
 OBJ=main.o
 
 ## Your executable file name
-GEN_EXEC=robot
+GEN_EXEC=calib
+
+## Default target
+DEFAULT_TARGET=atmega2560
 
 ########################################
 # Aversive++ Configuration
@@ -54,7 +57,9 @@ AVR_BUILD_DIR=$(GEN_BUILD_DIR)
 
 ########################################
 # Rules
-all:
+all: $(DEFAULT_TARGET)
+
+usage:
 	@echo "Usage :"
 	@echo "\t- make sasiae: Compile your project for sasiae"
 	@echo "\t- make atmegaX: Compile your project for atmegaX (X may be 16, 32, 128 or 2560)"
