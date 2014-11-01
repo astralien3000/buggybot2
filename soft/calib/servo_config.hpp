@@ -7,8 +7,8 @@ struct PWMConfig {
 };
 
 struct ServoConfig {
-  char name[32];
   u32 pin;
+  char name[32];
 
   u32 default_pwm;
   PWMConfig max;
