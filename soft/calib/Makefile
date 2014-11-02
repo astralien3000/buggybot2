@@ -7,7 +7,7 @@
 AVERSIVE_ROOT=/home/astralien3000/aversive--
 
 ## Your project's object .o files
-OBJ=main.o
+OBJ=main.o shell.o list_servo.o cmd_servo.o servos.o
 
 ## Your executable file name
 GEN_EXEC=calib

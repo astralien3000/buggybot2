@@ -1,9 +1,11 @@
 #ifndef SERVO_CONFIG_HPP
 #define SERVO_CONFIG_HPP
 
+#include "servo_tester.hpp"
+
 struct PWMConfig {
   u32 pwm;
-  u32 angle;
+  s32 angle;
 };
 
 struct ServoConfig {
@@ -14,5 +16,13 @@ struct ServoConfig {
   PWMConfig max;
   PWMConfig min;
 };
+
+struct Servo {
+  GenericServoTester* dev;
+  ServoConfig* conf;
+};
+
+extern Servo servos[];
+
 
 #endif//SERVO_CONFIG_HPP
