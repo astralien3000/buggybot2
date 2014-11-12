@@ -1,4 +1,4 @@
-/* Chargement des fonction utiles */
+/* Chargement des fonctions utiles */
 kill(all)$
 batchload("tr_homogene.mac")$
 
@@ -29,3 +29,8 @@ T["L0", "L3"] : T["L0", "L1"] . T["L1", "L2"] . T["L2", "L3"]$
 
 /* Chain Robot */
 T[0, "R"] = T[0, "S"] . T["S", "R"];
+
+
+/* The rest */
+T["L1", "L0"] : inv_SO3_h(T["L0", "L1"])$
+T["L1", "L3"] : T["L1", "L2"] . T["L2", "L3"]$

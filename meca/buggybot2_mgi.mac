@@ -1,0 +1,23 @@
+/* Chargement des fonctions utiles */
+batchload("buggybot2_mgd.mac")$
+
+simplif_trigo_reduce(x):=trigsimp(trigreduce(x))$
+simplif_trigo_expand(x):=trigsimp(trigexpand(x))$
+
+/* Target */
+P["L3"] : transpose([0,0,0])$
+Pd["L0"] : transpose([x,y,z])$
+
+P["L0"] : apply_point(T["L0", "L3"], P["L3"])$
+
+Pd["L1"] : apply_point(T["L1", "L0"], Pd["L0"])$
+P["L1"] : apply_point(T["L1", "L3"], P["L3"])$
+
+/* Eqn */
+eq1 : simplif_trigo_reduce(P["L1"][1,1] = Pd["L1"][1,1])$
+eq2 : simplif_trigo_reduce(P["L1"][2,1] = Pd["L1"][2,1])$
+eq3 : simplif_trigo_reduce(P["L1"][3,1] = Pd["L1"][3,1])$
+
+eq1;
+eq2 + eq3;
+eq3;
