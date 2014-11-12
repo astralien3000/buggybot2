@@ -1,5 +1,5 @@
 /* Chargement des fonctions utiles */
-batchload("buggybot2_mgd.mac")$
+batchload("mgd.mac")$
 
 simplif_trigo_reduce(x):=trigsimp(trigreduce(x))$
 simplif_trigo_expand(x):=trigsimp(trigexpand(x))$
@@ -19,5 +19,5 @@ eq2 : simplif_trigo_reduce(P["L1"][2,1] = Pd["L1"][2,1])$
 eq3 : simplif_trigo_reduce(P["L1"][3,1] = Pd["L1"][3,1])$
 
 eq1;
-eq2 + eq3;
+eq2;
 eq3;
