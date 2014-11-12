@@ -1,2 +1,9 @@
 simplif_trigo_reduce(x):=trigsimp(trigreduce(x))$
 simplif_trigo_expand(x):=trigsimp(trigexpand(x))$
+
+_mt(v) := args(transpose(v))[1]$
+make_matrix3_cols(C1, C2, C3) := transpose([
+    _mt(C1),
+    _mt(C2),
+    _mt(C3)]
+  )$
