@@ -1,8 +1,6 @@
 /* Chargement des fonctions utiles */
+batchload("utils.mac")$
 batchload("mgd.mac")$
-
-simplif_trigo_reduce(x):=trigsimp(trigreduce(x))$
-simplif_trigo_expand(x):=trigsimp(trigexpand(x))$
 
 /* Target */
 P["L3"] : transpose([0,0,0])$

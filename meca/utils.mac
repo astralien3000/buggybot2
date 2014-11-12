@@ -1,0 +1,2 @@
+simplif_trigo_reduce(x):=trigsimp(trigreduce(x))$
+simplif_trigo_expand(x):=trigsimp(trigexpand(x))$
