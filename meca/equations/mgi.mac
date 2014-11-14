@@ -1,21 +1,30 @@
 /* Chargement des fonctions utiles */
-batchload("utils.mac")$
 batchload("mgd.mac")$
+batchload("utils.mac")$
 
 /* Target */
 P["L3"] : transpose([0,0,0])$
-Pd["L0"] : transpose([x,y,z])$
 
+Pd["L0"] : transpose([x,y,z])$
 P["L0"] : apply_point(T["L0", "L3"], P["L3"])$
 
 Pd["L1"] : apply_point(T["L1", "L0"], Pd["L0"])$
 P["L1"] : apply_point(T["L1", "L3"], P["L3"])$
 
 /* Eqn */
-eq1 : simplif_trigo_reduce(P["L1"][1,1] = Pd["L1"][1,1])$
-eq2 : simplif_trigo_reduce(P["L1"][2,1] = Pd["L1"][2,1])$
-eq3 : simplif_trigo_reduce(P["L1"][3,1] = Pd["L1"][3,1])$
+eq1 : simplif_trigo_reduce(P["L1"][1,1] - Pd["L1"][1,1])$
+eq2 : simplif_trigo_reduce(P["L1"][2,1] - Pd["L1"][2,1])$
+eq3 : simplif_trigo_reduce(P["L1"][3,1] - Pd["L1"][3,1])$
 
 eq1;
 eq2;
 eq3;
+
+Y : -ratcoeff(eq1, cos(q0), 1);
+X : -ratcoeff(eq1, sin(q0), 1);
+Z : subst([cos(q0)=0,sin(q0)=0], eq1);
+
+sq0_main : atan2(Y, X)$
+sq0_delta : asin(Z / sqrt(X^2 + Y^2))$
+
+sq0 : [sq0_delta - sq0_main, %pi - sq0_delta - sq0_main];
