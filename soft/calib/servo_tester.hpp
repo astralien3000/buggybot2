@@ -2,7 +2,7 @@
 #define SERVO_TESTER_HPP
 
 #include <system/multipwm.hpp>
-#include <device/other/pin.hpp>
+#include <device/pin/output_digital_pin.hpp>
 
 
 struct MyMultiPWMConfig : public DefaultMultiPWMConfig {  
@@ -15,7 +15,7 @@ class GenericServoTester : public Input<u32>, public Output<u32> {};
 template<u32 PIN_ID>
 class ServoTester : public GenericServoTester {
 private:
-  Pin<PIN_ID> _pin;
+  OutputDigitalPin<PIN_ID> _pin;
   MultiPWM<MyMultiPWMConfig>::Pin _servo;
 
   u32 _cmd;
@@ -25,7 +25,7 @@ public:
     : _pin(""),
       _servo(MultiPWM<MyMultiPWMConfig>::instance().createPin(_pin)) {
     
-    _pin.setMode(PinMode::OUTPUT);
+    //_pin.setMode(PinMode::OUTPUT);
 
     _cmd = 1000;
     _servo.setValue(_cmd);

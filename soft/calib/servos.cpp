@@ -6,7 +6,7 @@
 #include <board/adm2560.hpp>
 
 Servo servos[] = {
-  #define MACRO_SERVO(name, pin) {new ServoTester<ADM2560::Pinmap::pin>, new ServoConfig},
+#define MACRO_SERVO(name, pin) {new ServoTester<ADM2560::Pinmap::pin>, new ServoConfig},
   #include "servos.hpp"
   #undef MACRO_SERVO
   {NULL, NULL}

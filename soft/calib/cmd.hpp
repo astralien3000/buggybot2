@@ -1,7 +1,7 @@
 #ifndef CMD_HPP
 #define CMD_HPP
 
-#include <device/stream/formatted_stream.hpp>
+#include <stream/formatted_stream.hpp>
 
 class Command {
 public:

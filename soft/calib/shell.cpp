@@ -6,9 +6,10 @@
 
 #include <string.h>
 
+#include <stdlib.h>
 #include <base/alloc.hpp>
 
-#include <device/stream/string_stream.hpp>
+#include <stream/string_stream.hpp>
 
 Command* cmds[] = {
   new ListServo(),
