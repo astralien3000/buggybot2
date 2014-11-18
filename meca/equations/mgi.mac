@@ -20,11 +20,44 @@ eq1;
 eq2;
 eq3;
 
-Y : -ratcoeff(eq1, cos(q0), 1);
-X : -ratcoeff(eq1, sin(q0), 1);
-Z : subst([cos(q0)=0,sin(q0)=0], eq1);
+sY0 : -ratcoeff(eq1, cos(q0), 1);
+sX0 : -ratcoeff(eq1, sin(q0), 1);
+sZ0 : subst([cos(q0)=0,sin(q0)=0], eq1);
 
 sq0_main : atan2(Y, X)$
 sq0_delta : asin(Z / sqrt(X^2 + Y^2))$
 
 sq0 : [sq0_delta - sq0_main, %pi - sq0_delta - sq0_main];
+
+subst_l : [
+cos(q0) = c0,
+sin(q0) = s0,
+c0 * z = z0,
+s0 * y = y0,
+q1 + q2 = q3
+]$
+
+eq4 : subst(subst_l, eq3);
+eq5 : subst(subst_l, eq2)$
+eq5 : -eq5;
+
+paul1 : X * cos(Ai) + Y * cos(Ak) - Z1$
+paul2 : X * sin(Ai) + Y * sin(Ak) - Z2$
+
+l_subst : [
+Ai = q3,
+Ak = q1
+]$
+
+paul3 : subst(l_subst, paul1)$
+paul4 : subst(l_subst, paul2)$
+
+e1 : ratcoeff(paul3 - eq4, cos(q1), 1);
+e2 : ratcoeff(paul3 - eq4, cos(q3), 1);
+e3 : ratcoeff(paul4 - eq5, sin(q1), 1);
+e4 : ratcoeff(paul4 - eq5, sin(q3), 1);
+e5 : subst([cos(q1) = 0, sin(q1) = 0, cos(q3) = 0, sin(q3) = 0], paul3 - eq4);
+e6 : subst([cos(q1) = 0, sin(q1) = 0, cos(q3) = 0, sin(q3) = 0], paul4 - eq5);
+
+solve([e1=0,e2=0,e3=0,e4=0,e5=0,e6], [X,Y,Z1,Z2]);
+
