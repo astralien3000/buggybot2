@@ -24,8 +24,8 @@ sY0 : -ratcoeff(eq1, cos(q0), 1);
 sX0 : -ratcoeff(eq1, sin(q0), 1);
 sZ0 : subst([cos(q0)=0,sin(q0)=0], eq1);
 
-sq0_main : atan2(Y, X)$
-sq0_delta : asin(Z / sqrt(X^2 + Y^2))$
+sq0_main : atan2(sY0, sX0)$
+sq0_delta : asin(sZ0 / sqrt(sX0^2 + sY0^2))$
 
 sq0 : [sq0_delta - sq0_main, %pi - sq0_delta - sq0_main];
 
