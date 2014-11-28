@@ -1,2 +1,3 @@
-/home/astralien3000/aversive--/include/avr
-/home/astralien3000/aversive--/include/common
+/home/astralien3000/aversive--/modules/*/include
+/home/astralien3000/aversive--/modules/avr/include
+/usr/avr/include

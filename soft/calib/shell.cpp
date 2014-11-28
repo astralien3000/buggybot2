@@ -20,6 +20,7 @@ Command* cmds[] = {
   new SetDefaultServo(),
   new SetMaxServo(),
   new SetMinServo(),
+  new SetAngleServo(),
   NULL
 };
 

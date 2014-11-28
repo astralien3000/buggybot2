@@ -10,6 +10,13 @@ public:
   void run(char* args[]);
 };
 
+class SetAngleServo : public Command {
+public:
+  SetAngleServo(void);
+  const char* name(void);
+  void run(char* args[]);
+};
+
 class GetServo : public Command {
 public:
   GetServo(void);

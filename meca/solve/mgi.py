@@ -11,9 +11,9 @@ def get_q(bot, x, y, z):
         z0 = c0 * z
         y0 = s0 * y
         s1 = p.paul8(
-            bot.L8,
-            bot.L7,
-            -bot.L5 + z0 - y0,
+            -bot.L8,
+            -bot.L7,
+            bot.L5 + z0 - y0,
             x - bot.L3)
         for q1 in s1:
             q1[1] = q1[1] - q1[0]

@@ -36,6 +36,41 @@ SetServo::run(char* args[]) {
 }
 
 ////////////////////////////////////////
+// SET ANGLE
+
+SetAngleServo::SetAngleServo(void) {
+
+}
+
+const char*
+SetAngleServo::name(void) {
+  static const char* name = "set-angle";
+  return name;
+}
+
+void
+SetAngleServo::run(char* args[]) {
+  if(args[1] == 0 || args[2] == 0) {
+    *io << args[0] << " : error\n";
+    return;
+  }
+
+  for(u8 i = 0 ; servos[i].dev ; i++) {
+    if(strcmp(servos[i].conf->name, args[1]) == 0) {
+      int angle = atoi(args[2]) - servos[i].conf->min.angle;
+      int cmd = angle * (servos[i].conf->max.pwm - servos[i].conf->min.pwm);
+      cmd = cmd / (servos[i].conf->max.angle - servos[i].conf->min.angle);
+      cmd += servos[i].conf->min.pwm;
+
+      servos[i].dev->setValue(cmd);
+      return;
+    }
+  }
+
+  *io << args[0] << " : error\n";
+}
+
+////////////////////////////////////////
 // GET
 
 GetServo::GetServo(void) {
@@ -57,7 +92,12 @@ GetServo::run(char* args[]) {
 
   for(u8 i = 0 ; servos[i].dev ; i++) {
     if(strcmp(servos[i].conf->name, args[1]) == 0) {
-      *io << servos[i].dev->getValue() << "\n";
+      *io << "name : " << servos[i].conf->name << "\n";
+      *io << "pin : " << servos[i].conf->pin << "\n";
+      *io << "current : " << servos[i].dev->getValue() << "\n";
+      *io << "default : " << servos[i].conf->default_pwm << "\n";
+      *io << "min : " << servos[i].conf->min.pwm << "(" << servos[i].conf->min.angle << ")\n";
+      *io << "max : " << servos[i].conf->max.pwm << "(" << servos[i].conf->max.angle << ")\n";
       return;
     }
   }
