@@ -308,9 +308,9 @@ public:
   }
 
   ServoTester(void) {
-    TCCR1A = (1 << COM1A1) | (1 << WGM10); // Mode PWM, COMB
-    TCCR1B = (1 << CS12); // prescaler 256
-    DDRB = (1<<5);
+    TCCR1A |= (1 << COM1A1) | (1 << WGM10); // Mode PWM, COMB
+    TCCR1B |= (1 << CS12); // prescaler 256
+    DDRB |= (1<<5);
     _cmd = 800;
     setValue(800);
   }

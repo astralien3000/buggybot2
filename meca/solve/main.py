@@ -7,13 +7,15 @@ import robot
 
 import numpy as np
 
-left_front = np.transpose[[1,0,0,L0],[0,1,0,L1],[0,0,1,L2],[0,0,0,1]])
-right_front = np.transpose([[1,0,0,L0],[0,-1,0,-L1],[0,0,1,L2],[0,0,0,1]])
-left_back = np.transpose([[-1,0,0,-L0],[0,1,0,L1],[0,0,1,L2],[0,0,0,1]])
-right_back = np.transpose([[-1,0,0,-L0],[0,-1,0,-L1],[0,0,1,L2],[0,0,0,1]])
 
 bot = config.Robot
 scn = bpy.data.scenes[0]
+
+left_front = np.transpose([[1,0,0,bot.L0],[0,1,0,bot.L1],[0,0,1,bot.L2],[0,0,0,1]])
+right_front = np.transpose([[1,0,0,bot.L0],[0,-1,0,-bot.L1],[0,0,1,bot.L2],[0,0,0,1]])
+left_back = np.transpose([[-1,0,0,-bot.L0],[0,1,0,bot.L1],[0,0,1,bot.L2],[0,0,0,1]])
+right_back = np.transpose([[-1,0,0,-bot.L0],[0,-1,0,-bot.L1],[0,0,1,bot.L2],[0,0,0,1]])
+
 
 def test(dummy):
     tar = bpy.data.objects['target']
@@ -26,6 +28,16 @@ def test(dummy):
         leg.command([s[0][0], s[0][1], s[0][2]])
 
 test(0)
+
+class ToolsPanel(bpy.types.Panel):
+    bl_label = "Hello from Tools"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "TOOLS"
+ 
+    def draw(self, context):
+        self.layout.operator("hello.hello")
+
+bpy.utils.register_module(__name__)
 
 #bpy.app.handlers.scene_update_post.append(test)
 

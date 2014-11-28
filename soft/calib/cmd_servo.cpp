@@ -57,8 +57,8 @@ SetAngleServo::run(char* args[]) {
 
   for(u8 i = 0 ; servos[i].dev ; i++) {
     if(strcmp(servos[i].conf->name, args[1]) == 0) {
-      int angle = atoi(args[2]) - servos[i].conf->min.angle;
-      int cmd = angle * (servos[i].conf->max.pwm - servos[i].conf->min.pwm);
+      s32 angle = atoi(args[2]) - servos[i].conf->min.angle;
+      s32 cmd = angle * (servos[i].conf->max.pwm - servos[i].conf->min.pwm);
       cmd = cmd / (servos[i].conf->max.angle - servos[i].conf->min.angle);
       cmd += servos[i].conf->min.pwm;
 
@@ -69,6 +69,40 @@ SetAngleServo::run(char* args[]) {
 
   *io << args[0] << " : error\n";
 }
+
+////////////////////////////////////////
+// MAIN
+
+MainServo::MainServo(void) {
+
+}
+
+const char*
+MainServo::name(void) {
+  static const char* name = "main";
+  return name;
+}
+
+void
+MainServo::run(char* args[]) {
+
+  while(1) {
+    for(u8 i = 0 ; servos[i].dev ; i++) {
+      int a = 0;
+      *io >> a;
+
+      s32 angle = a - servos[i].conf->min.angle;
+      s32 cmd = angle * (servos[i].conf->max.pwm - servos[i].conf->min.pwm);
+      cmd = cmd / (servos[i].conf->max.angle - servos[i].conf->min.angle);
+      cmd += servos[i].conf->min.pwm;
+	
+      servos[i].dev->setValue(cmd);
+
+      //*io << cmd << "\n";
+    }
+  }
+}
+
 
 ////////////////////////////////////////
 // GET

@@ -17,6 +17,13 @@ public:
   void run(char* args[]);
 };
 
+class MainServo : public Command {
+public:
+  MainServo(void);
+  const char* name(void);
+  void run(char* args[]);
+};
+
 class GetServo : public Command {
 public:
   GetServo(void);
