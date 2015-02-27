@@ -20,8 +20,9 @@ void init_servos(void) {
   servos[i].conf->max.pwm = s_max_pwm;					\
   servos[i].conf->min.pwm = s_min_pwm;					\
   servos[i].conf->default_pwm = s_min_pwm;					\
-  servos[i].conf->max.angle =  s_min_angle;				\
-  servos[i].conf->min.angle = s_max_angle;					\
+  servos[i].conf->max.angle =  s_max_angle;				\
+  servos[i].conf->min.angle = s_min_angle;					\
+  servos[i].dev->setValue(servos[i].conf->default_pwm); \
   i++;
 #include "servos.hpp"
 #undef MACRO_SERVO

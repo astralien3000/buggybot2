@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 import serial
 import time
 
-h_average = 0.125
+h_average = 0.15
 h_max = 0.02
-i_step_amp = 0.00
+i_step_amp = 0.02
 e_step_amp = 0.035
 step_amp = i_step_amp + e_step_amp
 

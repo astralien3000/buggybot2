@@ -66,8 +66,8 @@ public:
   }
 
   ServoTester(void) {
-    TCCR3A = (1 << COM3B1) | (1 << WGM30); // Mode PWM, COMB
-    TCCR3B = (1 << CS32); // prescaler 256
+    TCCR3A = (1 << COM3B1) | (1 << WGM31) | (1 << WGM30); // Mode PWM 10b, COMB
+    TCCR3B = (1 << WGM32) | (1 << CS32) | (0 << CS31) | (0 << CS30); // prescaler 256
     DDRE = (1<<4);
     _cmd = 800;
     setValue(800);
@@ -164,7 +164,7 @@ public:
   }
 
   ServoTester(void) {
-    TCCR4A = (1 << COM4A1) | (1 << WGM40); // Mode PWM, COMB
+    TCCR4A = (1 << COM4A1) | (1 << WGM41); // Mode PWM, COMB
     TCCR4B = (1 << CS42); // prescaler 256
     DDRH |= (1<<3);
     _cmd = 800;
@@ -236,7 +236,7 @@ public:
   }
 
   ServoTester(void) {
-    TCCR2A = (1 << COM2B1) | (1 << WGM20); // Mode PWM, COMB
+    TCCR2A = (1 << COM2B1) | (1 << WGM21); // Mode PWM, COMB
     TCCR2B = (1 << CS22)|(1 << CS21); // prescaler 256
     DDRH |= (1<<6);
     _cmd = 30;
@@ -283,7 +283,7 @@ public:
   }
 
   ServoTester(void) {
-    TCCR5A = (1 << COM5A1) | (1 << WGM50); // Mode PWM, COMB
+    TCCR5A = (1 << COM5A1) | (1 << WGM51); // Mode PWM, COMB
     TCCR5B = (1 << CS52); // prescaler 256
     DDRL |= (1<<3);
     _cmd = 30;
@@ -308,7 +308,7 @@ public:
   }
 
   ServoTester(void) {
-    TCCR1A |= (1 << COM1A1) | (1 << WGM10); // Mode PWM, COMB
+    TCCR1A |= (1 << COM1A1) | (1 << WGM11); // Mode PWM, COMB
     TCCR1B |= (1 << CS12); // prescaler 256
     DDRB |= (1<<5);
     _cmd = 800;

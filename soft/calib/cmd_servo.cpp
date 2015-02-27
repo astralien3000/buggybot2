@@ -58,7 +58,7 @@ SetAngleServo::run(char* args[]) {
   for(u8 i = 0 ; servos[i].dev ; i++) {
     if(strcmp(servos[i].conf->name, args[1]) == 0) {
       s32 angle = atoi(args[2]) - servos[i].conf->min.angle;
-      s32 cmd = angle * (servos[i].conf->max.pwm - servos[i].conf->min.pwm);
+      s32 cmd = (angle - servos[i].conf->min.angle) * (servos[i].conf->max.pwm - servos[i].conf->min.pwm);
       cmd = cmd / (servos[i].conf->max.angle - servos[i].conf->min.angle);
       cmd += servos[i].conf->min.pwm;
 
