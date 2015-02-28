@@ -73,11 +73,11 @@ Text HLabel 6450 2200 2    60   Input ~ 0
 PWM_RB1
 Text HLabel 6450 2000 2    60   Input ~ 0
 PWM_RB2
-Text HLabel 4550 5250 0    60   Input ~ 0
+Text HLabel 4500 5250 0    60   Input ~ 0
 PWM_LB0
 Text HLabel 4550 5350 0    60   Input ~ 0
 PWM_LB1
-Text HLabel 4550 5450 0    60   Input ~ 0
+Text HLabel 4500 5450 0    60   Input ~ 0
 PWM_LB2
 Text HLabel 4550 1900 0    60   Input ~ 0
 LOG_5V
@@ -135,4 +135,16 @@ Text HLabel 4550 3900 0    60   Input ~ 0
 SENS_2
 Text HLabel 4550 4000 0    60   Input ~ 0
 SENS_3
+Wire Wire Line
+	4550 5250 4500 5250
+Wire Wire Line
+	4550 5150 4500 5150
+Wire Wire Line
+	4500 5150 4500 5250
+Wire Wire Line
+	4550 5450 4500 5450
+Wire Wire Line
+	4550 5550 4500 5550
+Wire Wire Line
+	4500 5550 4500 5450
 $EndSCHEMATC

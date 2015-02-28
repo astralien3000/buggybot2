@@ -1,4 +1,4 @@
-Cmp-Mod V01 Created by CvPcb (2013-june-11)-stable date = sam. 28 févr. 2015 13:40:46 CET
+Cmp-Mod V01 Created by CvPcb (2013-june-11)-stable date = sam. 28 févr. 2015 15:19:26 CET
 
 BeginCmp
 TimeStamp = /54F28CEC/54F28D93;
@@ -134,36 +134,36 @@ IdModule  = PIN_ARRAY_6x1;
 EndCmp
 
 BeginCmp
-TimeStamp = /54F0DD5E/54F08957;
+TimeStamp = /54F0DD5E/54F1D6BD;
 Reference = I2C0;
 ValeurCmp = CONN_4;
 IdModule  = PIN_ARRAY_4x1;
 EndCmp
 
 BeginCmp
-TimeStamp = /54F0DD5E/54F0DEAA;
+TimeStamp = /54F0DD5E/54F1D6D7;
 Reference = I2C1;
 ValeurCmp = CONN_4;
 IdModule  = PIN_ARRAY_4x1;
 EndCmp
 
 BeginCmp
-TimeStamp = /54F0DD5E/54F0DEB4;
+TimeStamp = /54F0DD5E/54F1D6E1;
+Reference = I2C2;
+ValeurCmp = CONN_4;
+IdModule  = PIN_ARRAY_4x1;
+EndCmp
+
+BeginCmp
+TimeStamp = /54F0DD5E/54F1D6EB;
 Reference = I2C3;
 ValeurCmp = CONN_4;
 IdModule  = PIN_ARRAY_4x1;
 EndCmp
 
 BeginCmp
-TimeStamp = /54F0DD5E/54F0DEBE;
+TimeStamp = /54F0DD5E/54F1D6F5;
 Reference = I2C4;
-ValeurCmp = CONN_4;
-IdModule  = PIN_ARRAY_4x1;
-EndCmp
-
-BeginCmp
-TimeStamp = /54F0DD5E/54F0DEC8;
-Reference = I2C5;
 ValeurCmp = CONN_4;
 IdModule  = PIN_ARRAY_4x1;
 EndCmp
