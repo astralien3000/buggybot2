@@ -34,9 +34,9 @@ EELAYER 27 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 2 20
+Sheet 3 24
 Title ""
-Date "27 feb 2015"
+Date "28 feb 2015"
 Rev ""
 Comp ""
 Comment1 ""
@@ -45,10 +45,10 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L CONN_3 K?
+L CONN_3 SERVO?
 U 1 1 54F06C2D
 P 7100 3500
-F 0 "K?" V 7050 3500 50  0000 C CNN
+F 0 "SERVO?" V 7050 3500 50  0000 C CNN
 F 1 "CONN_3" V 7150 3500 40  0000 C CNN
 F 2 "" H 7100 3500 60  0000 C CNN
 F 3 "" H 7100 3500 60  0000 C CNN

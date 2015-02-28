@@ -34,9 +34,9 @@ EELAYER 27 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 18 20
+Sheet 20 24
 Title ""
-Date "27 feb 2015"
+Date "28 feb 2015"
 Rev ""
 Comp ""
 Comment1 ""
@@ -99,13 +99,13 @@ Text HLabel 6450 3800 2    60   Input ~ 0
 SCL
 Text HLabel 6450 3700 2    60   Input ~ 0
 SDA
-Text HLabel 4550 2400 0    60   Input ~ 0
+Text HLabel 4550 3300 0    60   Input ~ 0
 GP2_LF
-Text HLabel 4550 2500 0    60   Input ~ 0
+Text HLabel 4550 3400 0    60   Input ~ 0
 GP2_RF
-Text HLabel 4550 2600 0    60   Input ~ 0
+Text HLabel 4550 3500 0    60   Input ~ 0
 GP2_RB
-Text HLabel 4550 2700 0    60   Input ~ 0
+Text HLabel 4550 3600 0    60   Input ~ 0
 GP2_LB
 Text HLabel 6450 3600 2    60   Input ~ 0
 RX
@@ -125,4 +125,14 @@ Text HLabel 6450 5750 2    60   Input ~ 0
 SS2
 Text HLabel 6450 5650 2    60   Input ~ 0
 SS3
+Text HLabel 6450 5550 2    60   Input ~ 0
+SS4
+Text HLabel 4550 3700 0    60   Input ~ 0
+SENS_0
+Text HLabel 4550 3800 0    60   Input ~ 0
+SENS_1
+Text HLabel 4550 3900 0    60   Input ~ 0
+SENS_2
+Text HLabel 4550 4000 0    60   Input ~ 0
+SENS_3
 $EndSCHEMATC
