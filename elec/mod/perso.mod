@@ -1,0 +1,62 @@
+PCBNEW-LibModule-V1  sam. 28 févr. 2015 13:20:13 CET
+# encoding utf-8
+Units mm
+$INDEX
+PIN_ARRAY_6x1
+$EndINDEX
+$MODULE PIN_ARRAY_6x1
+Po 0 0 0 15 54F1B245 00000000 ~~
+Li PIN_ARRAY_6x1
+Sc 0
+AR 
+Op 0 0 0
+T0 0 -2.54 1 1 0 0.15 N V 21 N "PIN_ARRAY_6x1"
+T1 0 2.54 1 1 0 0.15 N V 21 N "VAL**"
+DS -7.62 1.27 -7.62 -1.27 0.15 21
+DS -7.62 -1.27 7.62 -1.27 0.15 21
+DS 7.62 -1.27 7.62 1.27 0.15 21
+DS 7.62 1.27 -7.62 1.27 0.15 21
+$PAD
+Sh "1" C 1.5 1.5 0 0 0
+Dr 0.6 0 0
+At STD N 00E0FFFF
+Ne 0 ""
+Po -6.35 0
+$EndPAD
+$PAD
+Sh "2" C 1.5 1.5 0 0 0
+Dr 0.6 0 0
+At STD N 00E0FFFF
+Ne 0 ""
+Po -3.81 0
+$EndPAD
+$PAD
+Sh "3" C 1.5 1.5 0 0 0
+Dr 0.6 0 0
+At STD N 00E0FFFF
+Ne 0 ""
+Po -1.27 0
+$EndPAD
+$PAD
+Sh "4" C 1.5 1.5 0 0 0
+Dr 0.6 0 0
+At STD N 00E0FFFF
+Ne 0 ""
+Po 1.27 0
+$EndPAD
+$PAD
+Sh "5" C 1.5 1.5 0 0 0
+Dr 0.6 0 0
+At STD N 00E0FFFF
+Ne 0 ""
+Po 3.81 0
+$EndPAD
+$PAD
+Sh "6" C 1.5 1.5 0 0 0
+Dr 0.6 0 0
+At STD N 00E0FFFF
+Ne 0 ""
+Po 6.35 0
+$EndPAD
+$EndMODULE PIN_ARRAY_6x1
+$EndLIBRARY

@@ -34,7 +34,7 @@ EELAYER 27 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 2 24
+Sheet 10 24
 Title ""
 Date "28 feb 2015"
 Rev ""
@@ -55,7 +55,7 @@ F4 "POW_5V" I R 4350 4300 60
 $EndSheet
 $Sheet
 S 3550 2950 800  650 
-U 54F06B67
+U 54F1C808
 F0 "SERVO2" 50
 F1 "servo.sch" 50
 F2 "GND" I R 4350 3450 60 
@@ -64,7 +64,7 @@ F4 "POW_5V" I R 4350 3250 60
 $EndSheet
 $Sheet
 S 3550 1850 800  650 
-U 54F06B67
+U 54F1C807
 F0 "SERVO0" 50
 F1 "servo.sch" 50
 F2 "GND" I R 4350 2350 60 

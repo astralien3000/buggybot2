@@ -34,7 +34,7 @@ EELAYER 27 0
 EELAYER END
 $Descr User 5197 4000
 encoding utf-8
-Sheet 23 24
+Sheet 21 24
 Title ""
 Date "28 feb 2015"
 Rev ""
@@ -45,10 +45,10 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L CONN_6 GPIO
+L CONN_6 GPIO1
 U 1 1 54F37CAA
 P 2700 1700
-F 0 "GPIO" V 2650 1700 60  0000 C CNN
+F 0 "GPIO1" V 2650 1700 60  0000 C CNN
 F 1 "CONN_6" V 2750 1700 60  0000 C CNN
 F 2 "~" H 2700 1700 60  0000 C CNN
 F 3 "~" H 2700 1700 60  0000 C CNN
@@ -57,14 +57,14 @@ F 3 "~" H 2700 1700 60  0000 C CNN
 $EndComp
 Text HLabel 2350 1450 0    60   Input ~ 0
 GND
-Text HLabel 2350 1950 0    60   Input ~ 0
-LOG_5V
 Text HLabel 2350 1550 0    60   Input ~ 0
-GPIO0
+LOG_5V
 Text HLabel 2350 1650 0    60   Input ~ 0
-GPIO1
+GPIO0
 Text HLabel 2350 1750 0    60   Input ~ 0
-GPIO2
+GPIO1
 Text HLabel 2350 1850 0    60   Input ~ 0
+GPIO2
+Text HLabel 2350 1950 0    60   Input ~ 0
 GPIO3
 $EndSCHEMATC
