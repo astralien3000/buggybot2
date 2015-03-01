@@ -38,6 +38,7 @@
     (user_trace_width 1)
     (user_trace_width 1.25)
     (user_trace_width 1.5)
+    (user_trace_width 1.75)
     (trace_clearance 0.254)
     (zone_clearance 0.508)
     (zone_45_only no)
@@ -1030,7 +1031,7 @@
   )
 
   (module C2 (layer F.Cu) (tedit 200000) (tstamp 54F2D02B)
-    (at 257.81 176.53 180)
+    (at 256.54 176.53 180)
     (descr "Condensateur = 2 pas")
     (tags C)
     (path /54F1C80A/54F2D541)
@@ -1333,7 +1334,7 @@
   )
 
   (module PIN_ARRAY_3X1 (layer F.Cu) (tedit 4C1130E0) (tstamp 54F1B7AE)
-    (at 260.35 162.56 180)
+    (at 259.08 162.56 180)
     (descr "Connecteur 3 pins")
     (tags "CONN DEV")
     (path /54F1C809/54F06B67/54F06C2D)
@@ -1368,7 +1369,7 @@
   )
 
   (module PIN_ARRAY_3X1 (layer F.Cu) (tedit 4C1130E0) (tstamp 54F1B7BA)
-    (at 260.35 167.64 180)
+    (at 259.08 167.64 180)
     (descr "Connecteur 3 pins")
     (tags "CONN DEV")
     (path /54F1C809/54F1C808/54F06C2D)
@@ -1403,7 +1404,7 @@
   )
 
   (module PIN_ARRAY_3X1 (layer F.Cu) (tedit 4C1130E0) (tstamp 54F1B7C6)
-    (at 260.35 157.48 180)
+    (at 259.08 157.48 180)
     (descr "Connecteur 3 pins")
     (tags "CONN DEV")
     (path /54F1C809/54F1C807/54F06C2D)
