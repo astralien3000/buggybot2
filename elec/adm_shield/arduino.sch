@@ -81,8 +81,6 @@ Text HLabel 4500 5450 0    60   Input ~ 0
 PWM_LB2
 Text HLabel 4550 1900 0    60   Input ~ 0
 LOG_5V
-Text HLabel 4550 2000 0    60   Input ~ 0
-GND
 Text HLabel 4550 2100 0    60   Input ~ 0
 GND
 Text HLabel 6450 1400 2    60   Input ~ 0
