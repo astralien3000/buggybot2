@@ -59,10 +59,15 @@ SetAngleServo::run(char* args[]) {
     if(strcmp(servos[i].conf->name, args[1]) == 0) {
       s32 angle = atoi(args[2]) - servos[i].conf->min.angle;
       s32 cmd = (angle - servos[i].conf->min.angle) * (servos[i].conf->max.pwm - servos[i].conf->min.pwm);
-      cmd = cmd / (servos[i].conf->max.angle - servos[i].conf->min.angle);
-      cmd += servos[i].conf->min.pwm;
 
-      servos[i].dev->setValue(cmd);
+      if(servos[i].conf->max.angle != servos[i].conf->min.angle) {
+        cmd = cmd / (servos[i].conf->max.angle - servos[i].conf->min.angle);
+        cmd += servos[i].conf->min.pwm;
+        servos[i].dev->setValue(cmd);
+      }
+      else {
+        servos[i].dev->setValue(servos[i].conf->default_pwm);
+      }
       return;
     }
   }

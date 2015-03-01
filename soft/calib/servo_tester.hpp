@@ -4,37 +4,20 @@
 #include <system/multipwm.hpp>
 #include <device/pin/output_digital_pin.hpp>
 
-
-struct MyMultiPWMConfig : public DefaultMultiPWMConfig {  
-  static constexpr u32 PERIOD = 21000;
-};
-
-
 class GenericServoTester : public Input<u32>, public Output<u32> {};
 
 template<u32 PIN_ID>
 class ServoTester : public GenericServoTester {
 private:
-//  OutputDigitalPin<PIN_ID> _pin;
-//  MultiPWM<MyMultiPWMConfig>::Pin _servo;
-
   u32 _cmd;
 
 public:
   ServoTester(void)
-//    : _pin(""),
-//      _servo(MultiPWM<MyMultiPWMConfig>::instance().createPin(_pin))
   {
-    
-//    //_pin.setMode(PinMode::OUTPUT);
-
-//    _cmd = 1000;
-//    _servo.setValue(_cmd);
+        static_assert(PIN_ID == 0, "Servo not available");
   }
 
   void setValue(u32 cmd) {
-//    _cmd = cmd;
-//    _servo.setValue(cmd);
   }
 
   u32 getValue(void) {
@@ -49,14 +32,21 @@ public:
 #include <hardware/architecture.hpp>
 #include <hardware/timer.hpp>
 
+#define CFG_16B_TIMER(n) \
+  TCCR##n##A = (1 << COM##n##A1) | (1 << COM##n##B1) | (1 << COM##n##C1) | (1 << WGM##n##1) | (1 << WGM##n##0); \
+  TCCR##n##B = (1 << WGM##n##2) | (1 << CS##n##2) | (0 << CS##n##1) | (0 << CS##n##0); \
+
+#define SET_16B_COM(timer, com, cmd) \
+  OCR##timer##com##L = cmd & 0xFF; \
+  OCR##timer##com##H = (cmd >> 8) & 0xFF;
+
 template <>
 class ServoTester<ADM2560::Pinmap::D2> : public GenericServoTester {
   u32 _cmd;
 
 public:
   void setValue(u32 cmd) {
-    OCR3BL = cmd & 0xFF;
-    OCR3BH = (cmd >> 8) & 0xFF;
+    SET_16B_COM(3, B, cmd);
     _cmd = cmd;
   }
 
@@ -66,11 +56,11 @@ public:
   }
 
   ServoTester(void) {
-    TCCR3A = (1 << COM3B1) | (1 << WGM31) | (1 << WGM30); // Mode PWM 10b, COMB
-    TCCR3B = (1 << WGM32) | (1 << CS32) | (0 << CS31) | (0 << CS30); // prescaler 256
-    DDRE = (1<<4);
-    _cmd = 800;
-    setValue(800);
+    CFG_16B_TIMER(3);
+    //    TCCR3A = (1 << COM3B1) | (1 << WGM31) | (1 << WGM30); // Mode PWM 10b, COMB
+    //    TCCR3B = (1 << WGM32) | (1 << CS32) | (0 << CS31) | (0 << CS30); // prescaler 256
+    DDRE |= (1<<4);
+    setValue(0);
   }
 };
 
@@ -80,8 +70,7 @@ class ServoTester<ADM2560::Pinmap::D3> : public GenericServoTester {
 
 public:
   void setValue(u32 cmd) {
-    OCR3CL = cmd & 0xFF;
-    OCR3CH = (cmd >> 8) & 0xFF;
+    SET_16B_COM(3, C, cmd);
     _cmd = cmd;
   }
 
@@ -91,10 +80,9 @@ public:
   }
 
   ServoTester(void) {
-    TCCR3A |= (1 << COM3C1);
+    CFG_16B_TIMER(3);
     DDRE |= (1<<5);
-    _cmd = 800;
-    setValue(800);
+    setValue(0);
   }
 };
 
@@ -117,8 +105,7 @@ public:
     TCCR0A = (1 << COM0B1) | (1 << WGM00); // Mode PWM, COMB
     TCCR0B = (1 << CS02); // prescaler 256
     DDRG |= (1<<5);
-    _cmd = 30;
-    setValue(30);
+    setValue(0);
   }
 };
 
@@ -128,8 +115,7 @@ class ServoTester<ADM2560::Pinmap::D5> : public GenericServoTester {
 
 public:
   void setValue(u32 cmd) {
-    OCR3AL = cmd & 0xFF;
-    OCR3AH = (cmd >> 8) & 0xFF;
+    SET_16B_COM(3, A, cmd);
     _cmd = cmd;
   }
 
@@ -139,10 +125,9 @@ public:
   }
 
   ServoTester(void) {
-    TCCR3A |= (1 << COM3A1);
+    CFG_16B_TIMER(3);
     DDRE |= (1<<3);
-    _cmd = 800;
-    setValue(800);
+    setValue(0);
   }
 };
 
@@ -153,8 +138,7 @@ class ServoTester<ADM2560::Pinmap::D6> : public GenericServoTester {
 
 public:
   void setValue(u32 cmd) {
-    OCR4AL = cmd & 0xFF;
-    OCR4AH = (cmd >> 8) & 0xFF;
+    SET_16B_COM(4, A, cmd);
     _cmd = cmd;
   }
 
@@ -164,11 +148,9 @@ public:
   }
 
   ServoTester(void) {
-    TCCR4A = (1 << COM4A1) | (1 << WGM41); // Mode PWM, COMB
-    TCCR4B = (1 << CS42); // prescaler 256
+    CFG_16B_TIMER(4);
     DDRH |= (1<<3);
-    _cmd = 800;
-    setValue(800);
+    setValue(0);
   }
 };
 
@@ -178,8 +160,7 @@ class ServoTester<ADM2560::Pinmap::D7> : public GenericServoTester {
 
 public:
   void setValue(u32 cmd) {
-    OCR4BL = cmd & 0xFF;
-    OCR4BH = (cmd >> 8) & 0xFF;
+    SET_16B_COM(4, B, cmd);
     _cmd = cmd;
   }
 
@@ -189,10 +170,9 @@ public:
   }
 
   ServoTester(void) {
-    TCCR4A |= (1 << COM4B1);
+    CFG_16B_TIMER(4);
     DDRH |= (1<<4);
-    _cmd = 800;
-    setValue(800);
+    setValue(0);
   }
 };
 
@@ -202,8 +182,7 @@ class ServoTester<ADM2560::Pinmap::D8> : public GenericServoTester {
 
 public:
   void setValue(u32 cmd) {
-    OCR4CL = cmd & 0xFF;
-    OCR4CH = (cmd >> 8) & 0xFF;
+    SET_16B_COM(4, C, cmd);
     _cmd = cmd;
   }
 
@@ -213,10 +192,9 @@ public:
   }
 
   ServoTester(void) {
-    TCCR4A |= (1 << COM4C1);
+    CFG_16B_TIMER(4);
     DDRH |= (1<<5);
-    _cmd = 800;
-    setValue(800);
+    setValue(0);
   }
 };
 
@@ -239,8 +217,7 @@ public:
     TCCR2A = (1 << COM2B1) | (1 << WGM21); // Mode PWM, COMB
     TCCR2B = (1 << CS22)|(1 << CS21); // prescaler 256
     DDRH |= (1<<6);
-    _cmd = 30;
-    setValue(30);
+    setValue(0);
   }
 };
 
@@ -262,8 +239,7 @@ public:
   ServoTester(void) {
     TCCR2A |= (1 << COM2A1); // Mode PWM, COMA
     DDRB |= (1<<4);
-    _cmd = 30;
-    setValue(30);
+    setValue(0);
   }
 };
 
@@ -273,7 +249,7 @@ class ServoTester<ADM2560::Pinmap::D46> : public GenericServoTester {
 
 public:
   void setValue(u32 cmd) {
-    OCR5A = cmd & 0xFF;
+    SET_16B_COM(5, A, cmd);
     _cmd = cmd;
   }
 
@@ -283,11 +259,53 @@ public:
   }
 
   ServoTester(void) {
-    TCCR5A = (1 << COM5A1) | (1 << WGM51); // Mode PWM, COMB
-    TCCR5B = (1 << CS52); // prescaler 256
+    CFG_16B_TIMER(5);
     DDRL |= (1<<3);
-    _cmd = 30;
-    setValue(30);
+    setValue(0);
+  }
+};
+
+template <>
+class ServoTester<ADM2560::Pinmap::D45> : public GenericServoTester {
+  u32 _cmd;
+
+public:
+  void setValue(u32 cmd) {
+    SET_16B_COM(5, B, cmd);
+    _cmd = cmd;
+  }
+
+
+  u32 getValue(void) {
+    return _cmd;
+  }
+
+  ServoTester(void) {
+    CFG_16B_TIMER(5);
+    DDRL |= (1<<4);
+    setValue(0);
+  }
+};
+
+template <>
+class ServoTester<ADM2560::Pinmap::D44> : public GenericServoTester {
+  u32 _cmd;
+
+public:
+  void setValue(u32 cmd) {
+    SET_16B_COM(5, C, cmd);
+    _cmd = cmd;
+  }
+
+
+  u32 getValue(void) {
+    return _cmd;
+  }
+
+  ServoTester(void) {
+    CFG_16B_TIMER(5);
+    DDRL |= (1<<5);
+    setValue(0);
   }
 };
 
@@ -297,8 +315,7 @@ class ServoTester<ADM2560::Pinmap::D11> : public GenericServoTester {
 
 public:
   void setValue(u32 cmd) {
-    OCR1AL = cmd & 0xFF;
-    OCR1AH = (cmd >> 8) & 0xFF;
+    SET_16B_COM(1, A, cmd);
     _cmd = cmd;
   }
 
@@ -308,11 +325,9 @@ public:
   }
 
   ServoTester(void) {
-    TCCR1A |= (1 << COM1A1) | (1 << WGM11); // Mode PWM, COMB
-    TCCR1B |= (1 << CS12); // prescaler 256
+    CFG_16B_TIMER(1);
     DDRB |= (1<<5);
-    _cmd = 800;
-    setValue(800);
+    setValue(0);
   }
 };
 
@@ -323,8 +338,7 @@ class ServoTester<ADM2560::Pinmap::D12> : public GenericServoTester {
 
 public:
   void setValue(u32 cmd) {
-    OCR1BL = cmd & 0xFF;
-    OCR1BH = (cmd >> 8) & 0xFF;
+    SET_16B_COM(1, B, cmd);
     _cmd = cmd;
   }
 
@@ -334,10 +348,9 @@ public:
   }
 
   ServoTester(void) {
-    TCCR1A |= (1 << COM1B1);
+    CFG_16B_TIMER(1);
     DDRB |= (1<<6);
-    _cmd = 800;
-    setValue(800);
+    setValue(0);
   }
 };
 
@@ -347,8 +360,7 @@ class ServoTester<ADM2560::Pinmap::D13> : public GenericServoTester {
 
 public:
   void setValue(u32 cmd) {
-    OCR1CL = cmd & 0xFF;
-    OCR1CH = (cmd >> 8) & 0xFF;
+    SET_16B_COM(1, C, cmd);
     _cmd = cmd;
   }
 
@@ -358,10 +370,9 @@ public:
   }
 
   ServoTester(void) {
-    TCCR1A |= (1 << COM1C1);
+    CFG_16B_TIMER(1);
     DDRB |= (1<<7);
-    _cmd = 800;
-    setValue(800);
+    setValue(0);
   }
 };
 
