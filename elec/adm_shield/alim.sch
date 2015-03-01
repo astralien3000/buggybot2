@@ -36,7 +36,7 @@ $Descr A4 11693 8268
 encoding utf-8
 Sheet 14 24
 Title ""
-Date "28 feb 2015"
+Date "1 mar 2015"
 Rev ""
 Comp ""
 Comment1 ""
@@ -122,4 +122,13 @@ F 3 "~" H 4100 3200 60  0000 C CNN
 $EndComp
 Wire Wire Line
 	4250 3200 5700 3200
+Text Label 4950 3300 2    60   ~ 0
+BAT
+Text Label 4250 3050 2    60   ~ 0
+EN
+Wire Wire Line
+	4350 3200 4350 3050
+Wire Wire Line
+	4350 3050 4250 3050
+Connection ~ 4350 3200
 $EndSCHEMATC

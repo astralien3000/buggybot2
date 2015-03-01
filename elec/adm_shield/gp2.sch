@@ -36,7 +36,7 @@ $Descr User 7874 4000
 encoding utf-8
 Sheet 20 24
 Title ""
-Date "28 feb 2015"
+Date "1 mar 2015"
 Rev ""
 Comp ""
 Comment1 ""
@@ -55,7 +55,7 @@ F 3 "~" H 3050 1400 60  0000 C CNN
 	1    3050 1400
 	0    -1   -1   0   
 $EndComp
-Text HLabel 3150 1750 3    60   Input ~ 0
+Text HLabel 2950 1750 3    60   Input ~ 0
 GND
 Text HLabel 3050 1750 3    60   Input ~ 0
 LOG_5V
@@ -70,7 +70,7 @@ F 3 "~" H 3550 1400 60  0000 C CNN
 	1    3550 1400
 	0    -1   -1   0   
 $EndComp
-Text HLabel 3650 1750 3    60   Input ~ 0
+Text HLabel 3450 1750 3    60   Input ~ 0
 GND
 Text HLabel 3550 1750 3    60   Input ~ 0
 LOG_5V
@@ -85,7 +85,7 @@ F 3 "~" H 4050 1400 60  0000 C CNN
 	1    4050 1400
 	0    -1   -1   0   
 $EndComp
-Text HLabel 4150 1750 3    60   Input ~ 0
+Text HLabel 3950 1750 3    60   Input ~ 0
 GND
 Text HLabel 4050 1750 3    60   Input ~ 0
 LOG_5V
@@ -100,16 +100,16 @@ F 3 "~" H 4550 1400 60  0000 C CNN
 	1    4550 1400
 	0    -1   -1   0   
 $EndComp
-Text HLabel 4650 1750 3    60   Input ~ 0
+Text HLabel 4450 1750 3    60   Input ~ 0
 GND
 Text HLabel 4550 1750 3    60   Input ~ 0
 LOG_5V
-Text HLabel 2950 1750 3    60   Input ~ 0
+Text HLabel 3150 1750 3    60   Input ~ 0
 GP2_LF
-Text HLabel 3450 1750 3    60   Input ~ 0
+Text HLabel 3650 1750 3    60   Input ~ 0
 GP2_RF
-Text HLabel 3950 1750 3    60   Input ~ 0
+Text HLabel 4150 1750 3    60   Input ~ 0
 GP2_RB
-Text HLabel 4450 1750 3    60   Input ~ 0
+Text HLabel 4650 1750 3    60   Input ~ 0
 GP2_LB
 $EndSCHEMATC

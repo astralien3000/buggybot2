@@ -36,7 +36,7 @@ $Descr A4 11693 8268
 encoding utf-8
 Sheet 19 24
 Title ""
-Date "28 feb 2015"
+Date "1 mar 2015"
 Rev ""
 Comp ""
 Comment1 ""
@@ -61,17 +61,17 @@ Text HLabel 6450 1600 2    60   Input ~ 0
 PWM_LF1
 Text HLabel 6450 1500 2    60   Input ~ 0
 PWM_LF2
-Text HLabel 6450 2400 2    60   Input ~ 0
-PWM_RF0
-Text HLabel 6450 2700 2    60   Input ~ 0
-PWM_RF1
-Text HLabel 6450 2600 2    60   Input ~ 0
-PWM_RF2
 Text HLabel 6450 2300 2    60   Input ~ 0
-PWM_RB0
+PWM_RF0
 Text HLabel 6450 2200 2    60   Input ~ 0
-PWM_RB1
+PWM_RF1
 Text HLabel 6450 2000 2    60   Input ~ 0
+PWM_RF2
+Text HLabel 6450 2400 2    60   Input ~ 0
+PWM_RB0
+Text HLabel 6450 2600 2    60   Input ~ 0
+PWM_RB1
+Text HLabel 6450 2700 2    60   Input ~ 0
 PWM_RB2
 Text HLabel 4500 5250 0    60   Input ~ 0
 PWM_LB0

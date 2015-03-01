@@ -36,7 +36,7 @@ $Descr A4 11693 8268
 encoding utf-8
 Sheet 24 24
 Title ""
-Date "28 feb 2015"
+Date "1 mar 2015"
 Rev ""
 Comp ""
 Comment1 ""
@@ -59,13 +59,13 @@ Text HLabel 5400 2900 0    60   Input ~ 0
 GND
 Text HLabel 6200 2900 2    60   Input ~ 0
 GND
-Text HLabel 6200 3000 2    60   Input ~ 0
-SS
-Text HLabel 6200 3100 2    60   Input ~ 0
-SCK
-Text HLabel 6200 3200 2    60   Input ~ 0
-MOSI
 Text HLabel 6200 3300 2    60   Input ~ 0
+SS
+Text HLabel 6200 3200 2    60   Input ~ 0
+SCK
+Text HLabel 6200 3000 2    60   Input ~ 0
+MOSI
+Text HLabel 6200 3100 2    60   Input ~ 0
 MISO
 Text HLabel 5400 3000 0    60   Input ~ 0
 SS1

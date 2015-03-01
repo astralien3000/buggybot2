@@ -36,7 +36,7 @@ $Descr A4 11693 8268
 encoding utf-8
 Sheet 22 24
 Title ""
-Date "28 feb 2015"
+Date "1 mar 2015"
 Rev ""
 Comp ""
 Comment1 ""
@@ -55,10 +55,10 @@ F 3 "~" H 6100 4100 60  0000 C CNN
 	1    6100 4100
 	1    0    0    -1  
 $EndComp
-Text HLabel 5750 4000 0    60   Input ~ 0
+Text HLabel 5750 4200 0    60   Input ~ 0
 RX
 Text HLabel 5750 4100 0    60   Input ~ 0
 TX
-Text HLabel 5750 4200 0    60   Input ~ 0
+Text HLabel 5750 4000 0    60   Input ~ 0
 GND
 $EndSCHEMATC
