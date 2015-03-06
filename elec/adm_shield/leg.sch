@@ -36,7 +36,7 @@ $Descr A4 11693 8268
 encoding utf-8
 Sheet 2 24
 Title ""
-Date "1 mar 2015"
+Date "2 mar 2015"
 Rev ""
 Comp ""
 Comment1 ""
@@ -111,7 +111,7 @@ AR Path="/54F0EBC1/54F2D541" Ref="C1"  Part="1"
 AR Path="/54F1C80B/54F2D541" Ref="C2"  Part="1" 
 AR Path="/54F1C80A/54F2D541" Ref="C3"  Part="1" 
 AR Path="/54F1C809/54F2D541" Ref="C4"  Part="1" 
-F 0 "C3" H 6050 2500 40  0000 L CNN
+F 0 "C4" H 6050 2500 40  0000 L CNN
 F 1 "C" H 6056 2315 40  0000 L CNN
 F 2 "~" H 6088 2250 30  0000 C CNN
 F 3 "~" H 6050 2400 60  0000 C CNN
