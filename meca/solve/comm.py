@@ -5,34 +5,42 @@ import matplotlib.pyplot as plt
 import serial
 import time
 
-h_average = 0.15
-h_max = 0.02
-i_step_amp = 0.02
-e_step_amp = 0.035
-step_amp = i_step_amp + e_step_amp
+h_average = 0.12
+h_max = 0.03
+step_amp = 0.05
+
+PWM = np.pi / 8
 
 def cycl(t):
     ret = t
-    while(ret > np.pi):
+    while(ret >= np.pi):
         ret = ret - np.pi
     while(ret < 0):
         ret = ret + np.pi
     return ret
 
 def x(t):
-    if(0.0 <= t and t <= (np.pi/4.0)):
-        return t * step_amp / (np.pi/4) - i_step_amp / 2
+    ret = 0
+    if(0.0 <= t and t <= PWM):
+        ret = step_amp * t / PWM
     else:
-        return (np.pi/4 - t) * step_amp / (3*np.pi/4)+ i_step_amp / 2
+        ret = step_amp * (PWM - t) / (3 * np.pi / 4) + step_amp
+    return ret - 0.01
+
 
 def z(t):
-    if(0.0 <= t and t <= (np.pi/4.0) - 0.1):
+    if(0.0 < t and t <= PWM):
         return - h_average + h_max
     else:
         return - h_average
 
 def y(t):
-    return 0.045
+    if(0.0 <= t and t <= PWM*2):
+        return 0.055
+    else:
+        return 0.065
+
+
 
 def cmd(qn):
     ret = qn * 180.0 / np.pi
@@ -62,7 +70,6 @@ def q(t):
             ret.append(q)
     return ret
 
-ser = serial.Serial('/dev/ttyACM0', 9600)
 
 def send(q0, q1, q2):
     cmd0 = str(cmd(q0)) + '\n'
@@ -83,19 +90,22 @@ def send_q(t):
         send(ss[0], ss[1], ss[2])
     else:
         send(0,0,0)
-    s2 = q(np.pi - t)
+    s2 = q(np.pi / 4 + t)
+    #s2 = q(0)
     if len(s2) > 0:
         ss2 = s2[0]
         send(ss2[0], ss2[1], ss2[2])
     else:
         send(0,0,0)
-    s3 = q(3 * np.pi/4 - t)
+    s3 = q(np.pi / 2 - t)
+    #s3 = q(0)
     if len(s3) > 0:
         ss3 = s3[0]
         send(ss3[0], ss3[1], ss3[2])
     else:
         send(0,0,0)
-    s4 = q(t - np.pi / 4)
+    s4 = q(3*np.pi / 4 - t)
+    #s4 = q(0)
     if len(s4) > 0:
         ss4 = s4[0]
         send(ss4[0], ss4[1], ss4[2])
@@ -110,6 +120,12 @@ def anim():
         for t in np.arange(0.1, np.pi - 0.1, 0.03):
             send_q(t)
 
+tt = np.arange(0.0, np.pi, 0.02)
+plt.plot(tt,map(z, tt))
+plt.plot(tt,map(x, tt))
+plt.show()
+
+ser = serial.Serial('/dev/ttyACM0', 9600)
 time.sleep(2)
 ser.write(b'main\n')
 anim()
