@@ -33,7 +33,8 @@ while True:
     serv.bind(SERVER_SOCK)
 
     try:
-        time.sleep(2)
+        time.sleep(3)
+        seri.write(b'main\n')
         while True:
             data = serv.recv(1024)
             sys.stdout.write(data)
