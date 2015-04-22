@@ -5,38 +5,30 @@
 using namespace AP;
 using namespace std;
 
-bool test_predicate(const void* test) {
-  (void)test;
-  return ((const Pack<Message, Actuator::ServoAngle>*)test)->message.header.cls == Actuator::ServoAngle::CLS;
-}
-
 void test_handle(const void* test) {
-  const Pack<Message, Actuator::ServoAngle>* pak = (const Pack<Message, Actuator::ServoAngle>*)test;
-  cout << "miew ? " << pak->message.payload.angle << endl;
+  const Pack<Message, Actuator::ServoPWM>* pak = (const Pack<Message, Actuator::ServoPWM>*)test;
+  cout << "miew ? [" << (int)pak->message.payload.servo.id << "]" << pak->message.payload.pwm << endl;
 }
 
 int main(int argc, char* argv[]) {
   AP::Parser<16, 128> parser;
 
-  parser.addHandler(AP::Handler(test_predicate, test_handle));
+  parser.addHandler(DefaultHandler<Message, Actuator::ServoPWM>(test_handle));
 
-  Pack<Message, Actuator::ServoAngle> msg = {0};
+  parser.addHandler(DefaultHandler<PollRequest, Sensor::Bumper>(test_handle));
 
-  msg.message.payload.angle = 42;
+  Pack<PollRequest, Sensor::Bumper> msg = {0};
+
+  cout << sizeof(msg.message) << endl;
+  msg.message.payload.id = 2;
   u8* m = pack(msg);
 
-  parser.parse(m, sizeof(msg)-5);
-  parser.parse(m + sizeof(msg) - 5, 5);
   parser.parse(m, sizeof(msg));
-  
-  parser.parse(m, sizeof(msg)-2);
-  
-  msg.message.payload.angle = 666;
-  m = pack(msg);
 
-  parser.parse(m + sizeof(msg) - 2, 2);
-
-  parser.parse(m, sizeof(msg));
+  cout << "DUMP" << endl;
+  for(int i = 0 ; i < sizeof(msg) ; i++) {
+    cout << (u32)m[i] << endl;
+  }
 
   return 0;
 }

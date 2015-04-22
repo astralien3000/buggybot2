@@ -45,11 +45,27 @@ namespace AP{
     pack.sync = SYNC;
     pack.message.header.cls = Payload::CLS;
     pack.message.header.id = Payload::ID;
-    pack.message.header.length = sizeof(Payload);
+    pack.message.header.length = sizeof(pack.message.payload);
     pack.check = check((u8*)&pack.message, sizeof(pack.message));
     return (u8*)&pack;
   }
 
+  template<template<class T> class MsgType, class Payload>
+  struct DefaultHandler : Handler {
+    static bool predicate(const void* data) {
+      typedef Pack<MsgType, Payload> pack_t;
+      auto pak = (pack_t*)data;
+      bool ret = true;
+      ret &= pak->message.header.cls == Payload::CLS;
+      ret &= pak->message.header.id == Payload::ID;
+      ret &= pak->message.header.length == sizeof(pak->message.payload);
+      return ret;
+    }
+
+    DefaultHandler(handle_func_t handle)
+      : Handler(predicate, handle) {
+    }
+  };
 
   template<u32 MAX_HANDLERS, u32 MAX_BUFFER_SIZE>
   class Parser {

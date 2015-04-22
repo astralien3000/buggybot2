@@ -26,7 +26,7 @@ namespace AP {
   template<class Payload>
   struct PollRequest {
     Header header;
-    typename Payload::Poll poll;
+    typename Payload::Poll payload;
   } PACKED;
   
   template<template<class T> class MsgType, class Payload>
@@ -108,7 +108,7 @@ namespace AP {
       static constexpr u8 ID = 1;
     } PACKED;
     
-    struct Sevo : Config {
+    struct Servo : Config {
       static constexpr u8 ID = 3;
       
       struct Poll {
@@ -116,9 +116,9 @@ namespace AP {
       } servo;
       
       u16 default_pwm;
-      u16 angle1;
+      s16 angle1;
       u16 angle1_pwm;
-      u16 angle2;
+      s16 angle2;
       u16 angle2_pwm;
     } PACKED;
     
@@ -153,13 +153,17 @@ namespace AP {
   namespace Sensor {
     struct Sensor {
       static constexpr u8 CLS = 3;
-    };
+    } PACKED;
     
     struct Bumper : Sensor {
       static constexpr u8 ID = 0;
       
+      struct Poll {
+	u8 id;
+      } bumper;
+
       u16 mask;
-    };
+    } PACKED;
     
     struct GP2 : Sensor {
       static constexpr u8 ID = 1;
