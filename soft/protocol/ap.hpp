@@ -168,9 +168,11 @@ namespace AP {
     struct GP2 : Sensor {
       static constexpr u8 ID = 1;
       
-      u8 gp2;
+      struct Poll {
+	u8 id;
+      } gp2;
       
-      u32 value;
+      u16 value;
     } PACKED;
     
   }

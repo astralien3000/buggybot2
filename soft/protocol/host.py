@@ -44,6 +44,8 @@ class Message:
     def __setitem__(self, key, val):
         it = self.data[key]
         self.data[key] = (it[0], val)
+    def __getitem__(self, key):
+        return self.data[key]
     def pollRequest(self):
         self.keys = self.poll
     def pack(self):
@@ -61,6 +63,15 @@ class Message:
         format = Type.U16 + format + Type.U16
         ret = struct.pack('<' + format, *args)
         return ret
+    def unpack(self, data):
+        format = ''
+        for k in self.keys:
+            format += self.data[k][0]
+        format += 'H'
+        res = struct.unpack('<'+format, data[5:])
+        for i in range(0, len(self.keys)):
+            self.data[self.keys[i]] = res[i]
+        
 
 class Protocol(Message):
     def __init__(self):
@@ -121,11 +132,79 @@ class Bumper(Sensor):
         self.addPollField(Type.U8, 'id')
         self.addField(Type.U16, 'mask')
 
+class GP2(Sensor):
+    def __init__(self):
+        Sensor.__init__(self)
+        self.id = 1
+        self.addPollField(Type.U8, 'id')
+        self.addField(Type.U16, 'value')
+
+
 
 def dump(msg):
     for c in msg:
         print ord(c)
 
+
+class Parser:
+    def __init__(self):
+        self.handlers = dict()
+        self.data = ''
+        self.state = 'SYNC'
+        self.msg_length = None
+        self.MAX_BUFFER_SIZE = 64
+    def addHandler(self, msg, func):
+        m = msg()
+        self.handlers[(m.cls, m.id)] = (msg, func)
+    def parse(self, data):
+        wait_data = False
+        self.data += data
+        while not wait_data:
+            if self.state == 'SYNC':
+                #print 'SYNC'
+                if len(self.data) < 2:
+                    wait_data = True
+                else:
+                    (sync,) = struct.unpack('<H', self.data[0:2])
+                    if sync == Message.sync:
+                        self.state = 'LENGTH'
+                    else:
+                        self.data = self.data[1:]
+            elif self.state == 'LENGTH':
+                #print 'LENGTH'
+                if len(self.data) < 5:
+                    wait_data = True
+                else:
+                    (length,) = struct.unpack('<B', self.data[4:5])
+                    if length < self.MAX_BUFFER_SIZE:
+                        self.state = 'CHECK'
+                        self.msg_length = length
+                    else:
+                        self.state = 'SYNC'
+                        self.data = self.data[1:]
+            elif self.state == 'CHECK':
+                #print 'CHECK'
+                length = 7 + self.msg_length
+                if len(self.data) < length:
+                    wait_data = True
+                else:
+                    chk1 = check(self.data[2:length-2])
+                    (chk2,) = struct.unpack('<H', self.data[length-2:length])
+                    if chk1 == chk2:
+                        self.state = 'PREDICATE'
+                    else:
+                        self.state = 'SYNC'
+                        self.data = self.data[1:]
+            elif self.state == 'PREDICATE':
+                #print 'PREDICATE'
+                (cls, id) = struct.unpack('<BB', self.data[2:4])
+                if self.handlers.has_key((cls, id)):
+                    pak = self.handlers[(cls, id)][0]()
+                    pak.unpack(data[0:7+self.msg_length])
+                    self.handlers[(cls, id)][1](pak)
+                self.state = 'SYNC'
+                self.data = self.data[7+self.msg_length:]
+                
 
 LEG = {
     'LF' : 0x01,
@@ -184,15 +263,25 @@ def configure_servos(seri):
 seri = serial.Serial('/dev/ttyACM0', 9600)
 time.sleep(3)
 
+def test_bumper(pak):
+    print pak['mask']
+
+def test_gp2(pak):
+    print pak['mask']
+
+parser = Parser()
+parser.addHandler(GP2, test_gp2)
+parser.addHandler(Bumper, test_bumper)
+
 while True:
-    bum = Bumper()
-    bum['id'] = 0
-    bum.pollRequest()
-    seri.write(bum.pack())
-    res = seri.read(10)
-    print '--> RES'
-    dump(res)
-    time.sleep(5)
+    msg = Bumper()
+    msg['id'] = 1
+    msg.pollRequest()
+    seri.write(msg.pack())
+    while seri.inWaiting():
+        data = seri.read(seri.inWaiting())
+        parser.parse(data)
+    time.sleep(0.1)
     
 
 #san = ServoAngle()

@@ -4,6 +4,7 @@
 #include <base/pair.hpp>
 
 #include <servo.hpp>
+#include <adc_pin.hpp>
 
 #define BUGGYBOT_SERVOS_INTERN
 #include <buggybot_servos.hpp>
@@ -41,7 +42,13 @@ InputDigitalPin<ADM2560::Pinmap::A13> sensor2("s2");
 InputDigitalPin<ADM2560::Pinmap::A14> sensor3("s3");
 InputDigitalPin<ADM2560::Pinmap::A15> sensor4("s4");
 
+InputDigitalPin<ADM2560::Pinmap::A8> tirette("tir");
+
+ADCPin<ADM2560::Pinmap::A9> gp2l;
+ADCPin<ADM2560::Pinmap::A10> gp2r;
+
 List<5, Input<bool>*> bumpers;
+List<3, Input<u16>*> gp2s;
 
 struct Conf {
   u16 magic_number;
@@ -130,7 +137,13 @@ void bumper_list_init(void) {
   bumpers.append(&sensor1);
   bumpers.append(&sensor2);
   bumpers.append(&sensor3);
-  bumpers.append(&sensor4);  
+  bumpers.append(&sensor4);
+  bumpers.append(&tirette);
+}
+
+void gp2_list_init(void) {
+  gp2s.append(&gp2l);
+  gp2s.append(&gp2r);
 }
 
 void send_ack(const void* msg) {
@@ -229,8 +242,27 @@ void bumper_handle(const void* msg) {
   write(io, pack(res), sizeof(res));
 }
 
+void gp2_handle(const void* msg) {
+  typedef Pack<PollRequest, Sensor::GP2> pack_t;
+  auto pak = (pack_t*)msg;
+
+  const u8 id = pak->message.payload.id;
+  
+  if(id < gp2s.usedSpace()) {
+    Pack<Message, Sensor::GP2> res;
+  
+    res.message.payload.gp2.id = id;
+    res.message.payload.value = gp2s.get(id)->getValue();
+    
+    write(io, pack(res), sizeof(res));
+  }
+  else {
+    send_nak(msg);
+  }
+}
+
 void default_handle(const void* msg) {
-  //write(io, (u8*)"aaaaaaaaa", 9);
+  send_nak(msg);
 }
 
 bool true_predicate(const void* msg) {
@@ -241,6 +273,7 @@ int main(int argc, char* argv[]) {
   init_main_conf();
   servo_list_init();
   bumper_list_init();
+  gp2_list_init();
 
   Parser<16, 128> parser;
 
@@ -248,6 +281,7 @@ int main(int argc, char* argv[]) {
   parser.addHandler(DefaultHandler<Message, Actuator::ServoAngle>(servo_angle_handle));
   parser.addHandler(DefaultHandler<Message, AP::Config::Servo>(servo_config_handle));
   parser.addHandler(DefaultHandler<PollRequest, Sensor::Bumper>(bumper_handle));
+  parser.addHandler(DefaultHandler<PollRequest, Sensor::GP2>(gp2_handle));
   parser.addHandler(Handler(true_predicate, default_handle));
 
 
