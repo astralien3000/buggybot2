@@ -1,7 +1,7 @@
 #include <device/stream/uart_stream.hpp>
 
 #include <util/twi.h>
-#include "adc_pin.hpp"
+#include <adc_pin.hpp>
 
 UartStream<0> io("");
 
