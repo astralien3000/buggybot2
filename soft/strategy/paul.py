@@ -20,3 +20,16 @@ def paul8(X, Y, Z1, Z2):
         ak = np.arctan2(I(ai) * np.sign(Y), R(ai) * np.sign(Y)) 
         S.append([ai, ak])
     return S
+
+def paul6(X, Y, Z1, Z2, W):
+    Zp = W**2 - Z1**2 - Z2**2 - X**2 - Y**2
+    Xp = 2 * (X * Z2 + Y * Z1)
+    Yp = 2 * (X * Z1 - Y * Z2)
+    Ai = paul2(Xp, Yp, Zp)
+    I = lambda ai: X * np.cos(ai) + Y * np.sin(ai) + Z1
+    R = lambda ai: X * np.sin(ai) - Y * np.cos(ai) + Z2
+    S = []
+    for ai in Ai:
+        ak = np.arctan2(I(ai) * np.sign(W), R(ai) * np.sign(W))
+        S.append([ai, ak])
+    return S
