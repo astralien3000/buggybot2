@@ -41,23 +41,25 @@ eq4 : subst(subst_l, eq3);
 eq5 : subst(subst_l, eq2)$
 eq5 : -eq5;
 
-paul1 : X * cos(Ai) + Y * cos(Ak) - Z1$
-paul2 : X * sin(Ai) + Y * sin(Ak) - Z2$
+paul1 : X * cos(Ai) + Y * sin(Ai) + Z1 - W * sin(Ak)$
+paul2 : X * sin(Ai) - Y * cos(Ai) + Z2 - W * cos(Ak)$
 
 l_subst : [
-Ai = q3,
-Ak = q1
+Ai = q1,
+Ak = -q3
 ]$
 
-paul3 : subst(l_subst, paul1)$
-paul4 : subst(l_subst, paul2)$
+paul3 : subst(l_subst, paul1);
+paul4 : subst(l_subst, paul2);
 
-e1 : ratcoeff(paul3 - eq4, cos(q1), 1);
-e2 : ratcoeff(paul3 - eq4, cos(q3), 1);
-e3 : ratcoeff(paul4 - eq5, sin(q1), 1);
-e4 : ratcoeff(paul4 - eq5, sin(q3), 1);
-e5 : subst([cos(q1) = 0, sin(q1) = 0, cos(q3) = 0, sin(q3) = 0], paul3 - eq4);
-e6 : subst([cos(q1) = 0, sin(q1) = 0, cos(q3) = 0, sin(q3) = 0], paul4 - eq5);
+e1 : ratcoeff(paul4 - eq4, cos(q1), 1);
+e2 : ratcoeff(paul4 - eq4, sin(q1), 1);
+e3 : ratcoeff(paul4 - eq4, cos(q3), 1);
+e4 : ratcoeff(paul3 - eq5, sin(q1), 1);
+e5 : ratcoeff(paul3 - eq5, cos(q1), 1);
+e6 : ratcoeff(paul3 - eq5, sin(q3), 1);
+e7 : subst([cos(q1) = 0, sin(q1) = 0, cos(q3) = 0, sin(q3) = 0], paul4 - eq4);
+e8 : subst([cos(q1) = 0, sin(q1) = 0, cos(q3) = 0, sin(q3) = 0], paul3 - eq5);
 
-solve([e1=0,e2=0,e3=0,e4=0,e5=0,e6=0], [X,Y,Z1,Z2]);
+solve([e1=0,e2=0,e3=0,e4=0,e5=0,e6=0,e7=0,e8=0], [X,Y,Z1,Z2,W]);
 
