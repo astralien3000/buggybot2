@@ -1,6 +1,13 @@
 import config
 import numpy as np
 
+def leg_matrix(bot, q0, q1, q2):
+    return np.transpose([
+        [1,0,0,bot.L0],
+        [0,1,0,bot.L1],
+        [0,0,1,bot.L2],
+        [0,0,0,1]])
+
 def shoulder_matrix(bot, q0, q1, q2):
     return np.transpose([
         [1,0,0,0],

@@ -20,9 +20,9 @@ grind(T["R", "rbL"]);
 /* Leg */
 T["L0", "L0a"] : rot_x(q0)$
 T["L0a", "L1"] : trans(L3, L4, -L5) . rot_z(%pi/2)$
-T["L1", "L1a"] : rot_x(q1)$
-T["L1a", "L2"] : trans(L6, 0, -L7)$
-T["L2", "L2a"] : rot_x(q2)$
+T["L1", "L1a"] : rot_x(-q1)$
+T["L1a", "L2"] : trans(L6, L9, -L7)$
+T["L2", "L2a"] : rot_x(-q2)$
 T["L2a", "L3"] : trans(0, 0, -L8)$
 
 /* Chain Leg */
