@@ -10,6 +10,7 @@
 #include <buggybot_servos.hpp>
 
 #include <device/stream/uart_stream.hpp>
+#include <device/stream/eeprom_stream.hpp>
 
 #include <device/pin/input_digital_pin.hpp>
 #include <board/adm2560.hpp>
@@ -74,43 +75,50 @@ Conf main_conf;
 
 void init_main_conf(void) {
   main_conf.magic_number = AP::SYNC;
-
-
+  
   using namespace AP::Buggybot::Servo;
-
+  
   // Id
   main_conf.lf0.servo.id = LF0;
   main_conf.lf1.servo.id = LF1;
   main_conf.lf2.servo.id = LF2;
-
+  
   main_conf.rf0.servo.id = RF0;
   main_conf.rf1.servo.id = RF1;
   main_conf.rf2.servo.id = RF2;
-
+  
   main_conf.rb0.servo.id = RB0;
   main_conf.rb1.servo.id = RB1;
   main_conf.rb2.servo.id = RB2;
-
+  
   main_conf.lb0.servo.id = LB0;
   main_conf.lb1.servo.id = LB1;
   main_conf.lb2.servo.id = LB2;
-
+    
   // Default pwm
   main_conf.lf0.default_pwm = 44;
   main_conf.lf1.default_pwm = 73;
   main_conf.lf2.default_pwm = 30;
-
+    
   main_conf.rf0.default_pwm = 112;
   main_conf.rf1.default_pwm = 81;
   main_conf.rf2.default_pwm = 38;
-
+    
   main_conf.rb0.default_pwm = 50;
   main_conf.rb1.default_pwm = 100;
   main_conf.rb2.default_pwm = 130;
-
+    
   main_conf.lb0.default_pwm = 105;
   main_conf.lb1.default_pwm = 74;
   main_conf.lb2.default_pwm = 32;
+
+  // 
+  servos.doForeach([](pair_t& item) {
+      item.left()->angle1 = 0;
+      item.left()->angle1_pwm = 0;
+      item.left()->angle2 = 0;
+      item.left()->angle2_pwm = 0;
+    });
 }
 
 void servo_list_init(void) {
@@ -209,7 +217,7 @@ void servo_angle_handle(const void* msg) {
   send_ack(msg);
 }
 
-void servo_config_handle(const void* msg) {
+void set_servo_config_handle(const void* msg) {
   typedef Pack<Message, AP::Config::Servo> pack_t;
   auto pak = (pack_t*)msg;
   
@@ -227,6 +235,36 @@ void servo_config_handle(const void* msg) {
     });
 
   send_ack(msg);
+}
+
+void get_servo_config_handle(const void* msg) {
+  typedef Pack<PollRequest, AP::Config::Servo> pack_t;
+  auto pak = (pack_t*)msg;
+  
+  servos.doForeach([pak](pair_t& item) {
+      if(item.left()->servo.id == pak->message.payload.id) {
+	AP::Config::Servo* const cfg = item.left();
+	Pack<Message, AP::Config::Servo> res;
+
+	res.message.payload.servo.id = cfg->servo.id;
+	res.message.payload.default_pwm = cfg->default_pwm;
+	res.message.payload.angle1 = cfg->angle1;
+	res.message.payload.angle1_pwm = cfg->angle1_pwm;
+	res.message.payload.angle2 = cfg->angle2;
+	res.message.payload.angle2_pwm = cfg->angle2_pwm;
+
+	write(io, pack(res), sizeof(res));
+      }
+    });
+
+  send_ack(msg);
+}
+
+void save_config_handle(const void* msg) {
+  typedef Pack<Message, AP::Config::Save> pack_t;
+  auto pak = (pack_t*)msg;
+  
+  send_nak(msg);
 }
 
 void bumper_handle(const void* msg) {
@@ -270,18 +308,20 @@ bool true_predicate(const void* msg) {
 }
 
 int main(int argc, char* argv[]) {
-  init_main_conf();
   servo_list_init();
   bumper_list_init();
   gp2_list_init();
+  init_main_conf();
 
   Parser<16, 128> parser;
 
   parser.addHandler(DefaultHandler<Message, Actuator::ServoPWM>(servo_pwm_handle));
   parser.addHandler(DefaultHandler<Message, Actuator::ServoAngle>(servo_angle_handle));
-  parser.addHandler(DefaultHandler<Message, AP::Config::Servo>(servo_config_handle));
+  parser.addHandler(DefaultHandler<Message, AP::Config::Servo>(set_servo_config_handle));
+parser.addHandler(DefaultHandler<PollRequest, AP::Config::Servo>(get_servo_config_handle));
   parser.addHandler(DefaultHandler<PollRequest, Sensor::Bumper>(bumper_handle));
   parser.addHandler(DefaultHandler<PollRequest, Sensor::GP2>(gp2_handle));
+  parser.addHandler(DefaultHandler<Message, AP::Config::Save>(save_config_handle));
   parser.addHandler(Handler(true_predicate, default_handle));
 
 

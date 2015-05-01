@@ -1,7 +1,12 @@
+from BaseHTTPServer import *
+
 import serial
 import time
 import sys
 import struct
+import re
+
+from mod.calib import *
 
 def check(buff):
     chk0 = 0
@@ -132,26 +137,6 @@ class SaveConfig(Config):
         self.id = 0
         self.addPollField(Type.U8, 'dummy')
 
-class Sensor(Message):
-    def __init__(self):
-        Message.__init__(self)
-        self.cls = 3
-
-class Bumper(Sensor):
-    def __init__(self):
-        Sensor.__init__(self)
-        self.id = 0
-        self.addPollField(Type.U8, 'id')
-        self.addField(Type.U16, 'mask')
-
-class GP2(Sensor):
-    def __init__(self):
-        Sensor.__init__(self)
-        self.id = 1
-        self.addPollField(Type.U8, 'id')
-        self.addField(Type.U16, 'value')
-
-
 
 def dump(msg):
     for c in msg:
@@ -218,42 +203,6 @@ class Parser:
                 self.data = self.data[7+self.msg_length:]
                 
 
-LEG = {
-    'LF' : 0x01,
-    'RF' : 0x02,
-    'RB' : 0x04,
-    'LB' : 0x08,
-}
-
-JOIN = {
-    0 : 0x01,
-    1 : 0x02,
-    2 : 0x04,
-}
-
-SERVO = dict()
-
-for l in LEG.items():
-    for j in JOIN.items():
-        SERVO[(l[0] + str(j[0]))] = (l[1] << 4) | j[1]
-
-SERVO_CFG = {
-    'LF0' : (44, 0, 92, 90),
-    'LF1' : (73, 0, 121, 90),
-    'LF2' : (30, 0, 118, 180),
-
-    'RF0' : (112, 0, 60, 90),
-    'RF1' : (81, 0, 132, 90),
-    'RF2' : (38, 0, 126, 180),
-
-    'RB0' : (50, 0, 102, 90),
-    'RB1' : (100, 0, 44, 90),
-    'RB2' : (130, 0, 38, 180),
-
-    'LB0' : (105, 0, 56, 90),
-    'LB1' : (74, 0, 130, 90),
-    'LB2' : (32, 0, 122, 180),
-}
 
 def create_config_msg(sid):
     ret = ServoConfig()
@@ -274,32 +223,12 @@ def configure_servos(seri):
         data = seri.read(seri.inWaiting())
         parser.parse(data)
 
-    
-seri = serial.Serial('/dev/ttyACM0', 9600)
-time.sleep(3)
-
-def test_bumper(pak):
-    print pak['mask']
-
-def test_gp2(pak):
-    print pak['mask']
-
-def test_ack(pak):
-    print 'ACK', pak['cls'], pak['id']
-
-def test_nak(pak):
-    print 'NAK'
-
-def test_config(pak):
-    for k in pak.data.keys():
-        print str(k), ' = ', str(pak[k])
-
-parser = Parser()
-parser.addHandler(GP2, test_gp2)
-parser.addHandler(Bumper, test_bumper)
-parser.addHandler(ServoConfig, test_config)
-parser.addHandler(Ack, test_ack)
-parser.addHandler(Nak, test_nak)
+def configure_servo(seri, sid):
+    msg = create_config_msg(sid)
+    seri.write(msg.pack())
+    time.sleep(0.1)
+    data = seri.read(seri.inWaiting())
+    parser.parse(data)
 
 def send_cmd(seri, sid, val):
     msg = ServoPWM()
@@ -311,75 +240,151 @@ def send_cmd(seri, sid, val):
     parser.parse(data)
     time.sleep(0.1)
 
+def reset_default(seri):
+    for sid in SERVO_CFG.keys():
+        send_cmd(seri, sid, SERVO_CFG[sid][0])
 
-while 1:
-    print 'Calib'
-    for k in SERVO_CFG.keys():
-        print '-------------------------------'
-        print k
-        c = 0
-        # angle1
-        while c != 'q':
-            send_cmd(seri, k, SERVO_CFG[k][0])
-            print SERVO_CFG[k][0]
-            if c == 'p':
-                SERVO_CFG[k] = (SERVO_CFG[k][0]+1, SERVO_CFG[k][1], SERVO_CFG[k][2], SERVO_CFG[k][3])
-            if c == 'm':
-                SERVO_CFG[k] = (SERVO_CFG[k][0]-1, SERVO_CFG[k][1], SERVO_CFG[k][2], SERVO_CFG[k][3])
-            c = sys.stdin.read(1)
+def save_config():
+    f = open('mod/calib.py', 'w')
+    f.write('from servo import *\n')
+    f.write('\n')
+    f.write('SERVO_CFG = {\n')
+    for k in SERVO_NAME:
+        line = '    '
+        line += '\'' + k + '\''
+        line += ' : '
+        line += str(SERVO_CFG[k]) + ',\n'
+        f.write(line)
+    f.write('}\n')
 
+def test_ack(pak):
+    print 'ACK', pak['cls'], pak['id']
 
+def test_nak(pak):
+    print 'NAK'
 
+def test_config(pak):
+    for k in pak.data.keys():
+        print str(k), ' = ', str(pak[k])
+
+seri = serial.Serial('/dev/ttyACM0', 9600)
+time.sleep(3)
+
+parser = Parser()
+parser.addHandler(ServoConfig, test_config)
+parser.addHandler(Ack, test_ack)
+parser.addHandler(Nak, test_nak)
 
 configure_servos(seri)
+reset_default(seri)
 
-msg = create_config_msg('LF0')
-msg.keys = msg.poll
-seri.write(msg.pack())
-time.sleep(0.1)
-data = seri.read(seri.inWaiting())
-parser.parse(data)
-time.sleep(0.1)
+class MyHandler(BaseHTTPRequestHandler):
+    def do_HEAD_html(s):
+        s.send_response(200)
+        s.send_header("Content-type", "text/html")
+        s.end_headers()
+    def do_HEAD_js(s):
+        s.send_response(200)
+        s.send_header("Content-type", "text/javascript")
+        s.end_headers()
+    def do_GET_root(s):
+        s.do_HEAD_html()
+        s.wfile.write('<head>\n')
+        s.wfile.write('<script type="text/javascript" src="client.js">\n')
+        s.wfile.write('</script>\n')
+        s.wfile.write('</head>\n')
+        s.wfile.write('<body>\n')
+        s.wfile.write('<table>\n')
+        s.wfile.write('<tr>\n')
+        s.wfile.write('<td>\n')
+        s.wfile.write('<ul class="servo_list">\n')
+        for k in SERVO_NAME:
+            s.wfile.write('<li><input type="radio" name="servo" value="'+k+'" onclick="servo_select(\''+k+'\')">'+k+'</input></li>\n')
+        s.wfile.write('</ul>\n')
+        s.wfile.write('</td>\n')
+        s.wfile.write('<td>\n')
+        s.wfile.write('<div class="servo_config">\n')
+        s.wfile.write('<div class="angle_config">\n')
+        s.wfile.write('<input type="button" value="<" onclick="dec_p1()"/>\n')
+        s.wfile.write('<input type="text" value="0" id="angle1_pwm" onclick="up_p1()" readonly/>\n')
+        s.wfile.write('<input type="button" value=">" onclick="inc_p1()"/>\n')
+        s.wfile.write(' Angle <span id="angle1">0</span>\n')
+        s.wfile.write('</div>\n')
+        s.wfile.write('<div class="angle_config">\n')
+        s.wfile.write('<input type="button" value="<" onclick="dec_p2()"/>\n')
+        s.wfile.write('<input type="text" value="0" id="angle2_pwm" onclick="up_p2()" readonly/>\n')
+        s.wfile.write('<input type="button" value=">" onclick="inc_p2()"/>\n')
+        s.wfile.write(' Angle <span id="angle2">0</span>\n')
+        s.wfile.write('</div>\n')
+        s.wfile.write('</div>\n')
+        s.wfile.write('</td>\n')
+        s.wfile.write('</tr>\n')
+        s.wfile.write('</table>\n')
+        s.wfile.write('</body>\n')
+    def do_GET_servo_cfg(s):
+        s.do_HEAD_html()
+        s.wfile.write('test')
+    def do_GET_client(s):
+        s.do_HEAD_js()
+        f = open('app/calib/client.js', 'r')
+        for l in f:
+            s.wfile.write(l)
+        f.close()
+    def do_GET(s):
+        if s.path == '/':
+            s.do_GET_root()
+        if s.path == '/client.js':
+            s.do_GET_client()
+        if s.path == '/get_servo_cfg':
+            s.do_GET_servo_cfg()
+    def do_POST_get_servo_cfg(s):
+        l = s.headers['content-length']
+        params = s.rfile.read(int(l))
+        g = re.search('servo=(.*)', params)
+        k =  g.group(1)
+        s.do_HEAD_html()
+        s.wfile.write('{')
+        s.wfile.write('"servo":"'+k+'",')
+        s.wfile.write('"default_pwm":'+str(SERVO_CFG[k][0])+",")
+        s.wfile.write('"angle1":'+str(SERVO_CFG[k][1])+",")
+        s.wfile.write('"angle1_pwm":'+str(SERVO_CFG[k][0])+",")
+        s.wfile.write('"angle2":'+str(SERVO_CFG[k][3])+",")
+        s.wfile.write('"angle2_pwm":'+str(SERVO_CFG[k][2]))
+        s.wfile.write('}')
+    def do_POST_set_servo_cfg(s):
+        l = s.headers['content-length']
+        params = s.rfile.read(int(l)).split('&')
+        args = dict()
+        for p in params:
+            g = re.search('^(.*)=(.*)$', p)
+            args[g.group(1)] = g.group(2)
+        SERVO_CFG[args['servo']] = (
+            int(args['pwm1']),
+            int(args['angle1']),
+            int(args['pwm2']),
+            int(args['angle2']),
+        )
+        configure_servo(seri, args['servo'])
+        save_config()
+        s.do_HEAD_html()
+        s.wfile.write('OK')        
+    def do_POST_servo_cmd(s):
+        l = s.headers['content-length']
+        params = s.rfile.read(int(l))
+        g = re.search('^(.*)=(.*)$', params)
+        k =  g.group(1)
+        v =  g.group(2)
+        send_cmd(seri, k, int(v))
+        s.do_HEAD_html()
+        s.wfile.write('OK')
+    def do_POST(s):
+        if s.path == '/get_servo_cfg':
+            s.do_POST_get_servo_cfg()
+        if s.path == '/set_servo_cfg':
+            s.do_POST_set_servo_cfg()
+        if s.path == '/servo_cmd':
+            s.do_POST_servo_cmd()
+        
 
-msg = SaveConfig()
-msg['dummy'] = 0
-seri.write(msg.pack())
-time.sleep(0.1)
-data = seri.read(seri.inWaiting())
-parser.parse(data)
-time.sleep(0.1)
-
-
-while 1:
-    data = seri.read(seri.inWaiting())
-    parser.parse(data)
-    time.sleep(0.1)
-
-
-while True:
-    msg = Bumper()
-    msg['id'] = 1
-    msg.pollRequest()
-    seri.write(msg.pack())
-    while seri.inWaiting():
-        data = seri.read(seri.inWaiting())
-        parser.parse(data)
-    time.sleep(0.1)
-    
-
-#san = ServoAngle()
-#san['id'] = SERVO['LF1']
-
-# configure_servos(seri)
-# time.sleep(0.5)
-
-# san['angle'] = 90
-# seri.write(san.pack())
-# time.sleep(2)
-
-# san['angle'] = 0
-# seri.write(san.pack())
-# time.sleep(0.5)
-
-#seri.write(mm2)
-#time.sleep(1)
+httpd = HTTPServer(('', 5400), MyHandler)
+httpd.serve_forever()

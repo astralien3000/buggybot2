@@ -104,12 +104,8 @@ namespace AP {
       static constexpr u8 ID = 0;
     } PACKED;
     
-    struct Load : Config {
-      static constexpr u8 ID = 1;
-    } PACKED;
-    
     struct Servo : Config {
-      static constexpr u8 ID = 3;
+      static constexpr u8 ID = 1;
       
       struct Poll {
         u8 id;
