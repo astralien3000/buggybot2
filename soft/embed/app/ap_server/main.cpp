@@ -189,30 +189,57 @@ void servo_pwm_handle(const void* msg) {
   send_ack(msg);
 }
 
+void set_angle(AP::Config::Servo* cfg, _ServoBase* servo, s32 angle) {
+  const s32 min_angle = cfg->angle1;
+  const s32 min_pwm = cfg->angle1_pwm;
+  const s32 max_angle = cfg->angle2;
+  const s32 max_pwm = cfg->angle2_pwm;
+  const s32 cmd_angle = angle;
+
+  if(max_angle != min_angle) {
+    const s32 angle = cmd_angle - min_angle;
+    const s32 delta_pwm = max_pwm - min_pwm;
+    const s32 delta_angle = max_angle - min_angle;
+    const s32 cmd = ((angle * delta_pwm) / delta_angle) + min_pwm;
+    servo->setValue(cmd);
+  }
+  else {
+    servo->setValue(cfg->default_pwm);
+  }
+}
+
 void servo_angle_handle(const void* msg) {
   typedef Pack<Message, Actuator::ServoAngle> pack_t;
   auto pak = (pack_t*)msg;
   
   servos.doForeach([pak](pair_t& item) {
       if(item.left()->servo.id == pak->message.payload.servo.id) {
-	const s32 min_angle = item.left()->angle1;
-	const s32 min_pwm = item.left()->angle1_pwm;
-	const s32 max_angle = item.left()->angle2;
-	const s32 max_pwm = item.left()->angle2_pwm;
-	const s32 cmd_angle = pak->message.payload.angle;
-
-	if(max_angle != min_angle) {
-	  const s32 angle = cmd_angle - min_angle;
-	  const s32 delta_pwm = max_pwm - min_pwm;
-	  const s32 delta_angle = max_angle - min_angle;
-	  const s32 cmd = ((angle * delta_pwm) / delta_angle) + min_pwm;
-	  item.right()->setValue(cmd);
-	}
-	else {
-	  item.right()->setValue(item.left()->default_pwm);
-	}
+	set_angle(item.left(), item.right(), pak->message.payload.angle);
       }
     });
+
+  send_ack(msg);
+}
+
+void servo_ctrl_handle(const void* msg) {
+  typedef Pack<Message, Buggybot::ServosCtrl> pack_t;
+  auto pak = (pack_t*)msg;
+  
+  set_angle(&main_conf.lf0, &lf0, pak->message.payload.angle_lf0);
+  set_angle(&main_conf.lf1, &lf1, pak->message.payload.angle_lf1);
+  set_angle(&main_conf.lf2, &lf2, pak->message.payload.angle_lf2);
+
+  set_angle(&main_conf.rf0, &rf0, pak->message.payload.angle_rf0);
+  set_angle(&main_conf.rf1, &rf1, pak->message.payload.angle_rf1);
+  set_angle(&main_conf.rf2, &rf2, pak->message.payload.angle_rf2);
+
+  set_angle(&main_conf.rb0, &rb0, pak->message.payload.angle_rb0);
+  set_angle(&main_conf.rb1, &rb1, pak->message.payload.angle_rb1);
+  set_angle(&main_conf.rb2, &rb2, pak->message.payload.angle_rb2);
+
+  set_angle(&main_conf.lb0, &lb0, pak->message.payload.angle_lb0);
+  set_angle(&main_conf.lb1, &lb1, pak->message.payload.angle_lb1);
+  set_angle(&main_conf.lb2, &lb2, pak->message.payload.angle_lb2);
 
   send_ack(msg);
 }
@@ -322,6 +349,7 @@ parser.addHandler(DefaultHandler<PollRequest, AP::Config::Servo>(get_servo_confi
   parser.addHandler(DefaultHandler<PollRequest, Sensor::Bumper>(bumper_handle));
   parser.addHandler(DefaultHandler<PollRequest, Sensor::GP2>(gp2_handle));
   parser.addHandler(DefaultHandler<Message, AP::Config::Save>(save_config_handle));
+  parser.addHandler(DefaultHandler<Message, Buggybot::ServosCtrl>(servo_ctrl_handle));
   parser.addHandler(Handler(true_predicate, default_handle));
 
 
