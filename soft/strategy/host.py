@@ -142,7 +142,6 @@ reset_default(seri)
 msg = ServosCtrl()
 for k in msg.keys:
     msg[k] = 0
-msg['lf2'] = int(90)
 dump(msg.pack())
 seri.write(msg.pack())
 
