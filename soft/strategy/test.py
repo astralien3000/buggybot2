@@ -325,7 +325,7 @@ mymgd = MGD()
 while True:
     main()
     cur += 1
-    if(cur == 60):
+    if(cur == len(mod.anim.anim)):
         cur = 0
     time.sleep(1.0/25.0)
 
