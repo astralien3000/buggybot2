@@ -293,9 +293,9 @@ def walk(leg, t):
 import mod.anim
 
 def test(sock, mymgd, leg):
-    pos = walk(leg, cur)
+    #pos = walk(leg, cur)
     #pos = default_pos[leg]
-    #pos = mod.anim.anim[cur][leg]
+    pos = mod.anim.anim[cur][leg]
     print pos
     sol = mymgd.get_angles_mgi(leg, pos)
     if sol:

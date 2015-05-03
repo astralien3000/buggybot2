@@ -14,12 +14,12 @@ sce = bpy.data.scenes[0]
 anim = []
 for i in range(sce.frame_start, sce.frame_end+1):
     sce.frame_set(i)
-    frame = [
-        get_leg_loc('LF'),
-        get_leg_loc('RF'),
-        get_leg_loc('RB'),
-        get_leg_loc('LB'),
-    ]
+    frame = {
+        'LF' : get_leg_loc('LF'),
+        'RF' : get_leg_loc('RF'),
+        'RB' : get_leg_loc('RB'),
+        'LB' : get_leg_loc('LB'),
+    }
     anim.append(frame)
     
 f = open('mod/anim.py', 'w')
