@@ -5,9 +5,24 @@ import mgi
 import mod.servo as servo
 
 import socket
+import serial
 import lib.protocol as protocol
+from lib.protocol import *
+from mod.calib import *
+
+
 
 import time
+
+import mod.anim
+import mod.crawl
+import mod.walk
+import mod.turn
+
+def dump(msg):
+    for c in msg:
+        print ord(c)
+
 
 def trans(x, y, z):
     return [
@@ -214,6 +229,52 @@ class MGD:
             return sols[0]
         return None
 
+def create_config_msg(sid):
+    ret = ServoConfig()
+    ret['id'] = SERVO[sid]
+    cfg =  SERVO_CFG[sid]
+    ret['default_pwm'] = cfg[0]
+    ret['angle1'] = cfg[1]
+    ret['angle1_pwm'] = cfg[0]
+    ret['angle2'] = cfg[3]
+    ret['angle2_pwm'] = cfg[2]
+    return ret
+
+def configure_servos(seri):
+    for sid in SERVO_CFG.keys():
+        msg = create_config_msg(sid)
+        seri.write(msg.pack())
+        time.sleep(0.1)
+        data = seri.read(seri.inWaiting())
+        parser.parse(data)
+
+def send_cmd(seri, sid, val):
+    msg = ServoPWM()
+    msg['id'] = SERVO[sid]
+    msg['pwm'] = int(val)
+    seri.write(msg.pack())
+    time.sleep(0.1)
+    data = seri.read(seri.inWaiting())
+    parser.parse(data)
+    time.sleep(0.1)
+    
+def reset_default(seri):
+    for sid in SERVO_CFG.keys():
+        send_cmd(seri, sid, SERVO_CFG[sid][0])
+
+def test_bumper(pak):
+    print pak['mask']
+
+
+def test_ack(pak):
+    print 'ACK', pak['cls'], pak['id']
+
+def test_nak(pak):
+    print 'NAK'
+
+def test_config(pak):
+    for k in pak.data.keys():
+        print str(k), ' = ', str(pak[k])
 
 ###############
 # TEST MGI
@@ -222,7 +283,7 @@ def send_cmd(seri, sid, val):
     #print(val)
     msg['id'] = servo.SERVO[sid]
     msg['angle'] = int(val)
-    seri.send(msg.pack())
+    seri.write(msg.pack())
     time.sleep(0.0001)
 
 def send_ctrl(seri, vals):
@@ -233,7 +294,7 @@ def send_ctrl(seri, vals):
     for k in vals.keys():
         msg[k.lower()] = int(vals[k])
         print(k,msg[k.lower()])
-    seri.send(msg.pack())
+    seri.write(msg.pack())
     time.sleep(0.0001)
 
 default_pos = {
@@ -290,12 +351,28 @@ def walk(leg, t):
         y -= config_walk['delta_y2']
     return [x, y, z]
 
-import mod.anim
+anim_state = 'walk'
+
+def reverse_anim(anim):
+    ret = []
+    for i in range(0, len(anim)):
+        ret = [anim[i]] + ret
+    return ret;
+
+anims = {
+    'walk' : mod.walk.anim,
+    'back' : reverse_anim(mod.walk.anim),
+    'lturn' : mod.turn.anim,
+    'rturn' : reverse_anim(mod.turn.anim),
+    'crawl' : mod.crawl.anim,
+    'stay' : [default_pos],
+}
 
 def test(sock, mymgd, leg):
     #pos = walk(leg, cur)
     #pos = default_pos[leg]
-    pos = mod.anim.anim[cur][leg]
+
+    pos = anims[anim_state][cur][leg]
     print pos
     sol = mymgd.get_angles_mgi(leg, pos)
     if sol:
@@ -316,17 +393,75 @@ def main(dummy = None):
     vals = dict(vals, **test(sock, mymgd, 'RB'))
     vals = dict(vals, **test(sock, mymgd, 'LB'))
     send_ctrl(sock, vals)
-    
+
+
+
+state = 'begin'
+
+global gp2
+gp2 = [0,0]
+
+toggle = True
+
+def obstacle():
+    global toggle
+    global gp2
+    msg = GP2()
+    msg.keys = msg.poll
+    if toggle:
+        msg['id'] = 0
+    else:
+        msg['id'] = 1
+    toggle = not toggle
+    sock.write(msg.pack())
+    print '>>>>>>>>>>>>>>>', gp2
+    return gp2[0] > 300 or gp2[1] > 300
+
+
+def test_gp2(pak):
+    global gp2
+    i = 0
+    if int(pak['id']) == 1:
+        i = 1
+    gp2[i] = int(pak['value'])
+
+def strategy():
+    global anim_state
+    if obstacle():
+        print '------------------------------------------------'
+        anim_state = 'stay'
+    else:
+        anim_state = 'walk'
+
+
+sock = serial.Serial('/dev/ttyACM0', 9600)
+time.sleep(3)
+
+parser = Parser()
+parser.addHandler(Bumper, test_bumper)
+parser.addHandler(ServoConfig, test_config)
+parser.addHandler(Ack, test_ack)
+parser.addHandler(Nak, test_nak)
+parser.addHandler(GP2, test_gp2)
+
+configure_servos(sock)
+reset_default(sock)
+
+msg = ServosCtrl()
+for k in msg.keys:
+    msg[k] = 0
+dump(msg.pack())
+sock.write(msg.pack())
+
 cur = 0
-sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-sock.connect(('/tmp/buggybot2'))
 mymgd = MGD()
 
 while True:
-    main()
+    #strategy()
     cur += 1
-    if(cur == len(mod.anim.anim)):
+    if(cur >= len(anims[anim_state])):
         cur = 0
+    main()
     time.sleep(1.0/25.0)
-
-sock.close()
+    data = sock.read(sock.inWaiting())
+    #parser.parse(data)

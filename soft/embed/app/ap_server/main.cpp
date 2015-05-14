@@ -51,6 +51,8 @@ ADCPin<ADM2560::Pinmap::A10> gp2r;
 List<5, Input<bool>*> bumpers;
 List<3, Input<u16>*> gp2s;
 
+u32 count = 0;
+
 struct Conf {
   u16 magic_number;
 
@@ -222,6 +224,22 @@ void servo_angle_handle(const void* msg) {
 }
 
 void servo_ctrl_handle(const void* msg) {
+  if(gp2r.getValue() > 400 || gp2l.getValue() > 400) {
+
+    send_ack(msg);
+    return;
+  }
+
+  if(!tirette.getValue()) {
+    send_ack(msg);
+    return;
+  }
+
+  if(count >= (u32)80 * 200) {
+    send_ack(msg);
+    return;
+  }
+
   typedef Pack<Message, Buggybot::ServosCtrl> pack_t;
   auto pak = (pack_t*)msg;
   
@@ -360,6 +378,9 @@ parser.addHandler(DefaultHandler<PollRequest, AP::Config::Servo>(get_servo_confi
   while(1) {
     u8 c = io.getValue();
     parser.parse(&c, 1);
+    if(tirette.getValue()) {
+      count++;
+    }
   }
 
   return 0;

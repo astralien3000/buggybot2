@@ -246,7 +246,7 @@ class Parser:
         self.data += data
         while not wait_data:
             if self.state == 'SYNC':
-                #print 'SYNC'
+                print 'SYNC'
                 if len(self.data) < 2:
                     wait_data = True
                 else:
@@ -256,7 +256,7 @@ class Parser:
                     else:
                         self.data = self.data[1:]
             elif self.state == 'LENGTH':
-                #print 'LENGTH'
+                print 'LENGTH'
                 if len(self.data) < 5:
                     wait_data = True
                 else:
@@ -268,7 +268,7 @@ class Parser:
                         self.state = 'SYNC'
                         self.data = self.data[1:]
             elif self.state == 'CHECK':
-                #print 'CHECK'
+                print 'CHECK'
                 length = 7 + self.msg_length
                 if len(self.data) < length:
                     wait_data = True
@@ -281,9 +281,11 @@ class Parser:
                         self.state = 'SYNC'
                         self.data = self.data[1:]
             elif self.state == 'PREDICATE':
-                #print 'PREDICATE'
+                print 'PREDICATE'
                 (cls, id) = struct.unpack('<BB', self.data[2:4])
+                print cls, id
                 if self.handlers.has_key((cls, id)):
+                    print 'OK'
                     pak = self.handlers[(cls, id)][0]()
                     pak.unpack(data[0:7+self.msg_length])
                     self.handlers[(cls, id)][1](pak)
