@@ -224,12 +224,13 @@ void servo_angle_handle(const void* msg) {
 }
 
 void servo_ctrl_handle(const void* msg) {
+  /*
   if(gp2r.getValue() > 400 || gp2l.getValue() > 400) {
 
     send_ack(msg);
     return;
   }
-
+  
   if(!tirette.getValue()) {
     send_ack(msg);
     return;
@@ -239,6 +240,7 @@ void servo_ctrl_handle(const void* msg) {
     send_ack(msg);
     return;
   }
+  */
 
   typedef Pack<Message, Buggybot::ServosCtrl> pack_t;
   auto pak = (pack_t*)msg;
