@@ -10,8 +10,6 @@ import lib.protocol as protocol
 from lib.protocol import *
 from mod.calib import *
 
-
-
 import time
 
 import mod.anim
@@ -273,13 +271,14 @@ bumper = {
 }
 
 def test_bumper(pak):
-    #print pak['mask']
+    print pak['mask']
     val = int(pak['mask'])
-    bumper['tir'] = not (val & 16 == 16)
-    bumper['lf'] = (val & 2 == 2)
-    bumper['rf'] = (val & 1 == 1)
-    bumper['lb'] = (val & 8 == 8)
-    bumper['rb'] = (val & 4 == 4)
+    if val < 32:
+        bumper['tir'] = not (val & 16 == 16)
+        bumper['lf'] = (val & 2 == 2)
+        bumper['rf'] = (val & 1 == 1)
+        bumper['lb'] = (val & 8 == 8)
+        bumper['rb'] = (val & 4 == 4)
     
 
 
@@ -304,9 +303,11 @@ def send_cmd(seri, sid, val):
     time.sleep(0.0001)
 
 detect = True
+match_begin = time.time()
 
 def send_ctrl(seri, vals):
     global detect
+    global match_begin
     msg = protocol.ServosCtrl2()
     #print(vals)
     for k in msg.keys:
@@ -318,7 +319,8 @@ def send_ctrl(seri, vals):
         msg['detect'] = 1
     else:
         msg['detect'] = 0
-    seri.write(msg.pack())
+    if(time.time() - match_begin <= 85):
+        seri.write(msg.pack())
     time.sleep(0.0001)
 
 default_pos = {
@@ -458,7 +460,9 @@ def strategy():
     global side
     global loop
     global detect
+    global match_begin
     if state == 'begin':
+        match_begin = time.time()
         #print '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><', side
         if bumper['lf'] or bumper['lb']:
             side = 'yellow'
@@ -474,6 +478,9 @@ def strategy():
         msg.keys = msg.poll
         msg['id'] = 0
         sock.write(msg.pack())
+        time.sleep(0.1)
+        data = sock.read(sock.inWaiting())
+        parser.parse(data)
     if state == 'start_turn':
         detect = True
         if side == 'yellow':
@@ -489,19 +496,23 @@ def strategy():
         loop = 1
         anim_state = 'stay'
         if not bumper['tir']:
+            match_begin = time.time()
             state = 'passmuraille'
             loop = 2
         msg = Bumper()
         msg.keys = msg.poll
         msg['id'] = 0
         sock.write(msg.pack())
+        time.sleep(0.1)
+        data = sock.read(sock.inWaiting())
+        parser.parse(data)
     if state == 'passmuraille':
         detect = True
         #print 'GOGOGO'
         anim_state = 'crawl2'
         if loop == 0:
             state = 'goto_d1'
-            loop = 6
+            loop = 4
     if state == 'goto_d1':
         detect = True
         anim_state = 'walk'
@@ -509,7 +520,7 @@ def strategy():
             state = 'turn'
             loop = 3
     if state == 'turn':
-        detect = True
+        detect = False
         if side == 'yellow':
             anim_state = 'rturn'
         else:
@@ -566,6 +577,6 @@ while True:
         cur = 0
     if loop > 0:
         update_anim()
-    time.sleep(0.1)
+    time.sleep(0.03)
     data = sock.read(sock.inWaiting())
     parser.parse(data)
