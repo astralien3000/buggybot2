@@ -456,7 +456,7 @@ def strategy():
         if bumper['rf'] or bumper['rb']:
             side = 'green'
         if bumper['tir']:
-            loop = 6
+            loop = 4
             state = 'start_turn'
             return
         anim_state = 'stay'
@@ -487,7 +487,7 @@ def strategy():
         anim_state = 'crawl2'
         if loop == 0:
             state = 'goto_d1'
-            loop = 10
+            loop = 6
     if state == 'goto_d1':
         anim_state = 'walk'
         if loop == 0:
@@ -500,12 +500,12 @@ def strategy():
             anim_state = 'lturn'
         if loop == 0:
             state = 'goto_d2'
-            loop = 10
+            loop = 6
     if state == 'goto_d2':
         anim_state = 'walk'
         if loop == 0:
             state = 'climb'
-            loop = 3
+            loop = 4
     if state == 'climb':
         anim_state = 'crawl2'
         if loop == 0:
