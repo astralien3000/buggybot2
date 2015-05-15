@@ -21,8 +21,9 @@ import mod.walk
 import mod.turn
 
 def dump(msg):
-    for c in msg:
-        print ord(c)
+    print 'dump?'
+    #for c in msg:
+        #print ord(c)
 
 
 def trans(x, y, z):
@@ -304,12 +305,12 @@ def send_cmd(seri, sid, val):
 
 def send_ctrl(seri, vals):
     msg = protocol.ServosCtrl()
-    print(vals)
+    #print(vals)
     for k in msg.keys:
         msg[k] = int(0)
     for k in vals.keys():
         msg[k.lower()] = int(vals[k])
-        print(k,msg[k.lower()])
+        #print(k,msg[k.lower()])
     seri.write(msg.pack())
     time.sleep(0.0001)
 
@@ -378,8 +379,8 @@ def reverse_anim(anim):
 anims = {
     'walk' : mod.walk.anim,
     'back' : reverse_anim(mod.walk.anim),
-    'lturn' : mod.turn.anim,
-    'rturn' : reverse_anim(mod.turn.anim),
+    'rturn' : mod.turn.anim,
+    'lturn' : reverse_anim(mod.turn.anim),
     'crawl' : mod.crawl.anim,
     'crawl2' : mod.crawl2.anim,
     'stay' : [default_pos],
@@ -390,7 +391,7 @@ def test(sock, mymgd, leg):
     #pos = default_pos[leg]
 
     pos = anims[anim_state][cur][leg]
-    print pos
+    #print pos
     sol = mymgd.get_angles_mgi(leg, pos)
     if sol:
         mymgd.update_leg(leg, sol)
@@ -433,7 +434,7 @@ def obstacle():
         msg['id'] = 1
     toggle = not toggle
     sock.write(msg.pack())
-    print '>>>>>>>>>>>>>>>', gp2
+    #print '>>>>>>>>>>>>>>>', gp2
     return gp2[0] > 300 or gp2[1] > 300
 
 
@@ -450,7 +451,7 @@ def strategy():
     global side
     global loop
     if state == 'begin':
-        print '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><', side
+        #print '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><', side
         if bumper['lf'] or bumper['lb']:
             side = 'yellow'
         if bumper['rf'] or bumper['rb']:
@@ -473,17 +474,17 @@ def strategy():
             loop = 1
             state = 'wait_start'
     if state == 'wait_start':
-        print 'WAIT'
+        #print 'WAIT'
         anim_state = 'stay'
         if not bumper['tir']:
             state = 'passmuraille'
-            loop = 4
+            loop = 2
         msg = Bumper()
         msg.keys = msg.poll
         msg['id'] = 0
         sock.write(msg.pack())
     if state == 'passmuraille':
-        print 'GOGOGO'
+        #print 'GOGOGO'
         anim_state = 'crawl2'
         if loop == 0:
             state = 'goto_d1'
@@ -516,7 +517,7 @@ def strategy():
         
 
 
-sock = serial.Serial('/dev/ttyACM0', 9600)
+sock = serial.Serial('/dev/ttyACM1', 9600)
 time.sleep(3)
 
 parser = Parser()
