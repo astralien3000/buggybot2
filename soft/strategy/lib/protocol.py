@@ -151,6 +151,24 @@ class ServosCtrl(Buggybot):
         self.addField(Type.S16, 'lb1')
         self.addField(Type.S16, 'lb2')
 
+class ServosCtrl2(Buggybot):
+    def __init__(self):
+        Buggybot.__init__(self)
+        self.id = 1
+        self.addField(Type.U8, 'detect')
+        self.addField(Type.S16, 'lf0')
+        self.addField(Type.S16, 'lf1')
+        self.addField(Type.S16, 'lf2')
+        self.addField(Type.S16, 'rf0')
+        self.addField(Type.S16, 'rf1')
+        self.addField(Type.S16, 'rf2')
+        self.addField(Type.S16, 'rb0')
+        self.addField(Type.S16, 'rb1')
+        self.addField(Type.S16, 'rb2')
+        self.addField(Type.S16, 'lb0')
+        self.addField(Type.S16, 'lb1')
+        self.addField(Type.S16, 'lb2')
+
 
 class Protocol(Message):
     def __init__(self):

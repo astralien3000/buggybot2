@@ -197,6 +197,28 @@ namespace AP {
       s16 angle_lb1;
       s16 angle_lb2;
     } PACKED;
+
+    struct ServosCtrl2 : Buggybot {
+      static constexpr u8 ID = 1;
+
+      u8 detect;
+      
+      s16 angle_lf0;
+      s16 angle_lf1;
+      s16 angle_lf2;
+
+      s16 angle_rf0;
+      s16 angle_rf1;
+      s16 angle_rf2;
+
+      s16 angle_rb0;
+      s16 angle_rb1;
+      s16 angle_rb2;
+
+      s16 angle_lb0;
+      s16 angle_lb1;
+      s16 angle_lb2;
+    } PACKED;
   }
 }
 

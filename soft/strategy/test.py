@@ -303,14 +303,21 @@ def send_cmd(seri, sid, val):
     seri.write(msg.pack())
     time.sleep(0.0001)
 
+detect = True
+
 def send_ctrl(seri, vals):
-    msg = protocol.ServosCtrl()
+    global detect
+    msg = protocol.ServosCtrl2()
     #print(vals)
     for k in msg.keys:
         msg[k] = int(0)
     for k in vals.keys():
         msg[k.lower()] = int(vals[k])
         #print(k,msg[k.lower()])
+    if detect:
+        msg['detect'] = 1
+    else:
+        msg['detect'] = 0
     seri.write(msg.pack())
     time.sleep(0.0001)
 
@@ -450,6 +457,7 @@ def strategy():
     global state
     global side
     global loop
+    global detect
     if state == 'begin':
         #print '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><', side
         if bumper['lf'] or bumper['lb']:
@@ -460,12 +468,14 @@ def strategy():
             loop = 4
             state = 'start_turn'
             return
+        loop = 1
         anim_state = 'stay'
         msg = Bumper()
         msg.keys = msg.poll
         msg['id'] = 0
         sock.write(msg.pack())
     if state == 'start_turn':
+        detect = True
         if side == 'yellow':
             anim_state = 'lturn'
         else:
@@ -475,6 +485,8 @@ def strategy():
             state = 'wait_start'
     if state == 'wait_start':
         #print 'WAIT'
+        detect = True
+        loop = 1
         anim_state = 'stay'
         if not bumper['tir']:
             state = 'passmuraille'
@@ -484,17 +496,20 @@ def strategy():
         msg['id'] = 0
         sock.write(msg.pack())
     if state == 'passmuraille':
+        detect = True
         #print 'GOGOGO'
         anim_state = 'crawl2'
         if loop == 0:
             state = 'goto_d1'
             loop = 6
     if state == 'goto_d1':
+        detect = True
         anim_state = 'walk'
         if loop == 0:
             state = 'turn'
             loop = 3
     if state == 'turn':
+        detect = True
         if side == 'yellow':
             anim_state = 'rturn'
         else:
@@ -503,11 +518,13 @@ def strategy():
             state = 'goto_d2'
             loop = 6
     if state == 'goto_d2':
+        detect = True
         anim_state = 'walk'
         if loop == 0:
             state = 'climb'
             loop = 4
     if state == 'climb':
+        detect = False
         anim_state = 'crawl2'
         if loop == 0:
             state = 'begin'
@@ -517,7 +534,7 @@ def strategy():
         
 
 
-sock = serial.Serial('/dev/ttyACM1', 9600)
+sock = serial.Serial('/dev/ttyACM0', 9600)
 time.sleep(3)
 
 parser = Parser()
