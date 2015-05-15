@@ -16,6 +16,7 @@ import time
 
 import mod.anim
 import mod.crawl
+import mod.crawl2
 import mod.walk
 import mod.turn
 
@@ -262,8 +263,23 @@ def reset_default(seri):
     for sid in SERVO_CFG.keys():
         send_cmd(seri, sid, SERVO_CFG[sid][0])
 
+bumper = {
+    'tir' : False,
+    'lf' : False,
+    'rf' : False,
+    'lb' : False,
+    'rb' : False,
+}
+
 def test_bumper(pak):
-    print pak['mask']
+    #print pak['mask']
+    val = int(pak['mask'])
+    bumper['tir'] = not (val & 16 == 16)
+    bumper['lf'] = (val & 2 == 2)
+    bumper['rf'] = (val & 1 == 1)
+    bumper['lb'] = (val & 8 == 8)
+    bumper['rb'] = (val & 4 == 4)
+    
 
 
 def test_ack(pak):
@@ -351,7 +367,7 @@ def walk(leg, t):
         y -= config_walk['delta_y2']
     return [x, y, z]
 
-anim_state = 'walk'
+anim_state = 'crawl2'
 
 def reverse_anim(anim):
     ret = []
@@ -365,6 +381,7 @@ anims = {
     'lturn' : mod.turn.anim,
     'rturn' : reverse_anim(mod.turn.anim),
     'crawl' : mod.crawl.anim,
+    'crawl2' : mod.crawl2.anim,
     'stay' : [default_pos],
 }
 
@@ -386,7 +403,7 @@ def test(sock, mymgd, leg):
     return {}
         
         
-def main(dummy = None):
+def update_anim(dummy = None):
     vals = {}
     vals = dict(vals, **test(sock, mymgd, 'LF'))
     vals = dict(vals, **test(sock, mymgd, 'RF'))
@@ -397,6 +414,8 @@ def main(dummy = None):
 
 
 state = 'begin'
+side = 'yellow'
+loop = 0
 
 global gp2
 gp2 = [0,0]
@@ -427,11 +446,74 @@ def test_gp2(pak):
 
 def strategy():
     global anim_state
-    if obstacle():
-        print '------------------------------------------------'
+    global state
+    global side
+    global loop
+    if state == 'begin':
+        print '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><', side
+        if bumper['lf'] or bumper['lb']:
+            side = 'yellow'
+        if bumper['rf'] or bumper['rb']:
+            side = 'green'
+        if bumper['tir']:
+            loop = 6
+            state = 'start_turn'
+            return
         anim_state = 'stay'
-    else:
+        msg = Bumper()
+        msg.keys = msg.poll
+        msg['id'] = 0
+        sock.write(msg.pack())
+    if state == 'start_turn':
+        if side == 'yellow':
+            anim_state = 'lturn'
+        else:
+            anim_state = 'rturn'
+        if loop == 0:
+            loop = 1
+            state = 'wait_start'
+    if state == 'wait_start':
+        print 'WAIT'
+        anim_state = 'stay'
+        if not bumper['tir']:
+            state = 'passmuraille'
+            loop = 4
+        msg = Bumper()
+        msg.keys = msg.poll
+        msg['id'] = 0
+        sock.write(msg.pack())
+    if state == 'passmuraille':
+        print 'GOGOGO'
+        anim_state = 'crawl2'
+        if loop == 0:
+            state = 'goto_d1'
+            loop = 10
+    if state == 'goto_d1':
         anim_state = 'walk'
+        if loop == 0:
+            state = 'turn'
+            loop = 3
+    if state == 'turn':
+        if side == 'yellow':
+            anim_state = 'rturn'
+        else:
+            anim_state = 'lturn'
+        if loop == 0:
+            state = 'goto_d2'
+            loop = 10
+    if state == 'goto_d2':
+        anim_state = 'walk'
+        if loop == 0:
+            state = 'climb'
+            loop = 3
+    if state == 'climb':
+        anim_state = 'crawl2'
+        if loop == 0:
+            state = 'begin'
+            loop = 1
+        
+        
+        
 
 
 sock = serial.Serial('/dev/ttyACM0', 9600)
@@ -456,12 +538,16 @@ sock.write(msg.pack())
 cur = 0
 mymgd = MGD()
 
+
+
 while True:
-    #strategy()
+    strategy()
     cur += 1
     if(cur >= len(anims[anim_state])):
+        loop -= 1
         cur = 0
-    main()
-    time.sleep(1.0/25.0)
+    if loop > 0:
+        update_anim()
+    time.sleep(0.1)
     data = sock.read(sock.inWaiting())
-    #parser.parse(data)
+    parser.parse(data)
