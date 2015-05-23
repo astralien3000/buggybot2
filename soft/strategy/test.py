@@ -469,7 +469,7 @@ def strategy():
         if bumper['rf'] or bumper['rb']:
             side = 'green'
         if bumper['tir']:
-            loop = 4
+            loop = 2 #4
             state = 'start_turn'
             return
         loop = 1
@@ -497,8 +497,8 @@ def strategy():
         anim_state = 'stay'
         if not bumper['tir']:
             match_begin = time.time()
-            state = 'passmuraille'
-            loop = 2
+            state = 'goto_d1'
+            loop = 8
         msg = Bumper()
         msg.keys = msg.poll
         msg['id'] = 0
@@ -512,13 +512,13 @@ def strategy():
         anim_state = 'crawl2'
         if loop == 0:
             state = 'goto_d1'
-            loop = 4
+            loop = 7
     if state == 'goto_d1':
         detect = True
         anim_state = 'walk'
         if loop == 0:
             state = 'turn'
-            loop = 3
+            loop = 3 #3
     if state == 'turn':
         detect = False
         if side == 'yellow':
@@ -527,13 +527,13 @@ def strategy():
             anim_state = 'lturn'
         if loop == 0:
             state = 'goto_d2'
-            loop = 6
+            loop = 3
     if state == 'goto_d2':
         detect = True
         anim_state = 'walk'
         if loop == 0:
             state = 'climb'
-            loop = 4
+            loop = 1
     if state == 'climb':
         detect = False
         anim_state = 'crawl2'
@@ -567,16 +567,19 @@ sock.write(msg.pack())
 cur = 0
 mymgd = MGD()
 
-
+last_frame_time = time.time()
 
 while True:
-    strategy()
-    cur += 1
-    if(cur >= len(anims[anim_state])):
-        loop -= 1
-        cur = 0
-    if loop > 0:
-        update_anim()
-    time.sleep(0.03)
-    data = sock.read(sock.inWaiting())
-    parser.parse(data)
+    cur_frame_time = time.time()
+    if cur_frame_time - last_frame_time > 0.1:
+        strategy()
+        cur += 1
+        if(cur >= len(anims[anim_state])):
+            loop -= 1
+            cur = 0
+        if loop > 0:
+            update_anim()
+        #time.sleep(0.03)
+        data = sock.read(sock.inWaiting())
+        parser.parse(data)
+        last_frame_time = cur_frame_time
