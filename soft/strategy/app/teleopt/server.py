@@ -434,7 +434,7 @@ gp2 = [0,0]
 
 toggle = True
 
-sock = serial.Serial('/dev/ttyACM1', 9600)
+sock = serial.Serial('/dev/ttyACM0', 9600)
 time.sleep(3)
 
 parser = Parser()
