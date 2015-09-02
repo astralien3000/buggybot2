@@ -29,11 +29,15 @@ LIBS:opto
 LIBS:atmel
 LIBS:contrib
 LIBS:valves
+LIBS:arduino_shieldsNCL
+LIBS:teensy
+LIBS:pololu
+LIBS:teensy_shield-cache
 EELAYER 24 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 7 26
+Sheet 10 34
 Title ""
 Date ""
 Rev ""
@@ -43,20 +47,33 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-Text HLabel 5100 2900 0    60   Input ~ 0
+Text HLabel 6450 3250 2    60   Input ~ 0
 Vin
-Text HLabel 4800 3100 0    60   Input ~ 0
+Text HLabel 5250 3350 0    60   Input ~ 0
 GND
-Text HLabel 4850 3500 0    60   Output ~ 0
+Text HLabel 6450 3050 2    60   Output ~ 0
 M1
-Text HLabel 4950 3750 0    60   Output ~ 0
+Text HLabel 6450 3150 2    60   Output ~ 0
 M2
-Text HLabel 5800 3400 0    60   Input ~ 0
+Text HLabel 5250 3250 0    60   Input ~ 0
 nEN
-Text HLabel 5800 3600 0    60   Input ~ 0
+Text HLabel 5250 3150 0    60   Input ~ 0
 nFAULT
-Text HLabel 5750 3850 0    60   Input ~ 0
+Text HLabel 5250 3050 0    60   Input ~ 0
 DIR
-Text HLabel 5750 4050 0    60   Input ~ 0
+Text HLabel 5250 2950 0    60   Input ~ 0
 PWM
+$Comp
+L Pololu2961 U?
+U 1 1 55E82F97
+P 5850 3150
+F 0 "U?" H 5850 2800 60  0000 C CNN
+F 1 "Pololu2961" H 5850 2800 60  0000 C CNN
+F 2 "" H 5850 2800 60  0000 C CNN
+F 3 "" H 5850 2800 60  0000 C CNN
+	1    5850 3150
+	1    0    0    -1  
+$EndComp
+Text HLabel 6450 3350 2    60   Input ~ 0
+GND
 $EndSCHEMATC

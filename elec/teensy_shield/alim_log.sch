@@ -29,11 +29,15 @@ LIBS:opto
 LIBS:atmel
 LIBS:contrib
 LIBS:valves
+LIBS:arduino_shieldsNCL
+LIBS:teensy
+LIBS:pololu
+LIBS:teensy_shield-cache
 EELAYER 24 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 26 26
+Sheet 26 34
 Title ""
 Date ""
 Rev ""
@@ -43,8 +47,19 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-Text HLabel 4100 2100 0    60   Input ~ 0
+Text HLabel 5050 2200 0    60   Input ~ 0
 GND
-Text HLabel 4100 2400 0    60   Output ~ 0
+Text HLabel 5050 2400 0    60   Output ~ 0
 Vout
+$Comp
+L CONN_2 P?
+U 1 1 55E8500F
+P 5400 2300
+F 0 "P?" V 5350 2300 40  0000 C CNN
+F 1 "CONN_2" V 5450 2300 40  0000 C CNN
+F 2 "" H 5400 2300 60  0000 C CNN
+F 3 "" H 5400 2300 60  0000 C CNN
+	1    5400 2300
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC

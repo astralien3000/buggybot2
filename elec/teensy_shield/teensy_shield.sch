@@ -29,11 +29,15 @@ LIBS:opto
 LIBS:atmel
 LIBS:contrib
 LIBS:valves
+LIBS:arduino_shieldsNCL
+LIBS:teensy
+LIBS:pololu
+LIBS:teensy_shield-cache
 EELAYER 24 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 1 26
+Sheet 1 34
 Title ""
 Date ""
 Rev ""
@@ -44,12 +48,11 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Sheet
-S 6300 1550 600  2500
+S 6300 1550 850  2850
 U 55E5CC66
 F0 "mcu" 50
 F1 "mcu.sch" 50
 F2 "GND" I L 6300 1700 60 
-F3 "Vin" I L 6300 1800 60 
 F4 "PWM1" O L 6300 2000 60 
 F5 "DIR1" O L 6300 2100 60 
 F6 "ANGLE1" I L 6300 2200 60 
@@ -65,18 +68,24 @@ F15 "DIR3" O L 6300 3300 60
 F16 "ANGLE3" I L 6300 3400 60 
 F17 "CURRENT3" I L 6300 3500 60 
 F18 "EN3" O L 6300 3600 60 
-F19 "SDA" I L 6300 3800 60 
-F20 "SCL" I L 6300 3900 60 
+F19 "SDA" I R 7150 3800 60 
+F20 "SCL" I R 7150 3900 60 
+F21 "PWM4" O L 6300 3800 60 
+F22 "DIR4" O L 6300 3900 60 
+F23 "ANGLE4" I L 6300 4000 60 
+F24 "CURRENT4" I L 6300 4100 60 
+F25 "EN4" O L 6300 4200 60 
+F26 "GP2" I R 7150 4200 60 
 $EndSheet
 $Sheet
-S 3700 4550 750  500 
+S 8050 3500 550  500 
 U 55E614B3
 F0 "accelero" 50
 F1 "accelero.sch" 50
-F2 "GND" I R 4450 4650 60 
-F3 "Vin" I R 4450 4750 60 
-F4 "SDA" I R 4450 4850 60 
-F5 "SCL" I R 4450 4950 60 
+F2 "GND" I L 8050 3600 60 
+F3 "Vin" I L 8050 3700 60 
+F4 "SDA" I L 8050 3800 60 
+F5 "SCL" I L 8050 3900 60 
 $EndSheet
 $Sheet
 S 3900 950  550  1050
@@ -202,18 +211,6 @@ Wire Wire Line
 	5550 3600 5550 4300
 Wire Wire Line
 	5550 4300 4450 4300
-Wire Wire Line
-	6300 3800 5650 3800
-Wire Wire Line
-	5650 3800 5650 4850
-Wire Wire Line
-	5650 4850 4450 4850
-Wire Wire Line
-	6300 3900 5750 3900
-Wire Wire Line
-	5750 3900 5750 4950
-Wire Wire Line
-	5750 4950 4450 4950
 $Sheet
 S 8050 2050 550  300 
 U 55E71B9E
@@ -242,7 +239,7 @@ Text Label 4450 2250 0    60   ~ 0
 GND
 Text Label 4450 3450 0    60   ~ 0
 GND
-Text Label 4450 4650 0    60   ~ 0
+Text Label 8050 3600 2    60   ~ 0
 GND
 Text Label 4450 1150 0    60   ~ 0
 Vlog
@@ -250,9 +247,7 @@ Text Label 4450 2350 0    60   ~ 0
 Vlog
 Text Label 4450 3550 0    60   ~ 0
 Vlog
-Text Label 4450 4750 0    60   ~ 0
-Vlog
-Text Label 6300 1800 2    60   ~ 0
+Text Label 8050 3700 2    60   ~ 0
 Vlog
 Text Label 8050 2950 2    60   ~ 0
 Vlog
@@ -264,4 +259,77 @@ Text Label 4450 2450 0    60   ~ 0
 Vpow
 Text Label 4450 3650 0    60   ~ 0
 Vpow
+$Sheet
+S 3900 4600 550  1050
+U 55E6307C
+F0 "joint4" 50
+F1 "joint.sch" 50
+F2 "GND" I R 4450 4700 60 
+F3 "Vin_log" I R 4450 4800 60 
+F4 "Vin_pow" I R 4450 4900 60 
+F5 "PWM" I R 4450 5050 60 
+F6 "DIR" I R 4450 5150 60 
+F7 "ANGLE" O R 4450 5300 60 
+F8 "CURRENT" O R 4450 5400 60 
+F9 "EN" I R 4450 5550 60 
+$EndSheet
+Wire Wire Line
+	4450 5050 5650 5050
+Wire Wire Line
+	5650 5050 5650 3800
+Wire Wire Line
+	5650 3800 6300 3800
+Wire Wire Line
+	4450 5150 5750 5150
+Wire Wire Line
+	5750 5150 5750 3900
+Wire Wire Line
+	5750 3900 6300 3900
+Wire Wire Line
+	4450 5300 5850 5300
+Wire Wire Line
+	5850 5300 5850 4000
+Wire Wire Line
+	5850 4000 6300 4000
+Wire Wire Line
+	4450 5400 5950 5400
+Wire Wire Line
+	5950 5400 5950 4100
+Wire Wire Line
+	5950 4100 6300 4100
+Wire Wire Line
+	4450 5550 6050 5550
+Wire Wire Line
+	6050 5550 6050 4200
+Wire Wire Line
+	6050 4200 6300 4200
+$Sheet
+S 8050 4300 550  400 
+U 55E7E869
+F0 "GP2" 50
+F1 "GP2.sch" 50
+F2 "GND" I L 8050 4400 60 
+F3 "Vin" I L 8050 4500 60 
+F4 "OUT" I L 8050 4600 60 
+$EndSheet
+Wire Wire Line
+	8050 4600 7300 4600
+Wire Wire Line
+	7300 4600 7300 4200
+Wire Wire Line
+	7300 4200 7150 4200
+Wire Wire Line
+	8050 3900 7150 3900
+Wire Wire Line
+	8050 3800 7150 3800
+Text Label 4450 4700 0    60   ~ 0
+GND
+Text Label 4450 4800 0    60   ~ 0
+Vlog
+Text Label 4450 4900 0    60   ~ 0
+Vpow
+Text Label 8050 4400 2    60   ~ 0
+GND
+Text Label 8050 4500 2    60   ~ 0
+Vlog
 $EndSCHEMATC
