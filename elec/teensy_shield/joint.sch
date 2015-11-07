@@ -37,7 +37,7 @@ EELAYER 24 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 4 34
+Sheet 18 34
 Title ""
 Date ""
 Rev ""
@@ -78,18 +78,16 @@ F1 "current_sensor.sch" 50
 F2 "Vin" I L 4800 4150 60 
 F3 "GND" I L 4800 4050 60 
 F4 "OUT" I L 4800 4250 60 
-F5 "nFAULT" I L 4800 4350 60 
-F6 "IP+" I R 5500 4050 60 
-F7 "IP-" I R 5500 4150 60 
+F5 "IP+" I R 5500 4050 60 
+F6 "IP-" I R 5500 4150 60 
 $EndSheet
 $Sheet
 S 6350 3050 550  400 
 U 55E6315B
 F0 "motor" 50
 F1 "motor.sch" 50
-F2 "GND" I L 6350 3150 60 
-F3 "M+" I L 6350 3350 60 
-F4 "M-" I L 6350 3250 60 
+F2 "M+" I L 6350 3350 60 
+F3 "M-" I L 6350 3250 60 
 $EndSheet
 $Sheet
 S 4800 4700 550  450 
@@ -115,9 +113,7 @@ Wire Wire Line
 Text HLabel 4800 2100 0    60   Input ~ 0
 EN
 Wire Wire Line
-	4250 3550 4350 3550
-Wire Wire Line
-	4350 3550 4800 3550
+	4250 3550 4800 3550
 Wire Wire Line
 	4800 2700 4350 2700
 Wire Wire Line
@@ -138,9 +134,7 @@ GND
 Text Label 4800 4800 2    60   ~ 0
 GND
 Wire Wire Line
-	4100 4900 4200 4900
-Wire Wire Line
-	4200 4900 4800 4900
+	4100 4900 4800 4900
 Wire Wire Line
 	4800 4150 4200 4150
 Wire Wire Line
@@ -154,11 +148,9 @@ F1 "motor_driver.sch" 50
 F2 "Vin" I L 4800 3250 60 
 F3 "GND" I L 4800 3150 60 
 F4 "M2" O R 5400 3250 60 
-F5 "nEN" I L 4800 3350 60 
-F6 "nFAULT" I L 4800 3450 60 
-F7 "M1" O R 5400 3350 60 
-F8 "DIR" I L 4800 3650 60 
-F9 "PWM" I L 4800 3550 60 
+F5 "M1" O R 5400 3350 60 
+F6 "DIR" I L 4800 3650 60 
+F7 "PWM" I L 4800 3550 60 
 $EndSheet
 Text Label 4800 2000 2    60   ~ 0
 Vpow_IP+
