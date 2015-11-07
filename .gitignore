@@ -6,3 +6,9 @@ a.out
 *.s
 
 soft_homologation
+
+*.bck
+*.dcm
+*.zip
+*.pdf
+*.ps
