@@ -1,0 +1,25 @@
+module Buggybot {
+  
+#pragma DCPS_DATA_TYPE "Buggybot::JointAngles"
+#pragma DCPS_DATA_KEY "Buggybot::JointAngles id"
+
+  struct JointAngles {
+    unsigned long id;
+  
+    double lf0;
+    double lf1;
+    double lf2;
+
+    double lb0;
+    double lb1;
+    double lb2;
+
+    double rf0;
+    double rf1;
+    double rf2;
+
+    double rb0;
+    double rb1;
+    double rb2;
+  };
+};
