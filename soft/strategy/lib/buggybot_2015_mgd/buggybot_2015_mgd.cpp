@@ -18,7 +18,7 @@ void Buggybot2015MGD::addLeg(std::string prefix, double sx, double sy) {
 
   addVariableMatrix(prefix+".shoulder",
 		    prefix+"0",
-		    prefix+".leg",
+		    prefix+".shoulder.pos",
 		    [](double q) {
 		      return rot_x(q);
 		    });
@@ -95,8 +95,9 @@ Buggybot2015MGD::Buggybot2015MGD(void) {
     0.5_cm
   };
   
-  addRootMatrix("body", rot_z(90.0_deg));
-  addConstantMatrix("base", "body", rot_z(-90.0_deg) * rot_x(90.0_deg));
+  addRootMatrix("body", Matrix::Identity());
+  addConstantMatrix("blender_adapter", "body", rot_z(90.0_deg));
+  addConstantMatrix("base", "blender_adapter", rot_z(-90.0_deg) * rot_x(90.0_deg));
   addLeg("lf",  1, 1);
   addLeg("lb", -1, 1);
   addLeg("rf",  1,-1);

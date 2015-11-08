@@ -1,5 +1,6 @@
 #include <iostream>
 #include <unistd.h>
+#include <cmath>
 
 #include <dds/DdsDcpsInfrastructureC.h>
 #include <dds/DdsDcpsPublicationC.h>
@@ -44,7 +45,7 @@ int main(int argc, char* argv[]) {
     // Create topic
     CORBA::String_var type_name = ts->get_type_name();
 
-    DDS::Topic_var topic = participant->create_topic("test_topic", type_name, TOPIC_QOS_DEFAULT, 0, OpenDDS::DCPS::DEFAULT_STATUS_MASK);
+    DDS::Topic_var topic = participant->create_topic("joint_angles", type_name, TOPIC_QOS_DEFAULT, 0, OpenDDS::DCPS::DEFAULT_STATUS_MASK);
 
     if(!topic) {
       std::cerr << "create_topic failed" << std::endl;
@@ -103,6 +104,7 @@ int main(int argc, char* argv[]) {
       i++;
       Buggybot::JointAngles msg;
       msg.id = i;
+      msg.lf0 = sin(i*3.14/180.0);
       //msg.value = 42;
       //msg.text = "test";
       if(test_writer->write(msg, DDS::HANDLE_NIL) != DDS::RETCODE_OK) {
@@ -110,7 +112,7 @@ int main(int argc, char* argv[]) {
 	//return -1;
       }
       std::cout << "write" << std::endl;
-      sleep(1);
+      usleep(10000);
     }
   }
   catch (const CORBA::Exception& e) {

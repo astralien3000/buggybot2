@@ -33,7 +33,11 @@ target_link_libraries(
 target_link_libraries(
   node.elf
   messages
+  buggybot_2015_mgd
+  mgd
   )
 
 include_directories(${CMAKE_BINARY_DIR}/lib/messages)
+include_directories(${CMAKE_SOURCE_DIR}/lib/buggybot_2015_mgd)
+include_directories(${CMAKE_SOURCE_DIR}/lib/mgd)
 include_directories(/usr/include/eigen3)

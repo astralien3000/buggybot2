@@ -22,4 +22,16 @@ module Buggybot {
     double rb1;
     double rb2;
   };
+
+#pragma DCPS_DATA_TYPE "Buggybot::EntityPosition"
+#pragma DCPS_DATA_KEY "Buggybot::EntityPosition id"
+
+  struct EntityPosition {
+    unsigned long id;
+    string name;
+    
+    double x;
+    double y;
+    double z;
+  };
 };
