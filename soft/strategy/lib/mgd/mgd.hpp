@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <functional>
+#include <vector>
 
 class MGD {
 public:
@@ -37,4 +38,6 @@ public:
   Matrix getFullMatrix(const std::string& name) const;
 
   void updateParam(const std::string& name, double value);
+
+  std::vector<std::string> getMatrixList(void);
 };

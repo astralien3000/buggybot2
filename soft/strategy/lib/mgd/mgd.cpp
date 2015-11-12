@@ -38,3 +38,12 @@ void MGD::updateParam(const std::string& name, double value) {
   MatrixInfo& elem = mat_list[param.mat];
   elem.mat = param.func(value);
 }
+
+std::vector<std::string>  MGD::getMatrixList(void) {
+  std::vector<std::string> res;
+  
+  for (decltype(mat_list)::iterator it=mat_list.begin(); it!=mat_list.end(); ++it)
+    res.push_back(it->first);
+  
+  return res;
+}

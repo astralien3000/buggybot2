@@ -112,7 +112,7 @@ int main(int argc, char* argv[]) {
 	//return -1;
       }
       std::cout << "write" << std::endl;
-      usleep(10000);
+      usleep(100000);
     }
   }
   catch (const CORBA::Exception& e) {
