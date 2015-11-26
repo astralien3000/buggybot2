@@ -11,5 +11,5 @@ public:
 
   void onJointAngles(Buggybot::JointAngles msg);
 
-  void (*callback)(const char*);
+  void (*callback)(const char*, unsigned int);
 };

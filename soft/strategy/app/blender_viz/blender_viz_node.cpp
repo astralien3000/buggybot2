@@ -10,6 +10,7 @@
 #include <dds/DCPS/StaticIncludes.h>
 
 #include <buggybot_2015_mgd.hpp>
+#include <utils.hpp>
 
 #include <sstream>
 
@@ -171,6 +172,22 @@ void BlenderVizNode::onJointAngles(Buggybot::JointAngles msg) {
   mgd.updateParam("rb1", msg.rb1);
   mgd.updateParam("rb2", msg.rb2);
 
+  mgd.updateParam("LF0", msg.lf0);
+  mgd.updateParam("LF1", msg.lf1);
+  mgd.updateParam("LF2", msg.lf2);
+
+  mgd.updateParam("LB0", 0);
+  mgd.updateParam("LB1", 90.0_deg);
+  mgd.updateParam("LB2", 0);
+
+  mgd.updateParam("RF0", msg.rf0);
+  mgd.updateParam("RF1", msg.rf1);
+  mgd.updateParam("RF2", msg.rf2);
+
+  mgd.updateParam("RB0", msg.rb0);
+  mgd.updateParam("RB1", msg.rb1);
+  mgd.updateParam("RB2", msg.rb2);
+
   auto keys = mgd.getMatrixList();
   for(int i = 0 ; i < keys.size() ; i++) {
     MGD::Matrix m =  mgd.getFullMatrix(keys[i]);
@@ -181,6 +198,10 @@ void BlenderVizNode::onJointAngles(Buggybot::JointAngles msg) {
 	oss << m(i,j) << ",";
       }
     }
-    callback(oss.str().c_str());
+    unsigned int l = oss.str().size();
+    char* msg = new char[oss.str().size()];
+    strncpy(msg, oss.str().c_str(), l);
+    if(callback)
+      callback(msg, l);
   }
 }

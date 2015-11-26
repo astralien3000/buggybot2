@@ -12,7 +12,7 @@ extern "C" {
     delete node;
   }
 
-  void set_callback(void (*func)(const char*)) {
+  void set_callback(void (*func)(const char*, unsigned int)) {
     node->callback = func;
   }
   

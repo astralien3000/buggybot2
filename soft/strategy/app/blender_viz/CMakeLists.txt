@@ -5,10 +5,23 @@ add_custom_command(
   COMMENT "cp test.py"
   )
 
+add_custom_command(
+  OUTPUT buggybot2.blend
+  COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/buggybot2.blend .
+  MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/buggybot2.blend
+  COMMENT "cp buggybot2.blend"
+  )
+
 add_custom_target(
   test_py
   ALL 
   DEPENDS test.py
+  )
+
+add_custom_target(
+  buggybot2_blend
+  ALL 
+  DEPENDS buggybot2.blend
   )
 
 add_library(
