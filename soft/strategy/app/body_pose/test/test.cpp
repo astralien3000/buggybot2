@@ -104,7 +104,7 @@ int main(int argc, char* argv[]) {
       i++;
       Buggybot::JointAngles msg;
       msg.id = i;
-      msg.lf0 = sin(i*3.14/180.0);
+      msg.lf0 = i*3.14/180.0;
       //msg.value = 42;
       //msg.text = "test";
       if(test_writer->write(msg, DDS::HANDLE_NIL) != DDS::RETCODE_OK) {
@@ -112,7 +112,7 @@ int main(int argc, char* argv[]) {
 	//return -1;
       }
       std::cout << "write" << std::endl;
-      usleep(100000);
+      usleep(1000000);
     }
   }
   catch (const CORBA::Exception& e) {
