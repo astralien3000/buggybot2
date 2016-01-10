@@ -1,5 +1,5 @@
 add_executable(
-  node.elf
+  body_pose_node.elf
   main.cpp
   body_pose_node.cpp
   )
@@ -23,7 +23,7 @@ target_link_libraries(
   )
 
 target_link_libraries(
-  node.elf
+  body_pose_node.elf
   TAO
   TAO_AnyTypeCode
   ACE
@@ -31,13 +31,16 @@ target_link_libraries(
   )
 
 target_link_libraries(
-  node.elf
+  body_pose_node.elf
   messages
+  node
   buggybot_2015_mgd
   mgd
   )
 
 include_directories(${CMAKE_BINARY_DIR}/lib/messages)
+
+include_directories(${CMAKE_SOURCE_DIR}/lib/node)
 include_directories(${CMAKE_SOURCE_DIR}/lib/buggybot_2015_mgd)
 include_directories(${CMAKE_SOURCE_DIR}/lib/mgd)
 include_directories(/usr/include/eigen3)
