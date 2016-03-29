@@ -19,6 +19,27 @@ namespace Actuator {
 
   } PACKED;
 
+  struct ServoEnableTorque : Actuator {
+    static constexpr u8 ID = 1;
+
+    u8 id;
+    bool enabled;
+
+  } PACKED;
+
+  struct ServoInfo : Actuator {
+    static constexpr u8 ID = 2;
+
+    u8 id;
+
+    bool torque_enabled;
+    s16 angle;
+    s16 current;
+    s16 voltage;
+    s16 temperature;
+
+  } PACKED;
+
 }
 
 #endif//PAYLOAD_HPP
