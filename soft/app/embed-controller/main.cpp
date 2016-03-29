@@ -3,6 +3,11 @@
 #include <QString>
 #include <iostream>
 #include <cmath>
+#include <functional>
+
+#include <protocol/protocol.hpp>
+#include <protocol/payload.hpp>
+#include <protocol/parser.hpp>
 
 #include "port_client.hpp"
 
@@ -15,12 +20,46 @@ ostream& operator<<(ostream& out, QString&& str) {
   return out << str.toStdString();
 }
 
+Protocol::Parser<1, 128> parser;
+
+template<typename Payload, typename Func>
+void (*handler_binder(Func func))(const void*) {
+  static Func ret = func;
+  return [](const void* msg) {
+      ret(((Protocol::Pack<Protocol::Message, Payload>*)msg)->message.payload);
+    };
+}
+
+PortClient::PortClient(QSerialPort& port)
+  : _port(port) {
+
+  QObject::connect(&port, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+
+  parser.addHandler(Protocol::DefaultHandler<Protocol::Message, Actuator::ServoAngle>(
+                      handler_binder<Actuator::ServoAngle>([this](Actuator::ServoAngle& a) { this->onServoAngle(a); })
+          ));
+
+}
+
+void PortClient::onServoAngle(Actuator::ServoAngle& payload) {
+  cout << "Angle(" << (int)payload.id << ") : " << payload.angle << endl;
+
+  if(payload.angle > 2 || payload.angle < 0) {
+      cout << "RAZ" << endl;
+      Protocol::Pack<Protocol::Message, Actuator::ServoAngle> pak;
+      pak.message.payload.angle = 0;
+      u8* data = Protocol::pack(pak);
+      _port.write((char*)data, sizeof(pak));
+    }
+}
+
 void PortClient::onReadyRead(void) {
   char buff;
-  _port.getChar(&buff);
-  _port.putChar(buff+1);
-  cout.put(buff);
-  cout.flush();
+
+  while(_port.bytesAvailable()) {
+      _port.getChar(&buff);
+      parser.parse((u8*)&buff, 1);
+    }
 }
 
 int main(int argc, char* argv[]) {
@@ -62,6 +101,13 @@ int main(int argc, char* argv[]) {
 
   QApplication app(argc, argv);
   QSerialPort port(selected);
+
+  parser.addHandler(Protocol::DefaultHandler<Protocol::Message, Actuator::ServoAngle>([](const void* msg){
+      auto pak = (Protocol::Pack<Protocol::Message, Actuator::ServoAngle>*)msg;
+
+      cout << "Angle(" << pak->message.payload.id << ") : " << pak->message.payload.angle << endl;
+
+    }));
 
   port.setBaudRate(QSerialPort::Baud38400);
   port.setFlowControl(QSerialPort::NoFlowControl);
