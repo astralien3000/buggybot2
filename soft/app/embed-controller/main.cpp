@@ -34,27 +34,62 @@ PortClient::PortClient(QSerialPort& port)
   : _port(port) {
 
   QObject::connect(&port, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+  //QObject::connect(&port, SIGNAL(error(QSerialPort::SerialPortError)), this, SLOT(onError()));
+  QObject::connect(&_watchdog, SIGNAL(timeout()), this, SLOT(onTimeout()));
+
+  _watchdog.setInterval(10);
+  _watchdog.start();
 
   parser.addHandler(Protocol::DefaultHandler<Protocol::Message, Actuator::ServoAngle>(
                       handler_binder<Actuator::ServoAngle>([this](Actuator::ServoAngle& a) { this->onServoAngle(a); })
-          ));
+                    ));
 
 }
 
-void PortClient::onServoAngle(Actuator::ServoAngle& payload) {
-  cout << "Angle(" << (int)payload.id << ") : " << payload.angle << endl;
+void PortClient::onTimeout() {
+  _watchdog.stop();
 
-  if(payload.angle > 2 || payload.angle < 0) {
-      cout << "RAZ" << endl;
-      Protocol::Pack<Protocol::Message, Actuator::ServoAngle> pak;
-      pak.message.payload.angle = 0;
-      u8* data = Protocol::pack(pak);
-      _port.write((char*)data, sizeof(pak));
+  cout << "Timeout" << endl;
+  bool old = _port.isDataTerminalReady();
+  _port.setDataTerminalReady(!old);
+
+  _watchdog.start(1000);
+}
+
+
+void PortClient::onServoAngle(Actuator::ServoAngle& payload) {
+  //cout << "Angle(" << (int)payload.id << ") : " << payload.angle << endl;
+
+  if(payload.angle > 700 || payload.angle < 300) {
+      {
+        Protocol::Pack<Protocol::Message, Actuator::ServoEnableTorque> pak;
+        pak.message.payload.id = payload.id;
+        pak.message.payload.enabled = true;
+        u8* data = Protocol::pack(pak);
+        _port.write((char*)data, sizeof(pak));
+      }
+      {
+        Protocol::Pack<Protocol::Message, Actuator::ServoAngle> pak;
+        pak.message.payload.id = payload.id;
+        pak.message.payload.angle = 512;
+        u8* data = Protocol::pack(pak);
+        _port.write((char*)data, sizeof(pak));
+      }
+    }
+  else {
+      {
+        Protocol::Pack<Protocol::Message, Actuator::ServoEnableTorque> pak;
+        pak.message.payload.id = payload.id;
+        pak.message.payload.enabled = false;
+        u8* data = Protocol::pack(pak);
+        _port.write((char*)data, sizeof(pak));
+      }
     }
 }
 
 void PortClient::onReadyRead(void) {
   char buff;
+  _watchdog.start(10);
 
   while(_port.bytesAvailable()) {
       _port.getChar(&buff);

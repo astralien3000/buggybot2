@@ -3,6 +3,7 @@
 
 #include <QtSerialPort/QSerialPort>
 #include <QObject>
+#include <QTimer>
 
 #include <protocol/protocol.hpp>
 #include <protocol/payload.hpp>
@@ -14,6 +15,7 @@ class PortClient : public QObject {
 
   QSerialPort& _port;
   Protocol::Parser<1, 128> parser;
+  QTimer _watchdog;
 
 public:
   PortClient(QSerialPort& port);
@@ -22,7 +24,8 @@ public:
   void onServoAngle(Actuator::ServoAngle& payload);
 
 public slots:
-    void onReadyRead(void);
+  void onReadyRead(void);
+  void onTimeout();
 };
 
 #endif//PORT_CLIENT_HPP
