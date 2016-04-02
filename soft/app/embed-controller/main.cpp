@@ -79,6 +79,8 @@ void PortClient::onMonitor(void) {
       zmq::message_t msg;
       it->second->sub.recv(&msg, ZMQ_NOBLOCK);
       if(msg.size()) {
+          cout << "MSG !" << endl;
+
           std::stringstream ss;
           ss.write((char*)msg.data(), msg.size());
           cereal::BinaryInputArchive ar(ss);
@@ -122,6 +124,7 @@ void PortClient::onServoAngle(Actuator::ServoAngle& payload) {
 
       s->pub.bind((prefix + "in").toStdString().c_str());
       s->sub.bind((prefix + "out").toStdString().c_str());
+      s->sub.setsockopt(ZMQ_SUBSCRIBE, 0, 0);
     }
 
   std::stringstream ss;
