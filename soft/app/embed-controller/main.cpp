@@ -5,6 +5,9 @@
 #include <cmath>
 #include <functional>
 
+#include <cereal/archives/binary.hpp>
+//#include <cereal/archives/json.hpp>
+
 #include <protocol/protocol.hpp>
 #include <protocol/payload.hpp>
 #include <protocol/parser.hpp>
@@ -20,7 +23,9 @@ ostream& operator<<(ostream& out, QString&& str) {
   return out << str.toStdString();
 }
 
-Protocol::Parser<1, 128> parser;
+ostream& operator<<(ostream& out, QString& str) {
+  return out << str.toStdString();
+}
 
 template<typename Payload, typename Func>
 void (*handler_binder(Func func))(const void*) {
@@ -40,13 +45,26 @@ PortClient::PortClient(QSerialPort& port)
   _watchdog.setInterval(10);
   _watchdog.start();
 
+  _monitor.setInterval(1);
+  _monitor.start();
+
+  QObject::connect(&_monitor, SIGNAL(timeout()), this, SLOT(onMonitor()));
+
   parser.addHandler(Protocol::DefaultHandler<Protocol::Message, Actuator::ServoAngle>(
                       handler_binder<Actuator::ServoAngle>([this](Actuator::ServoAngle& a) { this->onServoAngle(a); })
                     ));
 
 }
 
-void PortClient::onTimeout() {
+PortClient::~PortClient() {
+  for(auto it = _sock.begin() ; it != _sock.end() ; it++) {
+      it->second->pub.close();
+      it->second->sub.close();
+      delete it->second;
+    }
+}
+
+void PortClient::onTimeout(void) {
   _watchdog.stop();
 
   cout << "Timeout" << endl;
@@ -56,35 +74,65 @@ void PortClient::onTimeout() {
   _watchdog.start(1000);
 }
 
+void PortClient::onMonitor(void) {
+  for(auto it = _sock.begin() ; it != _sock.end() ; it++) {
+      zmq::message_t msg;
+      it->second->sub.recv(&msg, ZMQ_NOBLOCK);
+      if(msg.size()) {
+          std::stringstream ss;
+          ss.write((char*)msg.data(), msg.size());
+          cereal::BinaryInputArchive ar(ss);
+
+          u16 pos;
+          ar(pos);
+
+          if(0 <= pos && pos <= 1024) {
+              {
+                Protocol::Pack<Protocol::Message, Actuator::ServoEnableTorque> pak;
+                pak.message.payload.id = it->first;
+                pak.message.payload.enabled = true;
+                u8* data = Protocol::pack(pak);
+                _port.write((char*)data, sizeof(pak));
+              }
+
+              {
+                Protocol::Pack<Protocol::Message, Actuator::ServoAngle> pak;
+                pak.message.payload.id = it->first;
+                pak.message.payload.angle = pos;
+                u8* data = Protocol::pack(pak);
+                _port.write((char*)data, sizeof(pak));
+              }
+            }
+          else {
+              cout << "Invalid servo_" << (u16)it->first << " command ->" << pos << endl;
+            }
+        }
+    }
+}
+
 
 void PortClient::onServoAngle(Actuator::ServoAngle& payload) {
-  //cout << "Angle(" << (int)payload.id << ") : " << payload.angle << endl;
+  if(_sock.count(payload.id) == 0) {
+      _sock[payload.id] = new SockPair(ctx);
+      SockPair* s = _sock[payload.id];
 
-  if(payload.angle > 700 || payload.angle < 300) {
-      {
-        Protocol::Pack<Protocol::Message, Actuator::ServoEnableTorque> pak;
-        pak.message.payload.id = payload.id;
-        pak.message.payload.enabled = true;
-        u8* data = Protocol::pack(pak);
-        _port.write((char*)data, sizeof(pak));
-      }
-      {
-        Protocol::Pack<Protocol::Message, Actuator::ServoAngle> pak;
-        pak.message.payload.id = payload.id;
-        pak.message.payload.angle = 512;
-        u8* data = Protocol::pack(pak);
-        _port.write((char*)data, sizeof(pak));
-      }
+      QString prefix = QString("ipc://embed.servo_") + QString::number((u16)payload.id) + QString(".pos.");
+
+      cout << "Creating " << prefix << "{in,out} sockets" << endl;
+
+      s->pub.bind((prefix + "in").toStdString().c_str());
+      s->sub.bind((prefix + "out").toStdString().c_str());
     }
-  else {
-      {
-        Protocol::Pack<Protocol::Message, Actuator::ServoEnableTorque> pak;
-        pak.message.payload.id = payload.id;
-        pak.message.payload.enabled = false;
-        u8* data = Protocol::pack(pak);
-        _port.write((char*)data, sizeof(pak));
-      }
-    }
+
+  std::stringstream ss;
+  cereal::BinaryOutputArchive ar(ss);
+  ar((u16)payload.angle);
+
+  zmq::message_t msg(ss.str().size());
+  ss.str().copy((char*)msg.data(), msg.size());
+
+  SockPair* s = _sock[payload.id];
+  s->pub.send(msg);
 }
 
 void PortClient::onReadyRead(void) {
@@ -136,13 +184,6 @@ int main(int argc, char* argv[]) {
 
   QApplication app(argc, argv);
   QSerialPort port(selected);
-
-  parser.addHandler(Protocol::DefaultHandler<Protocol::Message, Actuator::ServoAngle>([](const void* msg){
-      auto pak = (Protocol::Pack<Protocol::Message, Actuator::ServoAngle>*)msg;
-
-      cout << "Angle(" << pak->message.payload.id << ") : " << pak->message.payload.angle << endl;
-
-    }));
 
   port.setBaudRate(QSerialPort::Baud38400);
   port.setFlowControl(QSerialPort::NoFlowControl);
