@@ -24,17 +24,8 @@ private:
 
   zmq::context_t ctx {1};
 
-  struct SockPair {
-    zmq::socket_t pub;
-    zmq::socket_t sub;
-
-    SockPair(zmq::context_t& ctx)
-      : pub(ctx, ZMQ_PUB),
-        sub(ctx, ZMQ_SUB) {
-    }
-  };
-
-  std::map<u8, SockPair*> _sock;
+  zmq::socket_t in {ctx, ZMQ_PUB};
+  zmq::socket_t out{ctx, ZMQ_SUB};
 
 public:
   PortClient(QSerialPort& port);

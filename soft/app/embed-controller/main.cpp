@@ -5,8 +5,7 @@
 #include <cmath>
 #include <functional>
 
-#include <cereal/archives/binary.hpp>
-//#include <cereal/archives/json.hpp>
+#include <cereal/archives/json.hpp>
 
 #include <protocol/protocol.hpp>
 #include <protocol/payload.hpp>
@@ -54,14 +53,12 @@ PortClient::PortClient(QSerialPort& port)
                       handler_binder<Actuator::ServoAngle>([this](Actuator::ServoAngle& a) { this->onServoAngle(a); })
                     ));
 
+  in.bind("ipc://embed.in");
+  out.bind("ipc://embed.out");
+  out.setsockopt(ZMQ_SUBSCRIBE, 0, 0);
 }
 
 PortClient::~PortClient() {
-  for(auto it = _sock.begin() ; it != _sock.end() ; it++) {
-      it->second->pub.close();
-      it->second->sub.close();
-      delete it->second;
-    }
 }
 
 void PortClient::onTimeout(void) {
@@ -75,23 +72,25 @@ void PortClient::onTimeout(void) {
 }
 
 void PortClient::onMonitor(void) {
-  for(auto it = _sock.begin() ; it != _sock.end() ; it++) {
-      zmq::message_t msg;
-      it->second->sub.recv(&msg, ZMQ_NOBLOCK);
-      if(msg.size()) {
-          cout << "MSG !" << endl;
+  zmq::message_t msg;
+  out.recv(&msg, ZMQ_NOBLOCK);
+  if(msg.size()) {
+      std::stringstream ss;
+      ss.write((char*)msg.data(), msg.size());
+      cereal::JSONInputArchive ar(ss);
 
-          std::stringstream ss;
-          ss.write((char*)msg.data(), msg.size());
-          cereal::BinaryInputArchive ar(ss);
+      string topic;
+      ar(topic);
 
+      if(topic == string("pos")) {
+          u8 id;
           u16 pos;
-          ar(pos);
+          ar(id, pos);
 
           if(0 <= pos && pos <= 1024) {
               {
                 Protocol::Pack<Protocol::Message, Actuator::ServoEnableTorque> pak;
-                pak.message.payload.id = it->first;
+                pak.message.payload.id = id;
                 pak.message.payload.enabled = true;
                 u8* data = Protocol::pack(pak);
                 _port.write((char*)data, sizeof(pak));
@@ -99,43 +98,33 @@ void PortClient::onMonitor(void) {
 
               {
                 Protocol::Pack<Protocol::Message, Actuator::ServoAngle> pak;
-                pak.message.payload.id = it->first;
+                pak.message.payload.id = id;
                 pak.message.payload.angle = pos;
                 u8* data = Protocol::pack(pak);
                 _port.write((char*)data, sizeof(pak));
               }
             }
           else {
-              cout << "Invalid servo_" << (u16)it->first << " command ->" << pos << endl;
+              cout << "Invalid servo_" << (u16)id << " command ->" << pos << endl;
             }
         }
     }
+
 }
 
 
 void PortClient::onServoAngle(Actuator::ServoAngle& payload) {
-  if(_sock.count(payload.id) == 0) {
-      _sock[payload.id] = new SockPair(ctx);
-      SockPair* s = _sock[payload.id];
-
-      QString prefix = QString("ipc://embed.servo_") + QString::number((u16)payload.id) + QString(".pos.");
-
-      cout << "Creating " << prefix << "{in,out} sockets" << endl;
-
-      s->pub.bind((prefix + "in").toStdString().c_str());
-      s->sub.bind((prefix + "out").toStdString().c_str());
-      s->sub.setsockopt(ZMQ_SUBSCRIBE, 0, 0);
-    }
-
   std::stringstream ss;
-  cereal::BinaryOutputArchive ar(ss);
-  ar((u16)payload.angle);
+
+  {
+    cereal::JSONOutputArchive ar(ss);
+    ar(string("pos"), (uint8_t)payload.id, (uint16_t)payload.angle);
+  }
 
   zmq::message_t msg(ss.str().size());
   ss.str().copy((char*)msg.data(), msg.size());
 
-  SockPair* s = _sock[payload.id];
-  s->pub.send(msg);
+  in.send(msg);
 }
 
 void PortClient::onReadyRead(void) {

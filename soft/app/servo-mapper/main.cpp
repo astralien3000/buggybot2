@@ -6,7 +6,7 @@
 
 #include <zmq.hpp>
 
-#include <cereal/archives/binary.hpp>
+#include <cereal/archives/json.hpp>
 
 using namespace std;
 
@@ -19,13 +19,16 @@ int main(int argc, char* argv[]) {
 
       cout << "Connecting..." << endl;
       try {
-        sock.connect("ipc://embed.servo_3.pos.out");
+        sock.connect("ipc://embed.out");
 
         cout << "Connected !" << endl;
         while(sock.connected()) {
             std::stringstream ss;
-            cereal::BinaryOutputArchive ar(ss);
-            ar((uint16_t)512);
+
+            {
+              cereal::JSONOutputArchive ar(ss);
+              ar(string("pos"), (uint8_t)3, (uint16_t)512);
+            }
 
             zmq::message_t msg(ss.str().size());
             ss.str().copy((char*)msg.data(), msg.size());
