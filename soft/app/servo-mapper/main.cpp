@@ -159,7 +159,7 @@ int main(int argc, char* argv[]) {
 
   while(1) {
 
-      {
+      try {
         zmq::message_t msg;
         if(sock_config.recv(&msg, ZMQ_NOBLOCK)) {
             std::stringstream ss;
@@ -189,12 +189,16 @@ int main(int argc, char* argv[]) {
                 configs[config.id] = config;
 
                 answer(sock_config, action, string("ok"));
+                save_configs(configs);
               }
             else {
                 answer(sock_config, string("error"), string(""));
               }
 
           }
+      }
+      catch(zmq::error_t e) {
+        cout << "config error : " << e.what() << endl;
       }
 
       {

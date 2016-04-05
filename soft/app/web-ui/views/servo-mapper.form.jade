@@ -1,0 +1,35 @@
+form(method='post', action='/api/set', onload='get_config();', onsubmit='set_config();')
+  header
+    select(name='id', onchange='get_config();')
+      option(value='0') None
+    button(type='submit') save
+  .left
+    div
+      input(name='label', type='text', value='')
+      label label
+    div
+      input(name='min_angle', type='number', value=0)
+      label min
+      button(type='button') current
+    div
+      input(name='max_angle', type='number', value=0)
+      label max
+      button(type='button') current
+  .right
+    div
+      p position
+      .position-graph
+    div
+      p angle
+      .angle-graph
+  footer
+    div
+      label calib1
+      input(name='calib1_angle', type='number', value=0)
+      input(name='calib1_position', type='number', value=0, disabled)
+      button(type='button') current
+    div
+      label calib2
+      input(name='calib2_angle', type='number', value=0)
+      input(name='calib2_position', type='number', value=0, disabled)
+      button(type='button') current
