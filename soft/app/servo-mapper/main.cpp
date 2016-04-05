@@ -124,8 +124,8 @@ int main(int argc, char* argv[]) {
   //zmq::socket_t sock_servo_out(ctx, ZMQ_SUB);
   //sock_servo_out.bind("ipc://servo.out");
 
-  //zmq::socket_t sock_config(ctx, ZMQ_REP);
-  //sock_config.bind("ipc://servo-mapper.config");
+  zmq::socket_t sock_config(ctx, ZMQ_REP);
+  sock_config.bind("ipc://servo-mapper.config");
 
   while(1) {
 
