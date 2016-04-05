@@ -24,7 +24,7 @@ struct ServoAction {
 
   template <class Archive>
   void serialize(Archive& ar) {
-    ar(label, enable, angle);
+    ar(CEREAL_NVP(label), CEREAL_NVP(enable), CEREAL_NVP(angle));
   }
 };
 
@@ -34,7 +34,7 @@ struct ServoAnglePosition {
 
   template <class Archive>
   void serialize(Archive& ar) {
-    ar(angle, position);
+    ar(CEREAL_NVP(angle), CEREAL_NVP(position));
   }
 };
 
@@ -50,9 +50,9 @@ struct ServoConfig {
 
   template <class Archive>
   void serialize(Archive& ar) {
-    ar(id, label);
-    ar(calib1, calib2);
-    ar(min_angle, max_angle);
+    ar(CEREAL_NVP(id), CEREAL_NVP(label));
+    ar(CEREAL_NVP(calib1), CEREAL_NVP(calib2));
+    ar(CEREAL_NVP(min_angle), CEREAL_NVP(max_angle));
   }
 
   double pos2angle(uint16_t pos) {
@@ -84,6 +84,16 @@ struct ServoConfig {
   }
 };
 
+
+void sync_map_id(map<uint8_t, ServoConfig>& configs) {
+  for(auto it = configs.begin() ; it != configs.end() ; it++) {
+      if(it->first != it->second.id) {
+          it->second.id = it->first;
+          cout << "invalid id -> changing" << endl;
+        }
+    }
+}
+
 void load_configs(map<uint8_t, ServoConfig>& configs) {
   configs.clear();
 
@@ -91,17 +101,37 @@ void load_configs(map<uint8_t, ServoConfig>& configs) {
     ifstream ifs("servo-mapper.json", ios_base::in);
 
     cereal::JSONInputArchive ar(ifs);
-    ar(configs);
+    ar(CEREAL_NVP(configs));
+    sync_map_id(configs);
   }
   catch(cereal::RapidJSONException e) {
+    cout << "load : " << e.what() << endl;
+  }
+  catch(cereal::Exception e) {
     cout << "load : " << e.what() << endl;
   }
 }
 
 void save_configs(map<uint8_t, ServoConfig>& configs) {
+  sync_map_id(configs);
   ofstream ofs("servo-mapper.json", ios_base::out);
   cereal::JSONOutputArchive ofar(ofs);
-  ofar(configs);
+  ofar(CEREAL_NVP(configs));
+}
+
+template<typename T>
+void answer(zmq::socket_t& sock_config, string action, T data) {
+  stringstream oss;
+
+  {
+    cereal::JSONOutputArchive ar(oss);
+    ar(CEREAL_NVP(action), CEREAL_NVP(data));
+  }
+
+  zmq::message_t msg(oss.str().size());
+  oss.str().copy((char*)msg.data(), msg.size());
+
+  sock_config.send(msg);
 }
 
 int main(int argc, char* argv[]) {
@@ -132,7 +162,38 @@ int main(int argc, char* argv[]) {
       {
         zmq::message_t msg;
         if(sock_config.recv(&msg, ZMQ_NOBLOCK)) {
-            cout << "config request begin" << endl;
+            std::stringstream ss;
+            ss.write((char*)msg.data(), msg.size());
+            cereal::JSONInputArchive ar(ss);
+
+            string action;
+            ar(CEREAL_NVP(action));
+
+            if(action == string("getall")) {
+                answer(sock_config, action, configs);
+              }
+            else if(action == string("get")) {
+                uint16_t id = 0;
+                ar(CEREAL_NVP(id));
+
+                if(configs.count(id)) {
+                    answer(sock_config, action, configs[id]);
+                  }
+                else {
+                    answer(sock_config, string("error"), string("none"));
+                  }
+              }
+            else if(action == string("set")) {
+                ServoConfig config;
+                ar(CEREAL_NVP(config));
+                configs[config.id] = config;
+
+                answer(sock_config, action, string("ok"));
+              }
+            else {
+                answer(sock_config, string("error"), string(""));
+              }
+
           }
       }
 
