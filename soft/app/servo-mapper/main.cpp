@@ -229,6 +229,7 @@ int main(int argc, char* argv[]) {
 
                 if(!configs.count(id)) {
                     configs[id] = ServoConfig();
+                    configs[id].id = id;
                   }
 
                 try {
