@@ -68,31 +68,57 @@ app.get('/api/get/:id', function(req, res) {
     sock.send(msg);
 
     sock.on('message', function(msg) {
-	res.send(msg.toString());
+	res.send(JSON.parse(msg.toString()).data);
 	sock.disconnect('ipc://servo-mapper.config');
     });
 });
 
-app.post('/api/set', function(req, res) {
-    console.log(req.body);
-    
+app.get('/api/getlist', function(req, res) {
+    var msg = JSON.stringify({
+	"action" : "getall",
+    });
+
+    sock = zmq.socket('req');
+    sock.connect('ipc://servo-mapper.config');
+
+    sock.send(msg);
+
+    sock.on('message', function(msg) {
+	answer = JSON.parse(msg.toString());
+	//res.send(answer.data);
+	list = []
+	for(var i = 0 ; i < answer.data.length ; i++) {
+	    list.push({
+		'id' : answer.data[i].value.id,
+		'label' : answer.data[i].value.label,
+	    });
+	}
+	res.send(list);
+	sock.disconnect('ipc://servo-mapper.config');
+    });
+});
+
+app.post('/api/set', function(req, res) {    
     var msg = JSON.stringify({
 	"action": "set",
 	"config": {
 	    "id": parseInt(req.body.id),
-	    "label": "test",
+	    "label": req.body.label,
 	    "calib1": {
-		"angle": 0,
-		"position": 0
+		"angle": parseFloat(req.body.calib1_angle),
+		"position": parseInt(req.body.calib1_position)
 	    },
 	    "calib2": {
-		"angle": 0,
-		"position": 0
+		"angle": parseFloat(req.body.calib2_angle),
+		"position": parseInt(req.body.calib1_position)
 	    },
-	    "min_angle": 0,
-	    "max_angle": 0
+	    "min_angle": parseFloat(req.body.min_angle),
+	    "max_angle": parseFloat(req.body.max_angle)
 	}
     });
+
+    console.log(req.body);
+    console.log(msg);
 
     sock = zmq.socket('req');
     sock.connect('ipc://servo-mapper.config');

@@ -1,35 +1,35 @@
-form(method='post', action='/api/set', onload='get_config();', onsubmit='set_config();')
+form(action='javascript:', onchange='changed_config()', onsubmit='set_config()')
   header
-    select(name='id', onchange='get_config();')
+    select(name='id', onchange='get_config()')
       option(value='0') None
     button(type='submit') save
+    img(onload='get_config()', src='/img/uncheck.png', height='0px')
+    img#check(src='/img/uncheck.png', height='12px')
   .left
-    div
+    .lbl
       input(name='label', type='text', value='')
       label label
-    div
+    .min
       input(name='min_angle', type='number', value=0)
       label min
       button(type='button') current
-    div
+    .max
       input(name='max_angle', type='number', value=0)
       label max
       button(type='button') current
   .right
-    div
-      p position
-      .position-graph
-    div
-      p angle
-      .angle-graph
+    .pos position
+      .position-graph not connected
+    .angle angle
+      .angle-graph not connected
   footer
-    div
+    .calib1
       label calib1
       input(name='calib1_angle', type='number', value=0)
-      input(name='calib1_position', type='number', value=0, disabled)
+      input(name='calib1_position', type='number', value=0, readonly)
       button(type='button') current
-    div
+    .calib2
       label calib2
       input(name='calib2_angle', type='number', value=0)
-      input(name='calib2_position', type='number', value=0, disabled)
+      input(name='calib2_position', type='number', value=0, readonly)
       button(type='button') current

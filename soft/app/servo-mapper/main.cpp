@@ -170,9 +170,13 @@ int main(int argc, char* argv[]) {
             ar(CEREAL_NVP(action));
 
             if(action == string("getall")) {
+                cout << "config : getall" << endl;
+
                 answer(sock_config, action, configs);
               }
             else if(action == string("get")) {
+                cout << "config : get" << endl;
+
                 uint16_t id = 0;
                 ar(CEREAL_NVP(id));
 
@@ -184,6 +188,8 @@ int main(int argc, char* argv[]) {
                   }
               }
             else if(action == string("set")) {
+                cout << "config : set" << endl;
+
                 ServoConfig config;
                 ar(CEREAL_NVP(config));
                 configs[config.id] = config;
@@ -194,11 +200,15 @@ int main(int argc, char* argv[]) {
             else {
                 answer(sock_config, string("error"), string(""));
               }
-
           }
       }
       catch(zmq::error_t e) {
         cout << "config error : " << e.what() << endl;
+        answer(sock_config, string("error"), string(e.what()));
+      }
+      catch(cereal::RapidJSONException e) {
+        cout << "config error : " << e.what() << endl;
+        answer(sock_config, string("error"), string(e.what()));
       }
 
       {
