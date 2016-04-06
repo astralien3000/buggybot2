@@ -223,8 +223,9 @@ int main(int argc, char* argv[]) {
 
             if(topic == string("pos")) {
                 uint8_t id;
+                bool enabled;
                 uint16_t pos;
-                ar(id, pos);
+                ar(id, pos, enabled);
 
                 if(!configs.count(id)) {
                     configs[id] = ServoConfig();
@@ -250,7 +251,7 @@ int main(int argc, char* argv[]) {
                   sock_servo_in.send(msg);
                 }
                 catch(const char* msg) {
-                  cout << "servo[" << (uint16_t)id << "] : " << msg << endl;
+                  //cout << "servo[" << (uint16_t)id << "] : " << msg << endl;
                 }
               }
           }

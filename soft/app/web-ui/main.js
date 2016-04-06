@@ -1,47 +1,10 @@
 var zmq = require('zmq');
 var express = require('express');
-var bodyParser = require('body-parser')
-
-
-
-/*
-  var msg = JSON.stringify({
-  "action": "set",
-  "config": {
-  "id": 1,
-  "label": "test",
-  "calib1": {
-  "angle": 0,
-  "position": 0
-  },
-  "calib2": {
-  "angle": 0,
-  "position": 0
-  },
-  "min_angle": 0,
-  "max_angle": 0
-  }
-  });
-
-  sock.send(msg);
-  console.log('send : ' + msg);
-
-  setInterval(function() {
-  var msg = JSON.stringify({
-  "action" : "get",
-  "id" : 1,
-  });
-  
-  sock.send(msg);
-  console.log('send : ' + msg);
-  }, 1000);
-
-  sock.on('message', function(msg) {
-  console.log('recv : ' + msg);
-  });
-*/
-
+var bodyParser = require('body-parser');
 var app = express();
+var http = require('http');
+var server = http.Server(app);
+var io = require('socket.io')(server);
 
 app.use(bodyParser.urlencoded({
     extended: true
@@ -110,7 +73,7 @@ app.post('/api/set', function(req, res) {
 	    },
 	    "calib2": {
 		"angle": parseFloat(req.body.calib2_angle),
-		"position": parseInt(req.body.calib1_position)
+		"position": parseInt(req.body.calib2_position)
 	    },
 	    "min_angle": parseFloat(req.body.min_angle),
 	    "max_angle": parseFloat(req.body.max_angle)
@@ -131,4 +94,36 @@ app.post('/api/set', function(req, res) {
     });
 });
 
-app.listen(3000);
+server.listen(3000);
+
+io.on('connection', function(io_sock) {
+    embed_sock = zmq.socket('sub');
+    embed_sock.connect('ipc://embed.in');
+    embed_sock.subscribe('');
+
+    io_sock.on('filter', function(msg) {
+	io_sock.id_filter = msg;
+    });
+
+    io_sock.on('filter-lbl', function(msg) {
+	io_sock.lbl_filter = msg;
+    });
+
+    embed_sock.on('message', function(msg) {
+	msg = JSON.parse(msg.toString());
+	if(msg.value1 == io_sock.id_filter) {
+	    io_sock.emit('pos', msg.value2);
+	}
+    });
+
+    servo_sock = zmq.socket('sub');
+    servo_sock.connect('ipc://servo.in');
+    servo_sock.subscribe('');
+    
+    servo_sock.on('message', function(msg) {
+	msg = JSON.parse(msg.toString());
+	if(msg.value0.label == io_sock.lbl_filter) {
+	    io_sock.emit('angle', msg.value0.angle);
+	}
+    });
+});

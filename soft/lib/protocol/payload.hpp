@@ -11,19 +11,12 @@ namespace Actuator {
     static constexpr u8 CLS = 2;
   };
 
-  struct ServoAngle : Actuator {
+  struct ServoPosition : Actuator {
     static constexpr u8 ID = 0;
 
     u8 id;
-    s16 angle;
-
-  } PACKED;
-
-  struct ServoEnableTorque : Actuator {
-    static constexpr u8 ID = 1;
-
-    u8 id;
     bool enabled;
+    s16 position;
 
   } PACKED;
 
@@ -32,8 +25,8 @@ namespace Actuator {
 
     u8 id;
 
-    bool torque_enabled;
-    s16 angle;
+    bool enabled;
+    s16 position;
     s16 current;
     s16 voltage;
     s16 temperature;

@@ -49,8 +49,8 @@ PortClient::PortClient(QSerialPort& port)
 
   QObject::connect(&_monitor, SIGNAL(timeout()), this, SLOT(onMonitor()));
 
-  parser.addHandler(Protocol::DefaultHandler<Protocol::Message, Actuator::ServoAngle>(
-                      handler_binder<Actuator::ServoAngle>([this](Actuator::ServoAngle& a) { this->onServoAngle(a); })
+  parser.addHandler(Protocol::DefaultHandler<Protocol::Message, Actuator::ServoPosition>(
+                      handler_binder<Actuator::ServoPosition>([this](Actuator::ServoPosition& a) { this->onServoAngle(a); })
                     ));
 
   in.bind("ipc://embed.in");
@@ -84,22 +84,16 @@ void PortClient::onMonitor(void) {
 
       if(topic == string("pos")) {
           u8 id;
+          bool enabled;
           u16 pos;
-          ar(id, pos);
+          ar(id, pos, enabled);
 
           if(0 <= pos && pos <= 1024) {
               {
-                Protocol::Pack<Protocol::Message, Actuator::ServoEnableTorque> pak;
+                Protocol::Pack<Protocol::Message, Actuator::ServoPosition> pak;
                 pak.message.payload.id = id;
-                pak.message.payload.enabled = true;
-                u8* data = Protocol::pack(pak);
-                _port.write((char*)data, sizeof(pak));
-              }
-
-              {
-                Protocol::Pack<Protocol::Message, Actuator::ServoAngle> pak;
-                pak.message.payload.id = id;
-                pak.message.payload.angle = pos;
+                pak.message.payload.enabled = enabled;
+                pak.message.payload.position = pos;
                 u8* data = Protocol::pack(pak);
                 _port.write((char*)data, sizeof(pak));
               }
@@ -113,12 +107,12 @@ void PortClient::onMonitor(void) {
 }
 
 
-void PortClient::onServoAngle(Actuator::ServoAngle& payload) {
+void PortClient::onServoAngle(Actuator::ServoPosition& payload) {
   std::stringstream ss;
 
   {
     cereal::JSONOutputArchive ar(ss);
-    ar(string("pos"), (uint8_t)payload.id, (uint16_t)payload.angle);
+    ar(string("pos"), (uint8_t)payload.id, (uint16_t)payload.position, (bool)payload.enabled);
   }
 
   zmq::message_t msg(ss.str().size());

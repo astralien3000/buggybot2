@@ -10,26 +10,26 @@ form(action='javascript:', onchange='changed_config()', onsubmit='set_config()')
       input(name='label', type='text', value='')
       label label
     .min
-      input(name='min_angle', type='number', value=0)
+      input(name='min_angle', type='number', step='any', value=0)
       label min
-      button(type='button') current
+      button(type='button', onclick='fill_current("max_angle", "angle")') current
     .max
-      input(name='max_angle', type='number', value=0)
+      input(name='max_angle', type='number', step='any', value=0)
       label max
-      button(type='button') current
+      button(type='button', onclick='fill_current("max_angle", "angle")') current
   .right
-    .pos position
-      .position-graph not connected
-    .angle angle
-      .angle-graph not connected
+    .pos-graph position
+      #pos not connected
+    .angle-graph angle
+      #angle not connected
   footer
     .calib1
       label calib1
-      input(name='calib1_angle', type='number', value=0)
+      input(name='calib1_angle', type='number', step='any', value=0)
       input(name='calib1_position', type='number', value=0, readonly)
-      button(type='button') current
+      button(type='button', onclick='fill_current("calib1_position", "pos")') current
     .calib2
       label calib2
-      input(name='calib2_angle', type='number', value=0)
+      input(name='calib2_angle', type='number', step='any', value=0)
       input(name='calib2_position', type='number', value=0, readonly)
-      button(type='button') current
+      button(type='button', onclick='fill_current("calib2_position", "pos")') current

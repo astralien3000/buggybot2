@@ -5,6 +5,7 @@
       "express" : "",
       "jade" : "",
       "body-parser" : "",
+      "socket.io" : "1.4.5",
       "zmq" : ""
   }
 }

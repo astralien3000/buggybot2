@@ -35,15 +35,11 @@ int main(int, char**) {
   settings.stop_bit = UART::StopBit::ONE_BIT;
   settings.word_size = 8;
 
-  parser.addHandler(Protocol::DefaultHandler<Protocol::Message, Actuator::ServoAngle>([](const void* msg){
-      auto pak = *(Protocol::Pack<Protocol::Message, Actuator::ServoAngle>*)msg;
-      sc.setPosition(pak.message.payload.id, pak.message.payload.angle);
-    }));
-
-  parser.addHandler(Protocol::DefaultHandler<Protocol::Message, Actuator::ServoEnableTorque>([](const void* msg){
-      auto pak = *(Protocol::Pack<Protocol::Message, Actuator::ServoEnableTorque>*)msg;
+  parser.addHandler(Protocol::DefaultHandler<Protocol::Message, Actuator::ServoPosition>([](const void* msg){
+      auto pak = *(Protocol::Pack<Protocol::Message, Actuator::ServoPosition>*)msg;
       if(pak.message.payload.enabled) {
           sc.enableTorque(pak.message.payload.id);
+          sc.setPosition(pak.message.payload.id, pak.message.payload.position);
         }
       else {
           sc.disableTorque(pak.message.payload.id);
@@ -76,9 +72,10 @@ int main(int, char**) {
             }
 
           for(u8 i = 2 ; i < max_servo ; i++) {
-              Protocol::Pack<Protocol::Message, Actuator::ServoAngle> pak;
+              Protocol::Pack<Protocol::Message, Actuator::ServoPosition> pak;
               pak.message.payload.id = i;
-              pak.message.payload.angle = sc.getPosition(i);
+              pak.message.payload.enabled = sc.isTorqueEnabled(i);
+              pak.message.payload.position = sc.getPosition(i);
               u8* data = Protocol::pack(pak);
               UART::write(MY_UART, data, sizeof(pak));
             }

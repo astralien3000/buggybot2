@@ -32,7 +32,7 @@ public:
   ~PortClient();
 
 public:
-  void onServoAngle(Actuator::ServoAngle& payload);
+  void onServoAngle(Actuator::ServoPosition& payload);
 
 public slots:
   void onReadyRead(void);
