@@ -6,7 +6,6 @@ def bone_matrix(bone):
     else:
         return bone.parent.matrix_local.inverted() * bone.matrix_local
     
-    
 def find(bone, func):
     func(bone)
     for b in bone.children:
@@ -41,6 +40,14 @@ def matrix2cas(mat):
 def name2cxx(name):
     return str(name).replace(".", "_")
 
+def print_variable(cond):
+    ret = "static constexpr bool VARIABLE = "
+    if cond:
+        ret += "true"
+    else:
+        ret += "false"
+    print(ret + ";")
+
 def print_parent(obj):
     if obj.parent != None:
         if obj.parent_type == "BONE":
@@ -67,6 +74,7 @@ def print_pose_bone_parent(obj, default_parent = 'void'):
 
 def print_bone(bone):
     print("struct " + name2cxx(bone.name) + " {")
+    print_variable(False)
     print_bone_parent(bone)
     mat  = "using matrix = "
     mat += matrix2cas(bone_matrix(bone)) + ";"
@@ -75,6 +83,7 @@ def print_bone(bone):
 
 def print_armature(armature):
     print("struct " + name2cxx(armature.name) + " {")
+    print_variable(False)
     for b in armature.bones:
         print_bone(b)
     print("};")
@@ -95,6 +104,7 @@ def print_dof_matrix(name):
 def print_dof(name, cond, last):
     if(cond):
         print("struct " + name + " {")
+        print_variable(True)
         print("using parent = " + last + ";")
         print_dof_matrix(name)
         print("};")
@@ -110,6 +120,7 @@ def find_bone_armature(bone):
 
 def print_endpoint(bone):
     print("struct endpoint {")
+    print_variable(False)
     print("using parent = last;")
     tloc = bone.matrix_local.inverted() * bone.tail_local
     ret  = "using matrix = "
@@ -132,6 +143,7 @@ def print_pose_bone(pose_bone, armature_name):
         struct_def += name2cxx(a.name) + "::"
         struct_def += name2cxx(pose_bone.bone.name)
     print(struct_def + " {")    
+    print_variable(False)
     print_pose_bone_parent(pose_bone, name2cxx(armature_name))
     last = name2cxx(pose_bone.name)
     last = print_dof("rx", not pose_bone.lock_rotation[0], last)
@@ -143,6 +155,7 @@ def print_pose_bone(pose_bone, armature_name):
 
 def print_object(obj):
     print("struct " + name2cxx(obj.name) + " {")
+    print_variable(False)
     print_parent(obj)
     mat  = "using matrix = "
     mat += matrix2cas(obj.matrix_local) + ";"
