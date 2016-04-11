@@ -81,14 +81,15 @@ int main(int argc, char* argv[]) {
   sock_embed_in.connect("ipc://embed.in");
   sock_embed_in.setsockopt(ZMQ_SUBSCRIBE, 0, 0);
 
-  //zmq::socket_t sock_embed_out(ctx, ZMQ_PUB);
-  //sock_embed_out.connect("ipc://embed.out");
+  zmq::socket_t sock_embed_out(ctx, ZMQ_PUB);
+  sock_embed_out.connect("ipc://embed.out");
 
   zmq::socket_t sock_servo_in(ctx, ZMQ_PUB);
   sock_servo_in.bind("ipc://servo.in");
 
-  //zmq::socket_t sock_servo_out(ctx, ZMQ_SUB);
-  //sock_servo_out.bind("ipc://servo.out");
+  zmq::socket_t sock_servo_out(ctx, ZMQ_SUB);
+  sock_servo_out.bind("ipc://servo.out");
+  sock_servo_out.setsockopt(ZMQ_SUBSCRIBE, 0, 0);
 
   zmq::socket_t sock_config(ctx, ZMQ_REP);
   sock_config.bind("ipc://servo-mapper.config");

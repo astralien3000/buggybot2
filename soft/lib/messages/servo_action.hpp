@@ -6,7 +6,7 @@
 
 struct ServoAction {
   std::string label = "";
-  bool enable = 0;
+  bool enable = false;
   double angle = 0;
 
   template <class Archive>

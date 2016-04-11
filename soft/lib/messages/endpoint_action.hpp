@@ -6,7 +6,7 @@
 
 struct EndpointAction {
   std::string label = "";
-  uint8_t enable = 0;
+  bool enable = false;
   double x = 0;
   double y = 0;
   double z = 0;
