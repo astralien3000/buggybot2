@@ -10,7 +10,7 @@ private:
   double _stop_dist;
 
 public:
-  enum class Leg { LF, RF, LB, RB };
+  enum class Leg { LF, RF, LB, RB, NONE };
 
   inline RobotModel(double gain, uint16_t max_iter, double stop_dist)
     : _gain(gain), _max_iter(max_iter), _stop_dist(stop_dist) {

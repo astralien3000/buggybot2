@@ -110,7 +110,7 @@ RobotModel::Leg lbl2leg(string lbl) {
   else if(lbl == "RB") {
       return RobotModel::Leg::RB;
     }
-  return RobotModel::Leg::LF;
+  return RobotModel::Leg::NONE;
 }
 
 int main(int, char**) {
