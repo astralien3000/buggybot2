@@ -150,22 +150,28 @@ int main(int, char**) {
 
   while(1) {
 
-      {
+      try {
         zmq::message_t msg;
         if(sock_servo_in.recv(&msg, ZMQ_NOBLOCK)) {
             std::stringstream ss;
             ss.write((char*)msg.data(), msg.size());
             cereal::JSONInputArchive ar(ss);
-            ServoAction sa;
-            ar(sa);
+            ServoAction action;
+            ar(action);
 
-            ServoUpdate& up = update[sa.label];
+            ServoUpdate& up = update[action.label];
             up.updated = true;
-            up.value = sa.angle;
-            up.enabled = sa.enable;
+            up.value = action.angle;
+            up.enabled = action.enable;
 
             on_update(sock_ik_in, bot, ac, update);
           }
+      }
+      catch(zmq::error_t e) {
+        cout << "zmq::error : " << e.what() << endl;
+      }
+      catch(cereal::RapidJSONException e) {
+        cout << "cereal::error : " << e.what() << endl;
       }
 
       {
@@ -184,17 +190,17 @@ int main(int, char**) {
 
             sa.label = ea.label+"0";
             sa.enable = ea.enable;
-            sa.angle = bot.getAngle(lbl2leg(ea.label), 0);
+            sa.angle = ac.getAngle(lbl2leg(ea.label), 0);
             send_servo_action(sock_servo_out, sa);
 
             sa.label = ea.label+"1";
             sa.enable = ea.enable;
-            sa.angle = bot.getAngle(lbl2leg(ea.label), 1);
+            sa.angle = ac.getAngle(lbl2leg(ea.label), 1);
             send_servo_action(sock_servo_out, sa);
 
             sa.label = ea.label+"2";
             sa.enable = ea.enable;
-            sa.angle = bot.getAngle(lbl2leg(ea.label), 2);
+            sa.angle = ac.getAngle(lbl2leg(ea.label), 2);
             send_servo_action(sock_servo_out, sa);
           }
       }

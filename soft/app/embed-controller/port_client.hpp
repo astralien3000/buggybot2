@@ -21,6 +21,7 @@ private:
   Protocol::Parser<1, 128> parser;
   QTimer _watchdog;
   QTimer _monitor;
+  bool _sync = false;
 
   zmq::context_t ctx {1};
 

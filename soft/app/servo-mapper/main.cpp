@@ -70,6 +70,15 @@ void answer(zmq::socket_t& sock_config, string action, T data) {
   sock_config.send(msg);
 }
 
+uint8_t find_config_by_label(map<uint8_t, ServoConfig>& configs, string label) {
+  for(auto it = configs.begin() ; it != configs.end() ; it++) {
+      if(it->second.label == label) {
+          return it->first;
+        }
+    }
+  return 0xFF;
+}
+
 int main(int argc, char* argv[]) {
   zmq::context_t ctx(5);
   map<uint8_t, ServoConfig> configs;
@@ -195,6 +204,36 @@ int main(int argc, char* argv[]) {
           }
       }
 
+      {
+        zmq::message_t msg;
+        if(sock_servo_out.recv(&msg, ZMQ_NOBLOCK)) {
+            std::stringstream ss;
+            ss.write((char*)msg.data(), msg.size());
+            cereal::JSONInputArchive ar(ss);
+
+            ServoAction sa;
+            ar(sa);
+            uint8_t id = find_config_by_label(configs, sa.label);
+            if(id != 0xFF) {
+                ServoConfig& config = configs[id];
+                stringstream oss;
+
+                uint8_t id = config.id;
+                bool enabled = sa.enable;
+                uint16_t pos = config.angle2pos(sa.angle);
+
+                {
+                  cereal::JSONOutputArchive ar(oss);
+                  ar(string("pos"), id, pos, enabled);
+                }
+
+                zmq::message_t msg(oss.str().size());
+                oss.str().copy((char*)msg.data(), msg.size());
+
+                sock_embed_out.send(msg);
+              }
+          }
+      }
     }
 
   return 0;

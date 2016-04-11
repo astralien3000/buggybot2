@@ -63,6 +63,7 @@ PortClient::~PortClient() {
 
 void PortClient::onTimeout(void) {
   _watchdog.stop();
+  _sync = false;
 
   cout << "Timeout" << endl;
   bool old = _port.isDataTerminalReady();
@@ -72,38 +73,40 @@ void PortClient::onTimeout(void) {
 }
 
 void PortClient::onMonitor(void) {
-  zmq::message_t msg;
-  out.recv(&msg, ZMQ_NOBLOCK);
-  if(msg.size()) {
-      std::stringstream ss;
-      ss.write((char*)msg.data(), msg.size());
-      cereal::JSONInputArchive ar(ss);
+  if(_sync) {
+      zmq::message_t msg;
+      out.recv(&msg, ZMQ_NOBLOCK);
+      if(msg.size()) {
+          std::stringstream ss;
+          ss.write((char*)msg.data(), msg.size());
+          cereal::JSONInputArchive ar(ss);
 
-      string topic;
-      ar(topic);
+          string topic;
+          ar(topic);
 
-      if(topic == string("pos")) {
-          u8 id;
-          bool enabled;
-          u16 pos;
-          ar(id, pos, enabled);
+          if(topic == string("pos")) {
+              u8 id;
+              bool enabled;
+              u16 pos;
+              ar(id, pos, enabled);
+              cout << (uint16_t)id << "::" << pos << "::" << enabled << endl;
 
-          if(0 <= pos && pos <= 1024) {
-              {
-                Protocol::Pack<Protocol::Message, Actuator::ServoPosition> pak;
-                pak.message.payload.id = id;
-                pak.message.payload.enabled = enabled;
-                pak.message.payload.position = pos;
-                u8* data = Protocol::pack(pak);
-                _port.write((char*)data, sizeof(pak));
-              }
-            }
-          else {
-              cout << "Invalid servo_" << (u16)id << " command ->" << pos << endl;
+              if(0 <= pos && pos <= 1024) {
+                  {
+                    Protocol::Pack<Protocol::Message, Actuator::ServoPosition> pak;
+                    pak.message.payload.id = id;
+                    pak.message.payload.enabled = enabled;
+                    pak.message.payload.position = pos;
+                    u8* data = Protocol::pack(pak);
+                    _port.write((char*)data, sizeof(pak));
+                  }
+                }
+              else {
+                  cout << "Invalid servo_" << (u16)id << " command ->" << pos << endl;
+                }
             }
         }
     }
-
 }
 
 
@@ -124,6 +127,7 @@ void PortClient::onServoAngle(Actuator::ServoPosition& payload) {
 void PortClient::onReadyRead(void) {
   char buff;
   _watchdog.start(10);
+  _sync = true;
 
   while(_port.bytesAvailable()) {
       _port.getChar(&buff);
