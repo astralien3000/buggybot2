@@ -18,6 +18,7 @@ file(GLOB_RECURSE INCLUDE_H "include/*.h")
 link_directories("${AVERSIVE_ROOT}/lib/${AVERSIVE_TOOLCHAIN_TARGET}")
 include_directories("${AVERSIVE_ROOT}/include")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../lib")
+include_directories("/usr/avr/include")
 
 file(GLOB_RECURSE PROTOCOL "${CMAKE_CURRENT_SOURCE_DIR}/../../lib/protocol/*")
 

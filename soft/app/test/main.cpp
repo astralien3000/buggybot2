@@ -43,9 +43,9 @@ int main(int, char**) {
 
   double a = 0;
   while(1) {
-      usleep(100000);
+      usleep(10000);
 
-      a += 0.1;
+      a += 0.01;
       EndpointAction ea;
 
       ea.label = "LF";

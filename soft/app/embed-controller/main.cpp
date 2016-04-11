@@ -41,7 +41,7 @@ PortClient::PortClient(QSerialPort& port)
   //QObject::connect(&port, SIGNAL(error(QSerialPort::SerialPortError)), this, SLOT(onError()));
   QObject::connect(&_watchdog, SIGNAL(timeout()), this, SLOT(onTimeout()));
 
-  _watchdog.setInterval(10);
+  _watchdog.setInterval(500);
   _watchdog.start();
 
   _monitor.setInterval(1);
@@ -73,9 +73,9 @@ void PortClient::onTimeout(void) {
 }
 
 void PortClient::onMonitor(void) {
+  zmq::message_t msg;
+  out.recv(&msg, ZMQ_NOBLOCK);
   if(_sync) {
-      zmq::message_t msg;
-      out.recv(&msg, ZMQ_NOBLOCK);
       if(msg.size()) {
           std::stringstream ss;
           ss.write((char*)msg.data(), msg.size());
@@ -126,7 +126,7 @@ void PortClient::onServoAngle(Actuator::ServoPosition& payload) {
 
 void PortClient::onReadyRead(void) {
   char buff;
-  _watchdog.start(10);
+  _watchdog.start(500);
   _sync = true;
 
   while(_port.bytesAvailable()) {
