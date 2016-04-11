@@ -15,7 +15,7 @@ int main(int, char**) {
   RobotModel bot(0.00325, 100, 1);
 
   //bot.setAngle(RobotModel::Leg::LF, 0, -3.1415/2);
-  bot.setEndpoint(RobotModel::Leg::LF, Matrix<double, 3,1>(100.0, 80.0, -150.0));
+  bot.setEndpoint(RobotModel::Leg::LF, Matrix<double, 3,1>(50.0, 50.0, -150.0));
 
   cout << bot.getAngle(RobotModel::Leg::LF, 0) << endl;
   cout << bot.getAngle(RobotModel::Leg::LF, 1) << endl;

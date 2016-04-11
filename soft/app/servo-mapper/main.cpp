@@ -1,3 +1,6 @@
+#include <messages/servo_action.hpp>
+#include <messages/servo_config.hpp>
+
 #include <iostream>
 #include <cmath>
 #include <functional>
@@ -8,6 +11,7 @@
 
 #include <zmq.hpp>
 
+
 #include <cereal/types/map.hpp>
 #include <cereal/types/vector.hpp>
 #include <cereal/types/string.hpp>
@@ -16,74 +20,6 @@
 #include <cereal/archives/json.hpp>
 
 using namespace std;
-
-struct ServoAction {
-  string label = "";
-  bool enable = 0;
-  double angle = 0;
-
-  template <class Archive>
-  void serialize(Archive& ar) {
-    ar(CEREAL_NVP(label), CEREAL_NVP(enable), CEREAL_NVP(angle));
-  }
-};
-
-struct ServoAnglePosition {
-  double angle = 0;
-  uint16_t position = 0;
-
-  template <class Archive>
-  void serialize(Archive& ar) {
-    ar(CEREAL_NVP(angle), CEREAL_NVP(position));
-  }
-};
-
-struct ServoConfig {
-  uint8_t id = 0;
-  string label = "";
-
-  ServoAnglePosition calib1;
-  ServoAnglePosition calib2;
-
-  double min_angle = 0;
-  double max_angle = 0;
-
-  template <class Archive>
-  void serialize(Archive& ar) {
-    ar(CEREAL_NVP(id), CEREAL_NVP(label));
-    ar(CEREAL_NVP(calib1), CEREAL_NVP(calib2));
-    ar(CEREAL_NVP(min_angle), CEREAL_NVP(max_angle));
-  }
-
-  double pos2angle(uint16_t pos) {
-    const double p = pos;
-    const double p1 = calib1.position;
-    const double p2 = calib2.position;
-    const double a1 = calib1.angle;
-    const double a2 = calib2.angle;
-
-    if((p2-p1) == 0) {
-        throw("configuration error !");
-      }
-
-    return ((p-p1)/(p2-p1))*(a2-a1)+a1;
-  }
-
-  uint16_t angle2pos(double angle) {
-    const double a = angle;
-    const double p1 = calib1.position;
-    const double p2 = calib2.position;
-    const double a1 = calib1.angle;
-    const double a2 = calib2.angle;
-
-    if((a2-a1) == 0) {
-        throw("configuration error !");
-      }
-
-    return (uint16_t)(((a-a1)/(a2-a1))*(p2-p1)+p1);
-  }
-};
-
 
 void sync_map_id(map<uint8_t, ServoConfig>& configs) {
   for(auto it = configs.begin() ; it != configs.end() ; it++) {
