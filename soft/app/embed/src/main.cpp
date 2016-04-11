@@ -8,6 +8,8 @@
 #include <protocol/parser.hpp>
 
 #include <feetech/sc.hpp>
+#include "test.hpp"
+#include "sc_switcher.hpp"
 
 #include <avr/wdt.h>
 
@@ -17,20 +19,13 @@ auto& MY_UART = UART0; // Choose the UART
 auto& TX = E1;         // Choose the TX pin
 auto& RX = E0;         // Choose the RX pin
 
-struct SCSettings : Stream::HAL::DefaultUARTStreamSettings {
-  static constexpr auto& uart = ::HAL::UART1;
-  static constexpr auto& tx = ::HAL::D3;
-  static constexpr auto& rx = ::HAL::D2;
-
-  static constexpr auto baudrate = 1000000;
-};
-
-Stream::HAL::UARTStream<SCSettings> scio;
-Feetech::SC<decltype(scio)> sc(scio);
 u8 max_servo = 0;
 
 Protocol::Parser<2, 128> parser;
 u16 i = 0;
+
+SCSwitcher sc;
+//auto& sc = sc2;
 
 Container::Buffer<128, char> inbuff;
 
@@ -43,7 +38,7 @@ void flush_inbuff(void) {
 }
 
 int main(int, char**) {
-  wdt_enable(WDTO_120MS);
+  //wdt_enable(WDTO_120MS);
 
   UART::Settings settings;
   settings.baudrate = 38400;
