@@ -44,19 +44,46 @@ int main(int, char**) {
   double a = 0;
   while(1) {
       usleep(50000);
+      double default_x = 100;
+      double offset_x = -20;
+      double default_y = 100;
+      double offset_y = 0;
+      double default_z = 180;
+      double circle_r = 30;
 
       a += 0.08;
       EndpointAction ea;
 
       ea.label = "LF";
       ea.enable = true;
-      ea.x = 150 + 40*cos(a);
-      ea.y = 150 + 40*sin(a);
-      ea.z = -120;
-
-      cout << ea.x << " " << ea.y << " " << ea.z << endl;
-
+      ea.x = default_x + offset_x + circle_r*cos(a);
+      ea.y = default_y + offset_y + circle_r*sin(a);
+      ea.z = -default_z;
       send(sock_ik_out, ea);
+
+      ea.label = "RF";
+      ea.enable = true;
+      ea.x = default_x + offset_x + circle_r*cos(a);
+      ea.y = -default_y + offset_y + circle_r*sin(a);
+      ea.z = -default_z;
+      send(sock_ik_out, ea);
+
+      ea.label = "LB";
+      ea.enable = true;
+      ea.x = -default_x + offset_x + circle_r*cos(a);
+      ea.y = default_y + offset_y + circle_r*sin(a);
+      ea.z = -default_z;
+      send(sock_ik_out, ea);
+
+      ea.label = "RB";
+      ea.enable = true;
+      ea.x = -default_x + offset_x + circle_r*cos(a);
+      ea.y = -default_y + offset_y + circle_r*sin(a);
+      ea.z = -default_z;
+      send(sock_ik_out, ea);
+
+      //cout << ea.x << " " << ea.y << " " << ea.z << endl;
+
     }
 
   return 0;
