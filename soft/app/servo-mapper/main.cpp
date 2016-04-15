@@ -18,6 +18,7 @@
 #include <cereal/types/complex.hpp>
 
 #include <cereal/archives/json.hpp>
+#include <cereal/archives/binary.hpp>
 
 using namespace std;
 
@@ -103,6 +104,14 @@ int main(int argc, char* argv[]) {
   zmq::socket_t sock_config(ctx, ZMQ_REP);
   sock_config.bind("ipc://servo-mapper.config");
 
+  {
+    int hwm = 24;
+    sock_embed_in.setsockopt(ZMQ_RCVHWM, &hwm, sizeof(hwm));
+    sock_embed_out.setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
+    sock_servo_in.setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
+    sock_servo_out.setsockopt(ZMQ_RCVHWM, &hwm, sizeof(hwm));
+  }
+
   while(1) {
 
       try {
@@ -162,45 +171,41 @@ int main(int argc, char* argv[]) {
         if(sock_embed_in.recv(&msg, ZMQ_NOBLOCK)) {
             std::stringstream ss;
             ss.write((char*)msg.data(), msg.size());
-            cereal::JSONInputArchive ar(ss);
 
-            string topic;
-            ar(topic);
+            HardwareServoAction hsa;
 
-            if(topic == string("pos")) {
-                uint8_t id;
-                bool enabled;
-                uint16_t pos;
-                ar(id, pos, enabled);
+            {
+              cereal::BinaryInputArchive ar(ss);
+              ar(hsa);
+            }
 
-                if(!configs.count(id)) {
-                    configs[id] = ServoConfig();
-                    configs[id].id = id;
-                  }
-
-                try {
-                  ServoConfig& config = configs[id];
-                  stringstream oss;
-
-                  ServoAction action;
-                  action.label = config.label;
-                  action.enable = false;
-                  action.angle = config.pos2angle(pos);
-
-                  {
-                    cereal::JSONOutputArchive ar(oss);
-                    ar(action);
-                  }
-
-                  zmq::message_t msg(oss.str().size());
-                  oss.str().copy((char*)msg.data(), msg.size());
-
-                  sock_servo_in.send(msg);
-                }
-                catch(const char* msg) {
-                  //cout << "servo[" << (uint16_t)id << "] : " << msg << endl;
-                }
+            if(!configs.count(hsa.id)) {
+                configs[hsa.id] = ServoConfig();
+                configs[hsa.id].id = hsa.id;
               }
+
+            try {
+              ServoConfig& config = configs[hsa.id];
+              stringstream oss;
+
+              ServoAction action;
+              action.label = config.label;
+              action.enable = false;
+              action.angle = config.pos2angle(hsa.position);
+
+              {
+                cereal::BinaryOutputArchive ar(oss);
+                ar(action);
+              }
+
+              zmq::message_t msg(oss.str().size());
+              oss.str().copy((char*)msg.data(), msg.size());
+
+              sock_servo_in.send(msg);
+            }
+            catch(const char* msg) {
+              //cout << "servo[" << (uint16_t)id << "] : " << msg << endl;
+            }
           }
       }
 
@@ -209,7 +214,7 @@ int main(int argc, char* argv[]) {
         if(sock_servo_out.recv(&msg, ZMQ_NOBLOCK)) {
             std::stringstream ss;
             ss.write((char*)msg.data(), msg.size());
-            cereal::JSONInputArchive ar(ss);
+            cereal::BinaryInputArchive ar(ss);
 
             ServoAction sa;
             ar(sa);
@@ -218,13 +223,14 @@ int main(int argc, char* argv[]) {
                 ServoConfig& config = configs[id];
                 stringstream oss;
 
-                uint8_t id = config.id;
-                bool enabled = sa.enable;
-                uint16_t pos = config.angle2pos(sa.angle);
+                HardwareServoAction hsa;
+                hsa.id = config.id;
+                hsa.enable= sa.enable;
+                hsa.position = config.angle2pos(sa.angle);
 
                 {
-                  cereal::JSONOutputArchive ar(oss);
-                  ar(string("pos"), id, pos, enabled);
+                  cereal::BinaryOutputArchive ar(oss);
+                  ar(hsa);
                 }
 
                 zmq::message_t msg(oss.str().size());

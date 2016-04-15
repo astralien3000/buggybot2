@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include <cereal/archives/json.hpp>
+#include <cereal/archives/binary.hpp>
 
 #include <zmq.hpp>
 
@@ -21,7 +22,7 @@ void send(zmq::socket_t& sock_pub, T& ea) {
   stringstream oss;
 
   {
-    cereal::JSONOutputArchive ar(oss);
+    cereal::BinaryOutputArchive ar(oss);
     ar(ea);
   }
 
@@ -32,21 +33,21 @@ void send(zmq::socket_t& sock_pub, T& ea) {
 }
 
 struct WalkConfig {
-  double offset_x = -40;
+  double offset_x = -10;
   double half_esp_x = 140;
 
-  double offset_y = 2.5;
-  double half_esp_y = 100;
+  double offset_y = 0;
+  double half_esp_y = 120;
 
   double default_z = -180;
   double delta_z = 40;
 
   double period = 2;
 
-  double step_up_ratio = 0.2;
+  double step_up_ratio = 0.3;
   double move_ratio = 0.25;
 
-  double step_size = 30;
+  double step_size = 60;
 };
 
 struct LegConfig {
@@ -150,6 +151,11 @@ int main(int, char**) {
   zmq::socket_t sock_servo_out(ctx, ZMQ_PUB);
   sock_servo_out.connect("ipc://servo.out");
 
+  {
+    int hwm = 8;
+    sock_ik_out.setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
+  }
+
   WalkConfig cfg;
 
   LegConfig lf = {
@@ -178,8 +184,8 @@ int main(int, char**) {
 
   double t = 0;
   while(1) {
-      usleep(100000);
-      t = add_mod(t, 0.1, cfg.period);
+      usleep(50000);
+      t = add_mod(t, 0.05, cfg.period);
       EndpointAction ea;
 
       ea.label = "LF";

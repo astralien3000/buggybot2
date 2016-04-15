@@ -6,10 +6,13 @@
 #include <functional>
 
 #include <cereal/archives/json.hpp>
+#include <cereal/archives/binary.hpp>
 
 #include <protocol/protocol.hpp>
 #include <protocol/payload.hpp>
 #include <protocol/parser.hpp>
+
+#include <messages/servo_action.hpp>
 
 #include "port_client.hpp"
 
@@ -56,6 +59,13 @@ PortClient::PortClient(QSerialPort& port)
   in.bind("ipc://embed.in");
   out.bind("ipc://embed.out");
   out.setsockopt(ZMQ_SUBSCRIBE, 0, 0);
+
+  {
+    int hwm = 24;
+    out.setsockopt(ZMQ_RCVHWM, &hwm, sizeof(hwm));
+    in.setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
+  }
+
 }
 
 PortClient::~PortClient() {
@@ -79,31 +89,26 @@ void PortClient::onMonitor(void) {
       if(msg.size()) {
           std::stringstream ss;
           ss.write((char*)msg.data(), msg.size());
-          cereal::JSONInputArchive ar(ss);
 
-          string topic;
-          ar(topic);
+          HardwareServoAction hsa;
 
-          if(topic == string("pos")) {
-              u8 id;
-              bool enabled;
-              u16 pos;
-              ar(id, pos, enabled);
-              cout << (uint16_t)id << "::" << pos << "::" << enabled << endl;
+          {
+            cereal::BinaryInputArchive ar(ss);
+            ar(hsa);
+          }
 
-              if(0 <= pos && pos <= 1024) {
-                  {
-                    Protocol::Pack<Protocol::Message, Actuator::ServoPosition> pak;
-                    pak.message.payload.id = id;
-                    pak.message.payload.enabled = enabled;
-                    pak.message.payload.position = pos;
-                    u8* data = Protocol::pack(pak);
-                    _port.write((char*)data, sizeof(pak));
-                  }
-                }
-              else {
-                  cout << "Invalid servo_" << (u16)id << " command ->" << pos << endl;
-                }
+          if(0 <= hsa.position && hsa.position <= 1024) {
+              {
+                Protocol::Pack<Protocol::Message, Actuator::ServoPosition> pak;
+                pak.message.payload.id = hsa.id;
+                pak.message.payload.enabled = hsa.enable;
+                pak.message.payload.position = hsa.position;
+                u8* data = Protocol::pack(pak);
+                _port.write((char*)data, sizeof(pak));
+              }
+            }
+          else {
+              cout << "Invalid servo_" << (u16)hsa.id << " command ->" << hsa.position << endl;
             }
         }
     }
@@ -113,9 +118,14 @@ void PortClient::onMonitor(void) {
 void PortClient::onServoAngle(Actuator::ServoPosition& payload) {
   std::stringstream ss;
 
+  HardwareServoAction hsa;
+  hsa.id = payload.id;
+  hsa.position = payload.position;
+  hsa.enable = payload.enabled;
+
   {
-    cereal::JSONOutputArchive ar(ss);
-    ar(string("pos"), (uint8_t)payload.id, (uint16_t)payload.position, (bool)payload.enabled);
+    cereal::BinaryOutputArchive ar(ss);
+    ar(hsa);
   }
 
   zmq::message_t msg(ss.str().size());

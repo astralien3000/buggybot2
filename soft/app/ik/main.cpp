@@ -6,6 +6,7 @@
 #include <functional>
 
 #include <cereal/archives/json.hpp>
+#include <cereal/archives/binary.hpp>
 
 #include <zmq.hpp>
 
@@ -14,6 +15,8 @@
 
 #include <messages/servo_action.hpp>
 #include <messages/endpoint_action.hpp>
+
+#include <sys/time.h>
 
 using namespace std;
 
@@ -43,7 +46,7 @@ void send_endpoint_action(zmq::socket_t& sock_pub, EndpointAction& ea) {
   stringstream oss;
 
   {
-    cereal::JSONOutputArchive ar(oss);
+    cereal::BinaryOutputArchive ar(oss);
     ar(ea);
   }
 
@@ -57,7 +60,7 @@ void send_servo_action(zmq::socket_t& sock_pub, ServoAction& sa) {
   stringstream oss;
 
   {
-    cereal::JSONOutputArchive ar(oss);
+    cereal::BinaryOutputArchive ar(oss);
     ar(sa);
   }
 
@@ -148,14 +151,31 @@ int main(int, char**) {
   sock_ik_out.bind("ipc://ik.out");
   sock_ik_out.setsockopt(ZMQ_SUBSCRIBE, 0, 0);
 
+  {
+    int hwm = 24;
+    sock_ik_in.setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
+    sock_ik_out.setsockopt(ZMQ_RCVHWM, &hwm, sizeof(hwm));
+    sock_servo_in.setsockopt(ZMQ_RCVHWM, &hwm, sizeof(hwm));
+    sock_servo_out.setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
+  }
+
+  struct timeval t1 = {0,0}, t2 = {0,0};
+
   while(1) {
+
+      gettimeofday(&t2, NULL);
+      if(abs(t2.tv_usec - t1.tv_usec) > 30000) {
+          on_update(sock_ik_in, bot, ac, update);
+          t1.tv_sec = t2.tv_sec;
+          t1.tv_usec = t2.tv_usec;
+      }
 
       try {
         zmq::message_t msg;
         if(sock_servo_in.recv(&msg, ZMQ_NOBLOCK)) {
             std::stringstream ss;
             ss.write((char*)msg.data(), msg.size());
-            cereal::JSONInputArchive ar(ss);
+            cereal::BinaryInputArchive ar(ss);
             ServoAction action;
             ar(action);
 
@@ -163,8 +183,6 @@ int main(int, char**) {
             up.updated = true;
             up.value = action.angle;
             up.enabled = action.enable;
-
-            on_update(sock_ik_in, bot, ac, update);
           }
       }
       catch(zmq::error_t e) {
@@ -179,12 +197,13 @@ int main(int, char**) {
         if(sock_ik_out.recv(&msg, ZMQ_NOBLOCK)) {
             std::stringstream ss;
             ss.write((char*)msg.data(), msg.size());
-            cereal::JSONInputArchive ar(ss);
+            cereal::BinaryInputArchive ar(ss);
             EndpointAction ea;
             ar(ea);
 
             Matrix<double, 3,1> pos(ea.x, ea.y, ea.z);
             bot.setEndpoint(lbl2leg(ea.label), pos);
+            cout << "test " << t2.tv_usec << endl;
 
             ServoAction sa;
 
