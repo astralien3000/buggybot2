@@ -5,6 +5,8 @@
 #include <cmath>
 #include <functional>
 
+#include <cereal/types/vector.hpp>
+
 #include <cereal/archives/json.hpp>
 #include <cereal/archives/binary.hpp>
 
@@ -42,21 +44,8 @@ struct ServoUpdate {
   double value;
 };
 
-void send_endpoint_action(zmq::socket_t& sock_pub, EndpointAction& ea) {
-  stringstream oss;
-
-  {
-    cereal::BinaryOutputArchive ar(oss);
-    ar(ea);
-  }
-
-  zmq::message_t msg(oss.str().size());
-  oss.str().copy((char*)msg.data(), msg.size());
-
-  sock_pub.send(msg);
-}
-
-void send_servo_action(zmq::socket_t& sock_pub, ServoAction& sa) {
+template<typename T>
+void send(zmq::socket_t& sock_pub, T& sa) {
   stringstream oss;
 
   {
@@ -86,7 +75,7 @@ void on_update_leg(zmq::socket_t& sock_pub, RobotModel& bot, AnglesConverter& ac
       ea.y = pos(1,0);
       ea.z = pos(2,0);
 
-      send_endpoint_action(sock_pub, ea);
+      send(sock_pub, ea);
       up[leg_str+"0"].updated = false;
       up[leg_str+"1"].updated = false;
       up[leg_str+"2"].updated = false;
@@ -152,7 +141,7 @@ int main(int, char**) {
   sock_ik_out.setsockopt(ZMQ_SUBSCRIBE, 0, 0);
 
   {
-    int hwm = 24;
+    int hwm = 2;
     sock_ik_in.setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
     sock_ik_out.setsockopt(ZMQ_RCVHWM, &hwm, sizeof(hwm));
     sock_servo_in.setsockopt(ZMQ_RCVHWM, &hwm, sizeof(hwm));
@@ -168,7 +157,7 @@ int main(int, char**) {
           on_update(sock_ik_in, bot, ac, update);
           t1.tv_sec = t2.tv_sec;
           t1.tv_usec = t2.tv_usec;
-      }
+        }
 
       try {
         zmq::message_t msg;
@@ -198,29 +187,45 @@ int main(int, char**) {
             std::stringstream ss;
             ss.write((char*)msg.data(), msg.size());
             cereal::BinaryInputArchive ar(ss);
-            EndpointAction ea;
-            ar(ea);
 
-            Matrix<double, 3,1> pos(ea.x, ea.y, ea.z);
-            bot.setEndpoint(lbl2leg(ea.label), pos);
-            cout << "test " << t2.tv_usec << endl;
+            vector<ServoAction> sas;
 
-            ServoAction sa;
+            vector<EndpointAction> eas;
+            ar(eas);
 
-            sa.label = ea.label+"0";
-            sa.enable = ea.enable;
-            sa.angle = ac.getAngle(lbl2leg(ea.label), 0);
-            send_servo_action(sock_servo_out, sa);
+            //cout << "test \t" << t1.tv_usec << endl;
+            for(auto it = eas.begin() ; it != eas.end() ; it++) {
 
-            sa.label = ea.label+"1";
-            sa.enable = ea.enable;
-            sa.angle = ac.getAngle(lbl2leg(ea.label), 1);
-            send_servo_action(sock_servo_out, sa);
+                EndpointAction& ea = *it;
+                //ar(ea);
 
-            sa.label = ea.label+"2";
-            sa.enable = ea.enable;
-            sa.angle = ac.getAngle(lbl2leg(ea.label), 2);
-            send_servo_action(sock_servo_out, sa);
+                Matrix<double, 3,1> pos(ea.x, ea.y, ea.z);
+                bot.setEndpoint(lbl2leg(ea.label), pos);
+                //cout << "test \t" << t2.tv_usec << "\t" << ea.label << endl;
+
+                ServoAction sa;
+
+                sa.label = ea.label+"0";
+                sa.enable = ea.enable;
+                sa.angle = ac.getAngle(lbl2leg(ea.label), 0);
+                //send(sock_servo_out, sa);
+                sas.push_back(sa);
+
+                sa.label = ea.label+"1";
+                sa.enable = ea.enable;
+                sa.angle = ac.getAngle(lbl2leg(ea.label), 1);
+                //send(sock_servo_out, sa);
+                sas.push_back(sa);
+
+                sa.label = ea.label+"2";
+                sa.enable = ea.enable;
+                sa.angle = ac.getAngle(lbl2leg(ea.label), 2);
+                //send(sock_servo_out, sa);
+                sas.push_back(sa);
+
+              }
+
+            send(sock_servo_out, sas);
           }
       }
 

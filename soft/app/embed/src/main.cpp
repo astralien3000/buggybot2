@@ -41,7 +41,7 @@ int main(int, char**) {
   //wdt_enable(WDTO_120MS);
 
   UART::Settings settings;
-  settings.baudrate = 38400;
+  settings.baudrate = 57600;
   settings.parity = UART::Parity::NONE;
   settings.stop_bit = UART::StopBit::ONE_BIT;
   settings.word_size = 8;

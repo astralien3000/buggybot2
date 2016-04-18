@@ -22,6 +22,21 @@
 
 using namespace std;
 
+template<typename T>
+void send(zmq::socket_t& sock_pub, T& sa) {
+  stringstream oss;
+
+  {
+    cereal::BinaryOutputArchive ar(oss);
+    ar(sa);
+  }
+
+  zmq::message_t msg(oss.str().size());
+  oss.str().copy((char*)msg.data(), msg.size());
+
+  sock_pub.send(msg);
+}
+
 void sync_map_id(map<uint8_t, ServoConfig>& configs) {
   for(auto it = configs.begin() ; it != configs.end() ; it++) {
       if(it->first != it->second.id) {
@@ -105,7 +120,7 @@ int main(int argc, char* argv[]) {
   sock_config.bind("ipc://servo-mapper.config");
 
   {
-    int hwm = 24;
+    int hwm = 2;
     sock_embed_in.setsockopt(ZMQ_RCVHWM, &hwm, sizeof(hwm));
     sock_embed_out.setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
     sock_servo_in.setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
@@ -214,30 +229,32 @@ int main(int argc, char* argv[]) {
         if(sock_servo_out.recv(&msg, ZMQ_NOBLOCK)) {
             std::stringstream ss;
             ss.write((char*)msg.data(), msg.size());
-            cereal::BinaryInputArchive ar(ss);
 
-            ServoAction sa;
-            ar(sa);
-            uint8_t id = find_config_by_label(configs, sa.label);
-            if(id != 0xFF) {
-                ServoConfig& config = configs[id];
-                stringstream oss;
+            vector<HardwareServoAction> hsas;
+            vector<ServoAction> sas;
 
-                HardwareServoAction hsa;
-                hsa.id = config.id;
-                hsa.enable= sa.enable;
-                hsa.position = config.angle2pos(sa.angle);
+            {
+              cereal::BinaryInputArchive ar(ss);
+              ar(sas);
+            }
 
-                {
-                  cereal::BinaryOutputArchive ar(oss);
-                  ar(hsa);
-                }
+            for(auto it = sas.begin() ; it != sas.end() ; it++) {
+                ServoAction& sa = *it;
+                //ar(sa);
 
-                zmq::message_t msg(oss.str().size());
-                oss.str().copy((char*)msg.data(), msg.size());
+                uint8_t id = find_config_by_label(configs, sa.label);
+                if(id != 0xFF) {
+                    ServoConfig& config = configs[id];
 
-                sock_embed_out.send(msg);
+                    HardwareServoAction hsa;
+                    hsa.id = config.id;
+                    hsa.enable= sa.enable;
+                    hsa.position = config.angle2pos(sa.angle);
+
+                    hsas.push_back(hsa);
+                  }
               }
+            send(sock_embed_out, hsas);
           }
       }
     }

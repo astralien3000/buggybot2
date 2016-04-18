@@ -7,6 +7,8 @@
 
 #include <unistd.h>
 
+#include <cereal/types/vector.hpp>
+
 #include <cereal/archives/json.hpp>
 #include <cereal/archives/binary.hpp>
 
@@ -152,7 +154,7 @@ int main(int, char**) {
   sock_servo_out.connect("ipc://servo.out");
 
   {
-    int hwm = 8;
+    int hwm = 1;
     sock_ik_out.setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
   }
 
@@ -183,33 +185,39 @@ int main(int, char**) {
   };
 
   double t = 0;
+  double freq = 20; // hz
   while(1) {
-      usleep(50000);
-      t = add_mod(t, 0.05, cfg.period);
+      usleep(1000000 / freq);
+      t = add_mod(t, 1.0/freq, cfg.period);
       EndpointAction ea;
+      vector<EndpointAction> eas;
 
       ea.label = "LF";
       ea.enable = true;
       get_walk_pos_1(cfg, lf, t, ea.x, ea.y, ea.z);
-      send(sock_ik_out, ea);
+      //send(sock_ik_out, ea);
+      eas.push_back(ea);
 
       ea.label = "RF";
       ea.enable = true;
       get_walk_pos_2(cfg, rf, t, ea.x, ea.y, ea.z);
-      send(sock_ik_out, ea);
+      //send(sock_ik_out, ea);
+      eas.push_back(ea);
 
       ea.label = "LB";
       ea.enable = true;
       get_walk_pos_2(cfg, lb, t, ea.x, ea.y, ea.z);
-      send(sock_ik_out, ea);
+      //send(sock_ik_out, ea);
+      eas.push_back(ea);
 
       ea.label = "RB";
       ea.enable = true;
       get_walk_pos_1(cfg, rb, t, ea.x, ea.y, ea.z);
-      send(sock_ik_out, ea);
+      //send(sock_ik_out, ea);
+      eas.push_back(ea);
 
       //cout << ea.x << " " << ea.y << " " << ea.z << endl;
-
+      send(sock_ik_out, eas);
     }
 
   return 0;

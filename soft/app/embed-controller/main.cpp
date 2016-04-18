@@ -5,6 +5,8 @@
 #include <cmath>
 #include <functional>
 
+#include <cereal/types/vector.hpp>
+
 #include <cereal/archives/json.hpp>
 #include <cereal/archives/binary.hpp>
 
@@ -44,7 +46,7 @@ PortClient::PortClient(QSerialPort& port)
   QObject::connect(&port, SIGNAL(error(QSerialPort::SerialPortError)), this, SLOT(onError()));
   QObject::connect(&_watchdog, SIGNAL(timeout()), this, SLOT(onTimeout()));
 
-  _watchdog.setInterval(500);
+  _watchdog.setInterval(1000);
   _watchdog.start();
 
   _monitor.setInterval(1);
@@ -61,7 +63,7 @@ PortClient::PortClient(QSerialPort& port)
   out.setsockopt(ZMQ_SUBSCRIBE, 0, 0);
 
   {
-    int hwm = 24;
+    int hwm = 4;
     out.setsockopt(ZMQ_RCVHWM, &hwm, sizeof(hwm));
     in.setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
   }
@@ -95,25 +97,29 @@ void PortClient::onMonitor(void) {
           std::stringstream ss;
           ss.write((char*)msg.data(), msg.size());
 
-          HardwareServoAction hsa;
+          vector<HardwareServoAction> hsas;
 
           {
             cereal::BinaryInputArchive ar(ss);
-            ar(hsa);
+            ar(hsas);
           }
 
-          if(0 <= hsa.position && hsa.position <= 1024) {
-              {
-                Protocol::Pack<Protocol::Message, Actuator::ServoPosition> pak;
-                pak.message.payload.id = hsa.id;
-                pak.message.payload.enabled = hsa.enable;
-                pak.message.payload.position = hsa.position;
-                u8* data = Protocol::pack(pak);
-                _port.write((char*)data, sizeof(pak));
-              }
-            }
-          else {
-              cout << "Invalid servo_" << (u16)hsa.id << " command ->" << hsa.position << endl;
+          for(auto it = hsas.begin() ; it != hsas.end() ; it++) {
+              HardwareServoAction& hsa = *it;
+
+              if(0 <= hsa.position && hsa.position <= 1024) {
+                  {
+                    Protocol::Pack<Protocol::Message, Actuator::ServoPosition> pak;
+                    pak.message.payload.id = hsa.id;
+                    pak.message.payload.enabled = hsa.enable;
+                    pak.message.payload.position = hsa.position;
+                    u8* data = Protocol::pack(pak);
+                    _port.write((char*)data, sizeof(pak));
+                  }
+                }
+              else {
+                  cout << "Invalid servo_" << (u16)hsa.id << " command ->" << hsa.position << endl;
+                }
             }
         }
     }
@@ -122,6 +128,8 @@ void PortClient::onMonitor(void) {
 
 void PortClient::onServoAngle(Actuator::ServoPosition& payload) {
   std::stringstream ss;
+  _watchdog.start(500);
+  _sync = true;
 
   HardwareServoAction hsa;
   hsa.id = payload.id;
@@ -141,8 +149,8 @@ void PortClient::onServoAngle(Actuator::ServoPosition& payload) {
 
 void PortClient::onReadyRead(void) {
   char buff;
-  _watchdog.start(500);
-  _sync = true;
+  //  _watchdog.start(500);
+  //  _sync = true;
 
   while(_port.bytesAvailable()) {
       _port.getChar(&buff);
@@ -178,18 +186,6 @@ int main(int argc, char* argv[]) {
             throw "No valid port found";
           }
 
-        cout << "----------------------------------------------------------------" << endl;
-        cout << "Port Name : " << selected.portName() << endl;
-        cout << "Description : " << selected.description() << endl;
-        cout << "Serial Number : " << selected.serialNumber() << endl;
-        cout << "Manufacturer : " << selected.manufacturer() << endl;
-        cout << "System Location : " << selected.systemLocation() << endl;
-        if(selected.hasProductIdentifier())
-          cout << "Product Id : " << selected.productIdentifier() << endl;
-        if(selected.hasVendorIdentifier())
-          cout << "Vendor Id : " << selected.vendorIdentifier() << endl;
-        cout << "----------------------------------------------------------------" << endl;
-
         if(selected.isBusy()) {
             if(ret == 3) show = false;
             else ret = 3;
@@ -199,7 +195,7 @@ int main(int argc, char* argv[]) {
         QApplication app(argc, argv);
         QSerialPort port(selected);
 
-        port.setBaudRate(QSerialPort::Baud38400);
+        port.setBaudRate(QSerialPort::Baud57600);
         port.setFlowControl(QSerialPort::NoFlowControl);
         port.setParity(QSerialPort::NoParity);
         port.setStopBits(QSerialPort::OneStop);
@@ -211,9 +207,24 @@ int main(int argc, char* argv[]) {
             throw "Can't open port";
           }
 
+        /*
+        cout << "----------------------------------------------------------------" << endl;
+        cout << "Port Name : " << selected.portName() << endl;
+        cout << "Description : " << selected.description() << endl;
+        cout << "Serial Number : " << selected.serialNumber() << endl;
+        cout << "Manufacturer : " << selected.manufacturer() << endl;
+        cout << "System Location : " << selected.systemLocation() << endl;
+        if(selected.hasProductIdentifier())
+          cout << "Product Id : " << selected.productIdentifier() << endl;
+        if(selected.hasVendorIdentifier())
+          cout << "Vendor Id : " << selected.vendorIdentifier() << endl;
+        cout << "----------------------------------------------------------------" << endl;
+        */
+
         PortClient client(port);
 
         ret = app.exec();
+        throw "Connection lost";
       }
       catch(const char* e) {
         if(show) {

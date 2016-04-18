@@ -1,7 +1,7 @@
 AVERSIVE_ROOT=/usr/local/AversivePlusPlus
 MCU=atmega2560
 
-NAME=embed
+NAME=embed-test
 
 TOOLCHAIN=$(shell find $(AVERSIVE_ROOT) -name "$(MCU).cmake")
 
