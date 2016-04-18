@@ -98,11 +98,11 @@ server.listen(3000);
 
 io.on('connection', function(io_sock) {
     embed_sock = zmq.socket('sub');
-    embed_sock.connect('ipc://embed.in');
+    embed_sock.connect('ipc://embed.json.in');
     embed_sock.subscribe('');
 
     servo_sock = zmq.socket('sub');
-    servo_sock.connect('ipc://servo.in');
+    servo_sock.connect('ipc://servo.json.in');
     servo_sock.subscribe('');
 
     io_sock.on('filter', function(msg) {
@@ -120,8 +120,8 @@ io.on('connection', function(io_sock) {
 
     embed_sock.on('message', function(msg) {
 	msg = JSON.parse(msg.toString());
-	if(msg.value1 == io_sock.id_filter) {
-	    io_sock.emit('pos', msg.value2);
+	if(msg.value0.id == io_sock.id_filter) {
+	    io_sock.emit('pos', msg.value0.position);
 	}
     });
     

@@ -15,7 +15,6 @@
 #include <cereal/types/map.hpp>
 #include <cereal/types/vector.hpp>
 #include <cereal/types/string.hpp>
-#include <cereal/types/complex.hpp>
 
 #include <cereal/archives/json.hpp>
 #include <cereal/archives/binary.hpp>
@@ -28,6 +27,21 @@ void send(zmq::socket_t& sock_pub, T& sa) {
 
   {
     cereal::BinaryOutputArchive ar(oss);
+    ar(sa);
+  }
+
+  zmq::message_t msg(oss.str().size());
+  oss.str().copy((char*)msg.data(), msg.size());
+
+  sock_pub.send(msg);
+}
+
+template<typename T>
+void send_json(zmq::socket_t& sock_pub, T& sa) {
+  stringstream oss;
+
+  {
+    cereal::JSONOutputArchive ar(oss);
     ar(sa);
   }
 
@@ -118,6 +132,12 @@ int main(int argc, char* argv[]) {
 
   zmq::socket_t sock_config(ctx, ZMQ_REP);
   sock_config.bind("ipc://servo-mapper.config");
+
+  zmq::socket_t sock_servo_json_in(ctx, ZMQ_PUB);
+  sock_servo_json_in.bind("ipc://servo.json.in");
+
+  zmq::socket_t sock_embed_json_in(ctx, ZMQ_PUB);
+  sock_embed_json_in.bind("ipc://embed.json.in");
 
   {
     int hwm = 2;
@@ -217,6 +237,9 @@ int main(int argc, char* argv[]) {
               oss.str().copy((char*)msg.data(), msg.size());
 
               sock_servo_in.send(msg);
+
+              send_json(sock_embed_json_in, hsa);
+              send_json(sock_servo_json_in, action);
             }
             catch(const char* msg) {
               //cout << "servo[" << (uint16_t)id << "] : " << msg << endl;
