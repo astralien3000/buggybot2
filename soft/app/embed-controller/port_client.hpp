@@ -39,6 +39,7 @@ public slots:
   void onReadyRead(void);
   void onTimeout(void);
   void onMonitor(void);
+  void onError(void);
 };
 
 #endif//PORT_CLIENT_HPP

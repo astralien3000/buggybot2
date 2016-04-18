@@ -41,7 +41,7 @@ PortClient::PortClient(QSerialPort& port)
   : _port(port) {
 
   QObject::connect(&port, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-  //QObject::connect(&port, SIGNAL(error(QSerialPort::SerialPortError)), this, SLOT(onError()));
+  QObject::connect(&port, SIGNAL(error(QSerialPort::SerialPortError)), this, SLOT(onError()));
   QObject::connect(&_watchdog, SIGNAL(timeout()), this, SLOT(onTimeout()));
 
   _watchdog.setInterval(500);
@@ -80,6 +80,11 @@ void PortClient::onTimeout(void) {
   _port.setDataTerminalReady(!old);
 
   _watchdog.start(1000);
+}
+
+void PortClient::onError(void) {
+  //throw "QSerialPort error";
+  QApplication::exit(5);
 }
 
 void PortClient::onMonitor(void) {
@@ -146,58 +151,78 @@ void PortClient::onReadyRead(void) {
 }
 
 int main(int argc, char* argv[]) {
-  PortList ports = QSerialPortInfo::availablePorts();
-  Port selected;
+  int ret = 0;
 
-  if(ports.size() == 0) {
-      cout << "No port detected" << endl;
-      exit(1);
+  while(1) {
+      bool show = true;
+
+      try {
+        PortList ports = QSerialPortInfo::availablePorts();
+        Port selected;
+
+        if(ports.size() == 0) {
+            if(ret == 1) show = false;
+            else ret = 1;
+            throw "No port detected";
+          }
+
+        for(PortList::Iterator it = ports.begin() ; it != ports.end() ; it++) {
+            if((*it).manufacturer().contains("Arduino")) {
+                selected = *it;
+              }
+          }
+
+        if(!selected.isValid()) {
+            if(ret == 2) show = false;
+            else ret = 2;
+            throw "No valid port found";
+          }
+
+        cout << "----------------------------------------------------------------" << endl;
+        cout << "Port Name : " << selected.portName() << endl;
+        cout << "Description : " << selected.description() << endl;
+        cout << "Serial Number : " << selected.serialNumber() << endl;
+        cout << "Manufacturer : " << selected.manufacturer() << endl;
+        cout << "System Location : " << selected.systemLocation() << endl;
+        if(selected.hasProductIdentifier())
+          cout << "Product Id : " << selected.productIdentifier() << endl;
+        if(selected.hasVendorIdentifier())
+          cout << "Vendor Id : " << selected.vendorIdentifier() << endl;
+        cout << "----------------------------------------------------------------" << endl;
+
+        if(selected.isBusy()) {
+            if(ret == 3) show = false;
+            else ret = 3;
+            throw "Port is busy";
+          }
+
+        QApplication app(argc, argv);
+        QSerialPort port(selected);
+
+        port.setBaudRate(QSerialPort::Baud38400);
+        port.setFlowControl(QSerialPort::NoFlowControl);
+        port.setParity(QSerialPort::NoParity);
+        port.setStopBits(QSerialPort::OneStop);
+        port.setDataBits(QSerialPort::Data8);
+
+        if(!port.open(QIODevice::ReadWrite)) {
+            if(ret == 4) show = false;
+            else ret = 4;
+            throw "Can't open port";
+          }
+
+        PortClient client(port);
+
+        ret = app.exec();
+      }
+      catch(const char* e) {
+        if(show) {
+            cout << "ERROR : " << e << endl;
+          }
+      }
+
     }
 
-  for(PortList::Iterator it = ports.begin() ; it != ports.end() ; it++) {
-      if((*it).manufacturer().contains("Arduino")) {
-          selected = *it;
-        }
-    }
-
-  if(!selected.isValid()) {
-      cout << "No valid port found" << endl;
-      exit(2);
-    }
-
-  cout << "----------------------------------------------------------------" << endl;
-  cout << "Port Name : " << selected.portName() << endl;
-  cout << "Description : " << selected.description() << endl;
-  cout << "Serial Number : " << selected.serialNumber() << endl;
-  cout << "Manufacturer : " << selected.manufacturer() << endl;
-  cout << "System Location : " << selected.systemLocation() << endl;
-  if(selected.hasProductIdentifier())
-    cout << "Product Id : " << selected.productIdentifier() << endl;
-  if(selected.hasVendorIdentifier())
-    cout << "Vendor Id : " << selected.vendorIdentifier() << endl;
-  cout << "----------------------------------------------------------------" << endl;
-
-  if(selected.isBusy()) {
-      cout << "Port is busy" << endl;
-      exit(3);
-    }
-
-  QApplication app(argc, argv);
-  QSerialPort port(selected);
-
-  port.setBaudRate(QSerialPort::Baud38400);
-  port.setFlowControl(QSerialPort::NoFlowControl);
-  port.setParity(QSerialPort::NoParity);
-  port.setStopBits(QSerialPort::OneStop);
-  port.setDataBits(QSerialPort::Data8);
-
-  if(!port.open(QIODevice::ReadWrite)) {
-      cout << "Can't open port" << endl;
-      exit(4);
-    }
-
-  PortClient client(port);
-
-  return app.exec();
+  return ret;
 }
 
