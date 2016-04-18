@@ -31,6 +31,14 @@ ostream& operator<<(ostream& out, QString& str) {
   return out << str.toStdString();
 }
 
+void config_sock(zmq::socket_t& sock) {
+  int hwm = 1;
+  int linger = 0;
+  sock.setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
+  sock.setsockopt(ZMQ_RCVHWM, &hwm, sizeof(hwm));
+  sock.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
+}
+
 template<typename Payload, typename Func>
 void (*handler_binder(Func func))(const void*) {
   static Func ret = func;
@@ -62,11 +70,8 @@ PortClient::PortClient(QSerialPort& port)
   out.bind("ipc://embed.out");
   out.setsockopt(ZMQ_SUBSCRIBE, 0, 0);
 
-  {
-    int hwm = 4;
-    out.setsockopt(ZMQ_RCVHWM, &hwm, sizeof(hwm));
-    in.setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
-  }
+  config_sock(out);
+  config_sock(in);
 
 }
 
@@ -144,7 +149,7 @@ void PortClient::onServoAngle(Actuator::ServoPosition& payload) {
   zmq::message_t msg(ss.str().size());
   ss.str().copy((char*)msg.data(), msg.size());
 
-  in.send(msg);
+  in.send(msg, ZMQ_NOBLOCK);
 }
 
 void PortClient::onReadyRead(void) {

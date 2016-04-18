@@ -33,7 +33,7 @@ void send(zmq::socket_t& sock_pub, T& sa) {
   zmq::message_t msg(oss.str().size());
   oss.str().copy((char*)msg.data(), msg.size());
 
-  sock_pub.send(msg);
+  sock_pub.send(msg, ZMQ_NOBLOCK);
 }
 
 template<typename T>
@@ -48,7 +48,15 @@ void send_json(zmq::socket_t& sock_pub, T& sa) {
   zmq::message_t msg(oss.str().size());
   oss.str().copy((char*)msg.data(), msg.size());
 
-  sock_pub.send(msg);
+  sock_pub.send(msg, ZMQ_NOBLOCK);
+}
+
+void config_sock(zmq::socket_t& sock) {
+  int hwm = 1;
+  int linger = 0;
+  sock.setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
+  sock.setsockopt(ZMQ_RCVHWM, &hwm, sizeof(hwm));
+  sock.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
 }
 
 void sync_map_id(map<uint8_t, ServoConfig>& configs) {
@@ -97,7 +105,7 @@ void answer(zmq::socket_t& sock_config, string action, T data) {
   zmq::message_t msg(oss.str().size());
   oss.str().copy((char*)msg.data(), msg.size());
 
-  sock_config.send(msg);
+  sock_config.send(msg, ZMQ_NOBLOCK);
 }
 
 uint8_t find_config_by_label(map<uint8_t, ServoConfig>& configs, string label) {
@@ -139,13 +147,10 @@ int main(int argc, char* argv[]) {
   zmq::socket_t sock_embed_json_in(ctx, ZMQ_PUB);
   sock_embed_json_in.bind("ipc://embed.json.in");
 
-  {
-    int hwm = 2;
-    sock_embed_in.setsockopt(ZMQ_RCVHWM, &hwm, sizeof(hwm));
-    sock_embed_out.setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
-    sock_servo_in.setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
-    sock_servo_out.setsockopt(ZMQ_RCVHWM, &hwm, sizeof(hwm));
-  }
+  config_sock(sock_embed_in);
+  config_sock(sock_embed_out);
+  config_sock(sock_servo_in);
+  config_sock(sock_servo_out);
 
   while(1) {
 
@@ -236,10 +241,10 @@ int main(int argc, char* argv[]) {
               zmq::message_t msg(oss.str().size());
               oss.str().copy((char*)msg.data(), msg.size());
 
-              sock_servo_in.send(msg);
+              sock_servo_in.send(msg, ZMQ_NOBLOCK);
 
-              send_json(sock_embed_json_in, hsa);
-              send_json(sock_servo_json_in, action);
+              //send_json(sock_embed_json_in, hsa);
+              //send_json(sock_servo_json_in, action);
             }
             catch(const char* msg) {
               //cout << "servo[" << (uint16_t)id << "] : " << msg << endl;

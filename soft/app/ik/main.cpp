@@ -56,7 +56,7 @@ void send(zmq::socket_t& sock_pub, T& sa) {
   zmq::message_t msg(oss.str().size());
   oss.str().copy((char*)msg.data(), msg.size());
 
-  sock_pub.send(msg);
+  sock_pub.send(msg, ZMQ_NOBLOCK);
 }
 
 void on_update_leg(zmq::socket_t& sock_pub, RobotModel& bot, AnglesConverter& ac, map<string, ServoUpdate>& up, RobotModel::Leg leg, string leg_str) {
@@ -105,9 +105,17 @@ RobotModel::Leg lbl2leg(string lbl) {
   return RobotModel::Leg::NONE;
 }
 
+void config_sock(zmq::socket_t& sock) {
+  int hwm = 1;
+  int linger = 0;
+  sock.setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
+  sock.setsockopt(ZMQ_RCVHWM, &hwm, sizeof(hwm));
+  sock.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
+}
+
 int main(int, char**) {
   // Update config
-  map<string, ServoUpdate> update;
+  map<string, ServoUpdate> servo_update;
 
   // Model config
   RobotModel bot(0.00325, 100, 1);
@@ -140,13 +148,10 @@ int main(int, char**) {
   sock_ik_out.bind("ipc://ik.out");
   sock_ik_out.setsockopt(ZMQ_SUBSCRIBE, 0, 0);
 
-  {
-    int hwm = 2;
-    sock_ik_in.setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
-    sock_ik_out.setsockopt(ZMQ_RCVHWM, &hwm, sizeof(hwm));
-    sock_servo_in.setsockopt(ZMQ_RCVHWM, &hwm, sizeof(hwm));
-    sock_servo_out.setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
-  }
+  config_sock(sock_ik_in);
+  config_sock(sock_ik_out);
+  config_sock(sock_servo_in);
+  config_sock(sock_servo_out);
 
   struct timeval t1 = {0,0}, t2 = {0,0};
 
@@ -154,7 +159,7 @@ int main(int, char**) {
 
       gettimeofday(&t2, NULL);
       if(abs(t2.tv_usec - t1.tv_usec) > 30000) {
-          on_update(sock_ik_in, bot, ac, update);
+          on_update(sock_ik_in, bot, ac, servo_update);
           t1.tv_sec = t2.tv_sec;
           t1.tv_usec = t2.tv_usec;
         }
@@ -168,7 +173,7 @@ int main(int, char**) {
             ServoAction action;
             ar(action);
 
-            ServoUpdate& up = update[action.label];
+            ServoUpdate& up = servo_update[action.label];
             up.updated = true;
             up.value = action.angle;
             up.enabled = action.enable;
@@ -193,7 +198,7 @@ int main(int, char**) {
             vector<EndpointAction> eas;
             ar(eas);
 
-            //cout << "test \t" << t1.tv_usec << endl;
+            cout << "test \t" << t1.tv_usec << endl;
             for(auto it = eas.begin() ; it != eas.end() ; it++) {
 
                 EndpointAction& ea = *it;
@@ -224,11 +229,10 @@ int main(int, char**) {
                 sas.push_back(sa);
 
               }
-
+            //cout << sas.size() << endl;
             send(sock_servo_out, sas);
           }
       }
-
 
     }
 

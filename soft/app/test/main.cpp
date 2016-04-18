@@ -6,6 +6,7 @@
 #include <functional>
 
 #include <unistd.h>
+#include <sys/time.h>
 
 #include <cereal/types/vector.hpp>
 
@@ -31,7 +32,7 @@ void send(zmq::socket_t& sock_pub, T& ea) {
   zmq::message_t msg(oss.str().size());
   oss.str().copy((char*)msg.data(), msg.size());
 
-  sock_pub.send(msg);
+  sock_pub.send(msg, ZMQ_NOBLOCK);
 }
 
 struct WalkConfig {
@@ -44,10 +45,10 @@ struct WalkConfig {
   double default_z = -180;
   double delta_z = 40;
 
-  double period = 2;
+  double period = 0.5;
 
-  double step_up_ratio = 0.3;
-  double move_ratio = 0.25;
+  double step_up_ratio = 0.8;
+  double move_ratio = 0.7;
 
   double step_size = 60;
 };
@@ -143,6 +144,14 @@ void get_walk_pos_2(WalkConfig& cfg, LegConfig& leg, double t, double& x, double
 
 }
 
+void config_sock(zmq::socket_t& sock) {
+  int hwm = 1;
+  int linger = 0;
+  sock.setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
+  sock.setsockopt(ZMQ_RCVHWM, &hwm, sizeof(hwm));
+  sock.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
+}
+
 int main(int, char**) {
   // IO config
   zmq::context_t ctx(5);
@@ -153,28 +162,25 @@ int main(int, char**) {
   zmq::socket_t sock_servo_out(ctx, ZMQ_PUB);
   sock_servo_out.connect("ipc://servo.out");
 
-  {
-    int hwm = 1;
-    sock_ik_out.setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
-  }
+  config_sock(sock_ik_out);
 
   WalkConfig cfg;
 
   LegConfig lf = {
-     cfg.half_esp_x+cfg.offset_x,
-     cfg.half_esp_y+cfg.offset_y,
+    cfg.half_esp_x+cfg.offset_x,
+    cfg.half_esp_y+cfg.offset_y,
     cfg.default_z
   };
 
   LegConfig rf = {
-     cfg.half_esp_x+cfg.offset_x,
+    cfg.half_esp_x+cfg.offset_x,
     -cfg.half_esp_y+cfg.offset_y,
     cfg.default_z
   };
 
   LegConfig lb = {
     -cfg.half_esp_x+cfg.offset_x,
-     cfg.half_esp_y+cfg.offset_y,
+    cfg.half_esp_y+cfg.offset_y,
     cfg.default_z
   };
 
@@ -185,39 +191,47 @@ int main(int, char**) {
   };
 
   double t = 0;
-  double freq = 20; // hz
+  double freq = 30; // hz
+  struct timeval t1 = {0,0}, t2 = {0,0};
+
   while(1) {
-      usleep(1000000 / freq);
-      t = add_mod(t, 1.0/freq, cfg.period);
-      EndpointAction ea;
-      vector<EndpointAction> eas;
 
-      ea.label = "LF";
-      ea.enable = true;
-      get_walk_pos_1(cfg, lf, t, ea.x, ea.y, ea.z);
-      //send(sock_ik_out, ea);
-      eas.push_back(ea);
+      gettimeofday(&t2, NULL);
+      if(abs(t2.tv_usec - t1.tv_usec) > 1000000 / freq) {
+          t1.tv_sec = t2.tv_sec;
+          t1.tv_usec = t2.tv_usec;
 
-      ea.label = "RF";
-      ea.enable = true;
-      get_walk_pos_2(cfg, rf, t, ea.x, ea.y, ea.z);
-      //send(sock_ik_out, ea);
-      eas.push_back(ea);
+          t = add_mod(t, 1.0/freq, cfg.period);
+          EndpointAction ea;
+          vector<EndpointAction> eas;
 
-      ea.label = "LB";
-      ea.enable = true;
-      get_walk_pos_2(cfg, lb, t, ea.x, ea.y, ea.z);
-      //send(sock_ik_out, ea);
-      eas.push_back(ea);
+          ea.label = "LF";
+          ea.enable = true;
+          get_walk_pos_1(cfg, lf, t, ea.x, ea.y, ea.z);
+          //send(sock_ik_out, ea);
+          eas.push_back(ea);
 
-      ea.label = "RB";
-      ea.enable = true;
-      get_walk_pos_1(cfg, rb, t, ea.x, ea.y, ea.z);
-      //send(sock_ik_out, ea);
-      eas.push_back(ea);
+          ea.label = "RF";
+          ea.enable = true;
+          get_walk_pos_2(cfg, rf, t, ea.x, ea.y, ea.z);
+          //send(sock_ik_out, ea);
+          eas.push_back(ea);
 
-      //cout << ea.x << " " << ea.y << " " << ea.z << endl;
-      send(sock_ik_out, eas);
+          ea.label = "LB";
+          ea.enable = true;
+          get_walk_pos_2(cfg, lb, t, ea.x, ea.y, ea.z);
+          //send(sock_ik_out, ea);
+          eas.push_back(ea);
+
+          ea.label = "RB";
+          ea.enable = true;
+          get_walk_pos_1(cfg, rb, t, ea.x, ea.y, ea.z);
+          //send(sock_ik_out, ea);
+          eas.push_back(ea);
+
+          //cout << ea.x << " " << ea.y << " " << ea.z << endl;
+          send(sock_ik_out, eas);
+        }
     }
 
   return 0;
