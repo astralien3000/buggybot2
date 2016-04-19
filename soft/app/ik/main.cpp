@@ -198,7 +198,7 @@ int main(int, char**) {
             vector<EndpointAction> eas;
             ar(eas);
 
-            cout << "test \t" << t1.tv_usec << endl;
+            //cout << "test \t" << t1.tv_usec << endl;
             for(auto it = eas.begin() ; it != eas.end() ; it++) {
 
                 EndpointAction& ea = *it;
