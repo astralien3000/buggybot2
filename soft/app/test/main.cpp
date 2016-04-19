@@ -17,6 +17,7 @@
 
 #include <messages/servo_action.hpp>
 #include <messages/endpoint_action.hpp>
+#include <messages/optoforce_data.hpp>
 
 using namespace std;
 
@@ -162,7 +163,13 @@ int main(int, char**) {
   zmq::socket_t sock_servo_out(ctx, ZMQ_PUB);
   sock_servo_out.connect("ipc://servo.out");
 
+  zmq::socket_t sock_opto_in(ctx, ZMQ_SUB);
+  sock_opto_in.connect("ipc://optoforce.in");
+  sock_opto_in.setsockopt(ZMQ_SUBSCRIBE, 0, 0);
+
   config_sock(sock_ik_out);
+  config_sock(sock_servo_out);
+  config_sock(sock_opto_in);
 
   WalkConfig cfg;
 
@@ -195,6 +202,29 @@ int main(int, char**) {
   struct timeval t1 = {0,0}, t2 = {0,0};
 
   while(1) {
+
+      {
+        zmq::message_t msg;
+        if(sock_opto_in.recv(&msg, ZMQ_NOBLOCK)) {
+            vector<OptoforceData> ods;
+
+            std::stringstream ss;
+            ss.write((char*)msg.data(), msg.size());
+
+            {
+              cereal::BinaryInputArchive ar(ss);
+              ar(ods);
+            }
+
+            for(auto it = ods.begin() ; it != ods.end() ; it++) {
+                OptoforceData& od = *it;
+
+                if(od.label == string("sensor_1")) {
+                    cout << od.label << " : \t" << od.x << " \t" << od.y << " \t" << od.z << endl;
+                  }
+              }
+          }
+      }
 
       gettimeofday(&t2, NULL);
       if(abs(t2.tv_usec - t1.tv_usec) > 1000000 / freq) {
