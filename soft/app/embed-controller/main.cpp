@@ -1,5 +1,5 @@
 #include <QtSerialPort/QtSerialPort>
-#include <QtWidgets/QApplication>
+#include <QtCore/QCoreApplication>
 #include <QString>
 #include <iostream>
 #include <cmath>
@@ -91,7 +91,7 @@ void PortClient::onTimeout(void) {
 
 void PortClient::onError(void) {
   //throw "QSerialPort error";
-  QApplication::exit(5);
+  QCoreApplication::exit(5);
 }
 
 void PortClient::onMonitor(void) {
@@ -197,7 +197,7 @@ int main(int argc, char* argv[]) {
             throw "Port is busy";
           }
 
-        QApplication app(argc, argv);
+        QCoreApplication app(argc, argv);
         QSerialPort port(selected);
 
         port.setBaudRate(QSerialPort::Baud57600);
