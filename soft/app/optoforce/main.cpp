@@ -83,25 +83,25 @@ void PortClient::onMessage(const uint8_t* msg, uint16_t size) {
   vector<OptoforceData> ods;
   OptoforceData od;
 
-  od.label = "sensor_1";
+  od.label = "RF";
   od.x = get_s16(msg, 8);
   od.y = get_s16(msg, 10);
   od.z = get_s16(msg, 12);
   ods.push_back(od);
 
-  od.label = "sensor_2";
+  od.label = "RB";
   od.x = get_s16(msg, 14);
   od.y = get_s16(msg, 16);
   od.z = get_s16(msg, 18);
   ods.push_back(od);
 
-  od.label = "sensor_3";
+  od.label = "LB";
   od.x = get_s16(msg, 20);
   od.y = get_s16(msg, 22);
   od.z = get_s16(msg, 24);
   ods.push_back(od);
 
-  od.label = "sensor_4";
+  od.label = "LF";
   od.x = get_s16(msg, 26);
   od.y = get_s16(msg, 28);
   od.z = get_s16(msg, 30);

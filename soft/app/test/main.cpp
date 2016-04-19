@@ -219,10 +219,12 @@ int main(int, char**) {
             for(auto it = ods.begin() ; it != ods.end() ; it++) {
                 OptoforceData& od = *it;
 
-                if(od.label == string("sensor_1")) {
+                if(od.label == string("LF")) {
                     cout << od.label << " : \t" << od.x << " \t" << od.y << " \t" << od.z << endl;
                   }
+                //cout << " \t" << od.z;
               }
+            //cout << endl;
           }
       }
 
