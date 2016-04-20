@@ -1,6 +1,8 @@
 #include <QtSerialPort/QtSerialPort>
 #include <QtWidgets/QApplication>
 #include <QString>
+#include <QMatrix4x4>
+
 #include <iostream>
 #include <cmath>
 #include <functional>
@@ -17,10 +19,30 @@
 
 #include <messages/servo_action.hpp>
 #include <messages/endpoint_action.hpp>
+#include <messages/optoforce_data.hpp>
 
 #include <sys/time.h>
 
+#include <cas/function.hpp>
+
 using namespace std;
+
+Matrix<double, 4,4> inverse(Matrix<double, 4,4> mat) {
+  QMatrix4x4 qmat(
+        mat(0,0), mat(0,1), mat(0,2), mat(0,3),
+        mat(1,0), mat(1,1), mat(1,2), mat(1,3),
+        mat(2,0), mat(2,1), mat(2,2), mat(2,3),
+        mat(3,0), mat(3,1), mat(3,2), mat(3,3)
+        );
+  auto qinv = qmat.inverted();
+
+  return Matrix<double, 4,4>(
+        qinv(0,0), qinv(0,1), qinv(0,2), qinv(0,3),
+        qinv(1,0), qinv(1,1), qinv(1,2), qinv(1,3),
+        qinv(2,0), qinv(2,1), qinv(2,2), qinv(2,3),
+        qinv(3,0), qinv(3,1), qinv(3,2), qinv(3,3)
+        );
+}
 
 void test(RobotModel& bot, AnglesConverter& ac, RobotModel::Leg leg, int id, double val) {
   ac.setAngle(leg, id, val);
@@ -113,6 +135,115 @@ void config_sock(zmq::socket_t& sock) {
   sock.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
 }
 
+struct OptoCorrection {
+  map<RobotModel::Leg, Matrix<double, 4,4>> matrix_after;
+  map<RobotModel::Leg, Matrix<double, 4,4>> matrix_before;
+
+  OptoCorrection(void) {
+
+    // LF
+    {
+      Matrix<double, 4,4> corr1(
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0
+            );
+
+      matrix_after[RobotModel::Leg::LF] = corr1;
+    }
+
+    {
+      Matrix<double, 4,4> corr1(
+            -1.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, -1.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 1.0
+            );
+
+      auto corr2 = CAS::General<double, double>::Space3D::RotationX::apply(20.0*3.1415/180.0);
+
+      matrix_before[RobotModel::Leg::LF] = corr1 * corr2;
+    }
+
+    // RF
+    {
+      Matrix<double, 4,4> corr1(
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0
+            );
+
+      matrix_after[RobotModel::Leg::RF] = corr1;
+    }
+
+    {
+      Matrix<double, 4,4> corr1(
+            -1.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, -1.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 1.0
+            );
+
+      auto corr2 = CAS::General<double, double>::Space3D::RotationX::apply(20.0*3.1415/180.0);
+
+      matrix_before[RobotModel::Leg::RF] = corr1 * corr2;
+    }
+
+    // LB
+    {
+      Matrix<double, 4,4> corr1(
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0
+            );
+
+      matrix_after[RobotModel::Leg::LB] = corr1;
+    }
+
+    {
+      Matrix<double, 4,4> corr1(
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, -1.0, 0.0,
+            0.0, -1.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 1.0
+            );
+
+      auto corr2 = CAS::General<double, double>::Space3D::RotationX::apply(20.0*3.1415/180.0);
+
+      matrix_before[RobotModel::Leg::LB] = corr1 * corr2;
+    }
+
+    // RB
+    {
+      Matrix<double, 4,4> corr1(
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0
+            );
+
+      matrix_after[RobotModel::Leg::RB] = corr1;
+    }
+
+    {
+      Matrix<double, 4,4> corr1(
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, -1.0, 0.0,
+            0.0, -1.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 1.0
+            );
+
+      auto corr2 = CAS::General<double, double>::Space3D::RotationX::apply(20.0*3.1415/180.0);
+
+      matrix_before[RobotModel::Leg::RB] = corr1 * corr2;
+    }
+
+  }
+};
+
 int main(int, char**) {
   // Update config
   map<string, ServoUpdate> servo_update;
@@ -131,6 +262,9 @@ int main(int, char**) {
 
   ac.setAngleConvertion(RobotModel::Leg::RB, 1, 0, -1);
 
+  // Opto config
+  OptoCorrection correction;
+
   // IO config
   zmq::context_t ctx(5);
 
@@ -148,10 +282,15 @@ int main(int, char**) {
   sock_ik_out.bind("ipc://ik.out");
   sock_ik_out.setsockopt(ZMQ_SUBSCRIBE, 0, 0);
 
+  zmq::socket_t sock_opto_in(ctx, ZMQ_SUB);
+  sock_opto_in.connect("ipc://optoforce.in");
+  sock_opto_in.setsockopt(ZMQ_SUBSCRIBE, 0, 0);
+
   config_sock(sock_ik_in);
   config_sock(sock_ik_out);
   config_sock(sock_servo_in);
   config_sock(sock_servo_out);
+  config_sock(sock_opto_in);
 
   struct timeval t1 = {0,0}, t2 = {0,0};
 
@@ -184,6 +323,35 @@ int main(int, char**) {
       }
       catch(cereal::RapidJSONException e) {
         cout << "cereal::error : " << e.what() << endl;
+      }
+
+      {
+        zmq::message_t msg;
+        if(sock_opto_in.recv(&msg, ZMQ_NOBLOCK)) {
+            std::stringstream ss;
+            ss.write((char*)msg.data(), msg.size());
+            vector<OptoforceData> ods;
+
+            {
+              cereal::BinaryInputArchive ar(ss);
+              ar(ods);
+            }
+
+            for(auto it = ods.begin() ; it != ods.end() ; it++) {
+                OptoforceData& od = *it;
+
+                Matrix<double, 4,1> v(od.x,od.y,od.z,1.0);
+                //Matrix<double, 4,1> v(0.0,0.0,1000.0,0.0);
+                auto m = bot.getMatrix(lbl2leg(od.label));
+                auto im = inverse(m);
+                auto bef = correction.matrix_before[lbl2leg(od.label)];
+                auto aft = correction.matrix_after[lbl2leg(od.label)];
+                auto a = aft * m * bef * v;
+                //cout << (int)a(0,0) << " \t" << (int)a(1,0) << " \t" << (int)a(2,0);
+                cout << (int)a(1,0) << " \t";
+              }
+            cout << endl;
+          }
       }
 
       {

@@ -38,15 +38,15 @@ void send(zmq::socket_t& sock_pub, T& ea) {
 
 struct WalkConfig {
   double offset_x = -10;
-  double half_esp_x = 140;
+  double half_esp_x = 100;
 
   double offset_y = 0;
-  double half_esp_y = 120;
+  double half_esp_y = 100;
 
   double default_z = -180;
   double delta_z = 40;
 
-  double period = 0.5;
+  double period = 4;
 
   double step_up_ratio = 0.8;
   double move_ratio = 0.7;

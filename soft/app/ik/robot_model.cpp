@@ -119,3 +119,18 @@ bool RobotModel::setEndpoint(Leg leg, Matrix<double, 3,1> pos) {
 
   return false;
 }
+
+Matrix<double, 4,4> RobotModel::getMatrix(Leg leg) {
+  if(leg == Leg::LF) {
+      return LF::Chain::matrix(LF::anglesInstance());
+    }
+  else if(leg == Leg::RF) {
+      return RF::Chain::matrix(RF::anglesInstance());
+    }
+  else if(leg == Leg::LB) {
+      return LB::Chain::matrix(LB::anglesInstance());
+    }
+  else if(leg == Leg::RB) {
+      return RB::Chain::matrix(RB::anglesInstance());
+    }
+}

@@ -45,6 +45,8 @@ public:
 
   Matrix<double, 3,1> getEndpoint(Leg leg);
   bool setEndpoint(Leg leg, Matrix<double, 3,1> pos);
+
+  Matrix<double, 4,4> getMatrix(Leg leg);
 };
 
 #endif//ROBOT_MODEL_HPP
