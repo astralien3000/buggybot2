@@ -4,6 +4,8 @@
 #include <iostream>
 #include <cmath>
 #include <functional>
+#include <algorithm>
+#include <array>
 
 #include <unistd.h>
 #include <sys/time.h>
@@ -18,6 +20,11 @@
 #include <messages/servo_action.hpp>
 #include <messages/endpoint_action.hpp>
 #include <messages/optoforce_data.hpp>
+
+#include <filter/average.hpp>
+#include <filter/limiter.hpp>
+#include <filter/integral.hpp>
+#include <filter/derivate.hpp>
 
 using namespace std;
 
@@ -37,21 +44,21 @@ void send(zmq::socket_t& sock_pub, T& ea) {
 }
 
 struct WalkConfig {
-  double offset_x = -10;
-  double half_esp_x = 100;
+  double offset_x = -10 - 20;
+  double half_esp_x = 120;
 
-  double offset_y = 0;
-  double half_esp_y = 100;
+  double offset_y = 10;
+  double half_esp_y = 120;
 
   double default_z = -180;
   double delta_z = 40;
 
-  double period = 4;
+  double period = 2;
 
-  double step_up_ratio = 0.8;
-  double move_ratio = 0.7;
+  double step_up_ratio = 0.25;
+  double move_ratio = 0.2;
 
-  double step_size = 60;
+  double step_size = 40;
 };
 
 struct LegConfig {
@@ -67,7 +74,17 @@ double add_mod(double val, double add, double mod) {
   return val+add;
 }
 
-void get_walk_pos_1(WalkConfig& cfg, LegConfig& leg, double t, double& x, double& y, double& z) {
+double Kp2 = -0.0 / 50.0;
+double Kp1 = -8.0 / 10.0;
+Filter::Integral<double> avg1(0);
+Filter::Integral<double> avg2(0);
+Filter::Limiter<double> lim(-70, 70);
+
+Filter::Average<double, 10> a1(0);
+Filter::Derivate<double> d1(0);
+Filter::Integral<double> i1(0);
+
+void get_walk_pos_1(WalkConfig& cfg, LegConfig& leg, map<string, OptoforceData>& opto, double t, double& x, double& y, double& z) {
 
   double t_step1_middle = cfg.period / 4.0;
   double t_step2_middle = cfg.period * 3.0 / 4.0;
@@ -106,7 +123,7 @@ void get_walk_pos_1(WalkConfig& cfg, LegConfig& leg, double t, double& x, double
 
 }
 
-void get_walk_pos_2(WalkConfig& cfg, LegConfig& leg, double t, double& x, double& y, double& z) {
+void get_walk_pos_2(WalkConfig& cfg, LegConfig& leg, map<string, OptoforceData>& opto, double t, double& x, double& y, double& z) {
 
   double t_step1_middle = cfg.period / 4.0;
   double t_step2_middle = cfg.period * 3.0 / 4.0;
@@ -153,6 +170,11 @@ void config_sock(zmq::socket_t& sock) {
   sock.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
 }
 
+
+void opto() {
+
+}
+
 int main(int, char**) {
   // IO config
   zmq::context_t ctx(5);
@@ -164,7 +186,7 @@ int main(int, char**) {
   sock_servo_out.connect("ipc://servo.out");
 
   zmq::socket_t sock_opto_in(ctx, ZMQ_SUB);
-  sock_opto_in.connect("ipc://optoforce.in");
+  sock_opto_in.connect("ipc://ik.opto.in");
   sock_opto_in.setsockopt(ZMQ_SUBSCRIBE, 0, 0);
 
   config_sock(sock_ik_out);
@@ -201,6 +223,8 @@ int main(int, char**) {
   double freq = 30; // hz
   struct timeval t1 = {0,0}, t2 = {0,0};
 
+  map<string, OptoforceData> opto;
+
   while(1) {
 
       {
@@ -218,13 +242,8 @@ int main(int, char**) {
 
             for(auto it = ods.begin() ; it != ods.end() ; it++) {
                 OptoforceData& od = *it;
-
-                if(od.label == string("LF")) {
-                    cout << od.label << " : \t" << od.x << " \t" << od.y << " \t" << od.z << endl;
-                  }
-                //cout << " \t" << od.z;
+                opto[od.label] = od;
               }
-            //cout << endl;
           }
       }
 
@@ -233,31 +252,32 @@ int main(int, char**) {
           t1.tv_sec = t2.tv_sec;
           t1.tv_usec = t2.tv_usec;
 
+          //t = 7.5;
           t = add_mod(t, 1.0/freq, cfg.period);
           EndpointAction ea;
           vector<EndpointAction> eas;
 
           ea.label = "LF";
           ea.enable = true;
-          get_walk_pos_1(cfg, lf, t, ea.x, ea.y, ea.z);
+          get_walk_pos_1(cfg, lf, opto, t, ea.x, ea.y, ea.z);
           //send(sock_ik_out, ea);
           eas.push_back(ea);
 
           ea.label = "RF";
           ea.enable = true;
-          get_walk_pos_2(cfg, rf, t, ea.x, ea.y, ea.z);
+          get_walk_pos_2(cfg, rf, opto, t, ea.x, ea.y, ea.z);
           //send(sock_ik_out, ea);
           eas.push_back(ea);
 
           ea.label = "LB";
           ea.enable = true;
-          get_walk_pos_2(cfg, lb, t, ea.x, ea.y, ea.z);
+          get_walk_pos_2(cfg, lb, opto, t, ea.x, ea.y, ea.z);
           //send(sock_ik_out, ea);
           eas.push_back(ea);
 
           ea.label = "RB";
           ea.enable = true;
-          get_walk_pos_1(cfg, rb, t, ea.x, ea.y, ea.z);
+          get_walk_pos_1(cfg, rb, opto, t, ea.x, ea.y, ea.z);
           //send(sock_ik_out, ea);
           eas.push_back(ea);
 

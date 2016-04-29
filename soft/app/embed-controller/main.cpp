@@ -133,8 +133,6 @@ void PortClient::onMonitor(void) {
 
 void PortClient::onServoAngle(Actuator::ServoPosition& payload) {
   std::stringstream ss;
-  _watchdog.start(500);
-  _sync = true;
 
   HardwareServoAction hsa;
   hsa.id = payload.id;
@@ -154,8 +152,8 @@ void PortClient::onServoAngle(Actuator::ServoPosition& payload) {
 
 void PortClient::onReadyRead(void) {
   char buff;
-  //  _watchdog.start(500);
-  //  _sync = true;
+  _watchdog.start(500);
+  _sync = true;
 
   while(_port.bytesAvailable()) {
       _port.getChar(&buff);

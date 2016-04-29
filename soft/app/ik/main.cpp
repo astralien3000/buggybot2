@@ -266,7 +266,7 @@ int main(int, char**) {
   OptoCorrection correction;
 
   // IO config
-  zmq::context_t ctx(5);
+  zmq::context_t ctx(6);
 
   zmq::socket_t sock_servo_in(ctx, ZMQ_SUB);
   sock_servo_in.connect("ipc://servo.in");
@@ -285,6 +285,9 @@ int main(int, char**) {
   zmq::socket_t sock_opto_in(ctx, ZMQ_SUB);
   sock_opto_in.connect("ipc://optoforce.in");
   sock_opto_in.setsockopt(ZMQ_SUBSCRIBE, 0, 0);
+
+  zmq::socket_t sock_ik_opto_in(ctx, ZMQ_PUB);
+  sock_ik_opto_in.bind("ipc://ik.opto.in");
 
   config_sock(sock_ik_in);
   config_sock(sock_ik_out);
@@ -331,6 +334,7 @@ int main(int, char**) {
             std::stringstream ss;
             ss.write((char*)msg.data(), msg.size());
             vector<OptoforceData> ods;
+            vector<OptoforceData> iods;
 
             {
               cereal::BinaryInputArchive ar(ss);
@@ -347,10 +351,15 @@ int main(int, char**) {
                 auto bef = correction.matrix_before[lbl2leg(od.label)];
                 auto aft = correction.matrix_after[lbl2leg(od.label)];
                 auto a = aft * m * bef * v;
-                //cout << (int)a(0,0) << " \t" << (int)a(1,0) << " \t" << (int)a(2,0);
-                cout << (int)a(1,0) << " \t";
+
+                OptoforceData iod;
+                iod.label = od.label;
+                iod.x = a(0,0);
+                iod.y = a(1,0);
+                iod.z = a(2,0);
+                iods.push_back(iod);
               }
-            cout << endl;
+            send(sock_ik_opto_in, iods);
           }
       }
 

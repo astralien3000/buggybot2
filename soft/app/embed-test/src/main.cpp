@@ -169,18 +169,24 @@ void write_u8(u8 reg, u8 val) {
 }
 
 using namespace Feetech::Protocol;
+
+u8 LOW(u16 val) {
+  return val / 256;
+}
+
+u8 HIGH(u16 val) {
+  return val % 256;
+}
+
 int main(int, char**) {
-  u8 L = 1024/256;
-  u8 H = 1024%256;
-
   //*/
-  write_u8(P_MAX_TORQUE_L, L);
-  write_u8(P_MAX_TORQUE_H, H);
-  write_u8(P_IMAX_L, L);
-  write_u8(P_IMAX_H, H);
+  write_u8(P_MAX_TORQUE_L, LOW(1023));
+  write_u8(P_MAX_TORQUE_H, HIGH(1023));
+  write_u8(P_IMAX_L, LOW(100));
+  write_u8(P_IMAX_H, HIGH(100));
 
-  write_u8(P_PUNCH_L, 0x00);
-  write_u8(P_PUNCH_H, 0x01);
+  write_u8(P_PUNCH_L, LOW(50));
+  write_u8(P_PUNCH_H, HIGH(50));
   //*/
   print_u16_reg("max_torque", Feetech::Protocol::P_MAX_TORQUE);
   print_u8_reg("max lim volt", Feetech::Protocol::P_MAX_LIMIT_VOLTAGE);
