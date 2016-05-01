@@ -89,6 +89,8 @@
 #include <hal/uart.hpp>
 #include <stream/hal/uart_stream.hpp>
 
+#include <device/hal/output_digital_pin.hpp>
+
 #include <container/buffer.hpp>
 
 #include <protocol/protocol.hpp>
@@ -100,6 +102,9 @@
 #include "sc_switcher.hpp"
 
 #include <avr/wdt.h>
+
+#include <device/adc_pin.hpp>
+#include <device/servo.hpp>
 
 using namespace HAL;
 
@@ -178,8 +183,73 @@ u8 HIGH(u16 val) {
   return val % 256;
 }
 
+struct LedSettings : Device::HAL::DefaultOutputDigitalPinSettings {};
+struct Led1Settings : LedSettings {
+  static constexpr auto& pin = HAL::K3;
+};
+struct Led2Settings : LedSettings {
+  static constexpr auto& pin = HAL::K4;
+};
+struct Led3Settings : LedSettings {
+  static constexpr auto& pin = HAL::K5;
+};
+struct Led4Settings : LedSettings {
+  static constexpr auto& pin = HAL::K6;
+};
+struct Led5Settings : LedSettings {
+  static constexpr auto& pin = HAL::K7;
+};
+
+Device::HAL::OutputDigitalPin<Led1Settings> led1;
+Device::HAL::OutputDigitalPin<Led2Settings> led2;
+Device::HAL::OutputDigitalPin<Led3Settings> led3;
+Device::HAL::OutputDigitalPin<Led4Settings> led4;
+Device::HAL::OutputDigitalPin<Led5Settings> led5;
+
+ADCPin<ADM2560::Pinmap::A0> adc1;
+
+Servo<ADM2560::Pinmap::D5> servo1;
+Servo<ADM2560::Pinmap::D6> servo2;
+Servo<ADM2560::Pinmap::D7> servo3;
+Servo<ADM2560::Pinmap::D8> servo4;
+
 int main(int, char**) {
-  //*/
+
+#if 0
+  for(int i = 100 ; i < 200 ; i++) {
+      servo1.setValue(i);
+      for(volatile u32 i = 0 ; i < 0xff ; i++);
+    }
+  for(int i = 200 ; i > 100 ; i--) {
+      servo1.setValue(i);
+      for(volatile u32 i = 0 ; i < 0xff ; i++);
+    }
+#endif
+
+#if 0
+  while(1) {
+      cout << adc1.getValue() << "\n\r";
+    }
+#endif
+
+#if 0
+  while(1) {
+      for(volatile u32 i = 0 ; i < 0xffff ; i++);
+      led1.setValue(false);
+      led2.setValue(false);
+      led3.setValue(false);
+      led4.setValue(false);
+      led5.setValue(false);
+      for(volatile u32 i = 0 ; i < 0xffff ; i++);
+      led1.setValue(true);
+      led2.setValue(true);
+      led3.setValue(true);
+      led4.setValue(true);
+      led5.setValue(true);
+    }
+#endif
+
+#if 0
   write_u8(P_MAX_TORQUE_L, LOW(1023));
   write_u8(P_MAX_TORQUE_H, HIGH(1023));
   write_u8(P_IMAX_L, LOW(100));
@@ -187,13 +257,15 @@ int main(int, char**) {
 
   write_u8(P_PUNCH_L, LOW(50));
   write_u8(P_PUNCH_H, HIGH(50));
-  //*/
+#endif
+
+#if 0
   print_u16_reg("max_torque", Feetech::Protocol::P_MAX_TORQUE);
   print_u8_reg("max lim volt", Feetech::Protocol::P_MAX_LIMIT_VOLTAGE);
   print_u8_reg("min lim volt", Feetech::Protocol::P_MIN_LIMIT_VOLTAGE);
   print_u16_reg("imax", Feetech::Protocol::P_IMAX);
   print_u16_reg("punch", Feetech::Protocol::P_PUNCH);
   print_u8_reg("lim temp", Feetech::Protocol::P_LIMIT_TEMPERATURE);
-  //*/
+#endif
   return 0;
 }
