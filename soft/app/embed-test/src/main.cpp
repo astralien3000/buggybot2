@@ -90,6 +90,7 @@
 #include <stream/hal/uart_stream.hpp>
 
 #include <device/hal/output_digital_pin.hpp>
+#include <device/hal/input_digital_pin.hpp>
 
 #include <container/buffer.hpp>
 
@@ -200,6 +201,19 @@ struct Led5Settings : LedSettings {
   static constexpr auto& pin = HAL::K7;
 };
 
+struct InSettings : Device::HAL::DefaultInputDigitalPinSettings {};
+#define DEFINE_IN(num, my_pin)  \
+  struct In##num##Settings : InSettings { \
+  static constexpr auto& pin = HAL:: my_pin; \
+  }; \
+  Device::HAL::InputDigitalPin<In##num##Settings> in##num;
+
+DEFINE_IN(1, F6);
+DEFINE_IN(2, F7);
+DEFINE_IN(3, K0);
+DEFINE_IN(4, K1);
+DEFINE_IN(5, K2);
+
 Device::HAL::OutputDigitalPin<Led1Settings> led1;
 Device::HAL::OutputDigitalPin<Led2Settings> led2;
 Device::HAL::OutputDigitalPin<Led3Settings> led3;
@@ -215,14 +229,50 @@ Servo<ADM2560::Pinmap::D8> servo4;
 
 int main(int, char**) {
 
+//  PORTF |= 1<<6;
+//  PORTF |= 1<<7;
+//  PORTK |= 1<<0;
+//  PORTK |= 1<<1;
+//  PORTK |= 1<<2;
+
 #if 0
-  for(int i = 100 ; i < 200 ; i++) {
-      servo1.setValue(i);
-      for(volatile u32 i = 0 ; i < 0xff ; i++);
+  while(1) {
+      cout << in1.getValue() << "\t";
+      cout << in2.getValue() << "\t";
+      cout << in3.getValue() << "\t";
+      cout << in4.getValue() << "\t";
+      cout << in5.getValue() << "\t";
+      cout << "\n\r";
     }
-  for(int i = 200 ; i > 100 ; i--) {
-      servo1.setValue(i);
-      for(volatile u32 i = 0 ; i < 0xff ; i++);
+#endif
+
+#define MIN 50
+#define MAX 150
+
+#if 1
+  u8 val = 0;
+  while(1) {
+      cout << "Num ?\n\r";
+      val = cout.getChar();
+      if(val == '1') {
+          servo1.setValue(MAX);
+        }
+      else if(val == '0') {
+          servo1.setValue(MIN);
+        }
+    }
+#endif
+
+#if 0
+  while(1) {
+      for(int i = MIN ; i < MAX ; i++) {
+          servo1.setValue(i);
+          for(volatile u32 i = 0 ; i < 0x2fff ; i++);
+        }
+      for(int i = MAX ; i > MIN ; i--) {
+          servo1.setValue(i);
+          for(volatile u32 i = 0 ; i < 0x2fff ; i++);
+        }
     }
 #endif
 
