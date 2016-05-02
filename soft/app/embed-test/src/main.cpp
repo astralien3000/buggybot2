@@ -201,6 +201,11 @@ struct Led5Settings : LedSettings {
   static constexpr auto& pin = HAL::K7;
 };
 
+struct RegEnSettings : LedSettings {
+  static constexpr auto& pin = HAL::E4;
+};
+
+
 struct InSettings : Device::HAL::DefaultInputDigitalPinSettings {};
 #define DEFINE_IN(num, my_pin)  \
   struct In##num##Settings : InSettings { \
@@ -220,9 +225,11 @@ Device::HAL::OutputDigitalPin<Led3Settings> led3;
 Device::HAL::OutputDigitalPin<Led4Settings> led4;
 Device::HAL::OutputDigitalPin<Led5Settings> led5;
 
+Device::HAL::OutputDigitalPin<RegEnSettings> reg_en;
+
 ADCPin<ADM2560::Pinmap::A0> adc1;
 
-#if 0
+#if 1
 Servo<ADM2560::Pinmap::D5> servo1;
 Servo<ADM2560::Pinmap::D6> servo2;
 Servo<ADM2560::Pinmap::D7> servo3;
@@ -231,12 +238,12 @@ Servo<ADM2560::Pinmap::D8> servo4;
 
 int main(int, char**) {
 
-#if 1
-  PORTF |= 1<<6;
-  PORTF |= 1<<7;
-  PORTK |= 1<<0;
-  PORTK |= 1<<1;
-  PORTK |= 1<<2;
+#if 0
+//  PORTF |= 1<<6;
+//  PORTF |= 1<<7;
+//  PORTK |= 1<<0;
+//  PORTK |= 1<<1;
+//  PORTK |= 1<<2;
 
   while(1) {
       cout << in1.getValue() << "\t";
@@ -251,16 +258,28 @@ int main(int, char**) {
 #define MIN 50
 #define MAX 150
 
-#if 0
+#if 1
   u8 val = 0;
   while(1) {
       cout << "Num ?\n\r";
       val = cout.getChar();
       if(val == '1') {
+          cout << "set servo to max" << "\n\r";
           servo1.setValue(MAX);
         }
       else if(val == '0') {
+          cout << "set servo to min" << "\n\r";
           servo1.setValue(MIN);
+        }
+      else if(val == '2') {
+          cout << "enable" << "\n\r";
+          reg_en.setValue(true);
+          led1.setValue(true);
+        }
+      else if(val == '3') {
+          cout << "disable" << "\n\r";
+          reg_en.setValue(true);
+          led1.setValue(false);
         }
     }
 #endif
