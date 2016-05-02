@@ -222,20 +222,22 @@ Device::HAL::OutputDigitalPin<Led5Settings> led5;
 
 ADCPin<ADM2560::Pinmap::A0> adc1;
 
+#if 0
 Servo<ADM2560::Pinmap::D5> servo1;
 Servo<ADM2560::Pinmap::D6> servo2;
 Servo<ADM2560::Pinmap::D7> servo3;
 Servo<ADM2560::Pinmap::D8> servo4;
+#endif
 
 int main(int, char**) {
 
-//  PORTF |= 1<<6;
-//  PORTF |= 1<<7;
-//  PORTK |= 1<<0;
-//  PORTK |= 1<<1;
-//  PORTK |= 1<<2;
+#if 1
+  PORTF |= 1<<6;
+  PORTF |= 1<<7;
+  PORTK |= 1<<0;
+  PORTK |= 1<<1;
+  PORTK |= 1<<2;
 
-#if 0
   while(1) {
       cout << in1.getValue() << "\t";
       cout << in2.getValue() << "\t";
@@ -249,7 +251,7 @@ int main(int, char**) {
 #define MIN 50
 #define MAX 150
 
-#if 1
+#if 0
   u8 val = 0;
   while(1) {
       cout << "Num ?\n\r";

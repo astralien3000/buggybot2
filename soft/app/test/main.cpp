@@ -47,7 +47,7 @@ struct WalkConfig {
   double offset_x = -10 - 20;
   double half_esp_x = 120;
 
-  double offset_y = 10;
+  double offset_y = 0;
   double half_esp_y = 120;
 
   double default_z = -180;
