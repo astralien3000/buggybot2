@@ -13,6 +13,8 @@
 
 #include <avr/wdt.h>
 
+#include "devices.hpp"
+
 using namespace HAL;
 
 auto& MY_UART = UART0; // Choose the UART
@@ -38,7 +40,7 @@ void flush_inbuff(void) {
 }
 
 int main(int, char**) {
-  //wdt_enable(WDTO_120MS);
+  wdt_enable(WDTO_120MS);
 
   UART::Settings settings;
   settings.baudrate = 57600;
@@ -61,12 +63,44 @@ int main(int, char**) {
         }
     }));
 
+  parser.addHandler(Protocol::DefaultHandler<Protocol::Message, Actuator::PWM>([](const void* msg) {
+      wdt_reset();
+      auto pak = *(Protocol::Pack<Protocol::Message, Actuator::PWM>*)msg;
+      if(pak.message.payload.id == 1) {
+          pwm1.setValue(pak.message.payload.value);
+        }
+      else if(pak.message.payload.id == 2) {
+          pwm2.setValue(pak.message.payload.value);
+        }
+      else if(pak.message.payload.id == 3) {
+          pwm3.setValue(pak.message.payload.value);
+        }
+      else if(pak.message.payload.id == 4) {
+          pwm4.setValue(pak.message.payload.value);
+        }
+    }));
+
   UART::init(MY_UART, TX, RX, settings);
   UART::setHandler(MY_UART, UART::Event::RX_COMPLETE, [](){
-          char c = UART::getChar(MY_UART);
-          //parser.parse((u8*)&c, 1);
-          inbuff.enqueue(c);
+      char c = UART::getChar(MY_UART);
+      //parser.parse((u8*)&c, 1);
+      inbuff.enqueue(c);
     });
+
+  pwm1.setValue(100);
+  pwm2.setValue(100);
+  pwm3.setValue(100);
+  pwm4.setValue(100);
+
+  {
+    Protocol::Pack<Protocol::Message, Sensor::GP2> pak;
+    {
+      pak.message.payload.id = 0;
+      pak.message.payload.value = 0xFFFF;
+      u8* data = Protocol::pack(pak);
+      UART::write(MY_UART, data, sizeof(pak));
+    }
+  }
 
   ::HDL::sei();
 
@@ -74,6 +108,7 @@ int main(int, char**) {
       wdt_reset();
       flush_inbuff();
 
+      // UPDATE servos
       if(0 == max_servo) {
 
           for(u8 i = 1 ; i < 0xfe ; i++) {
@@ -105,6 +140,89 @@ int main(int, char**) {
             }
 
         }
+
+      wdt_reset();
+      // UPDATE PWM
+      {
+        Protocol::Pack<Protocol::Message, Actuator::PWM> pak;
+        {
+          pak.message.payload.id = 1;
+          pak.message.payload.value = pwm1.getValue();
+          u8* data = Protocol::pack(pak);
+          UART::write(MY_UART, data, sizeof(pak));
+        }
+
+        {
+          pak.message.payload.id = 2;
+          pak.message.payload.value = pwm2.getValue();
+          u8* data = Protocol::pack(pak);
+          UART::write(MY_UART, data, sizeof(pak));
+        }
+
+        {
+          pak.message.payload.id = 3;
+          pak.message.payload.value = pwm3.getValue();
+          u8* data = Protocol::pack(pak);
+          UART::write(MY_UART, data, sizeof(pak));
+        }
+
+        {
+          pak.message.payload.id = 4;
+          pak.message.payload.value = pwm4.getValue();
+          u8* data = Protocol::pack(pak);
+          UART::write(MY_UART, data, sizeof(pak));
+        }
+      }
+
+
+      wdt_reset();
+      // UPDATE GP2
+      {
+        Protocol::Pack<Protocol::Message, Sensor::GP2> pak;
+        {
+          pak.message.payload.id = 1;
+          pak.message.payload.value = adc1.getValue();
+          u8* data = Protocol::pack(pak);
+          UART::write(MY_UART, data, sizeof(pak));
+        }
+
+        wdt_reset();
+        {
+          pak.message.payload.id = 2;
+          pak.message.payload.value = adc2.getValue();
+          u8* data = Protocol::pack(pak);
+          UART::write(MY_UART, data, sizeof(pak));
+        }
+
+        wdt_reset();
+        {
+          pak.message.payload.id = 3;
+          pak.message.payload.value = adc3.getValue();
+          u8* data = Protocol::pack(pak);
+          UART::write(MY_UART, data, sizeof(pak));
+        }
+
+        wdt_reset();
+        {
+          pak.message.payload.id = 4;
+          pak.message.payload.value = adc4.getValue();
+          u8* data = Protocol::pack(pak);
+          UART::write(MY_UART, data, sizeof(pak));
+        }
+      }
+
+      wdt_reset();
+      // UPDATE Bumpers
+      {
+        Protocol::Pack<Protocol::Message, Sensor::Bumpers> pak;
+        pak.message.payload.in1 = in1.getValue();
+        pak.message.payload.in2 = in2.getValue();
+        pak.message.payload.in3 = in3.getValue();
+        pak.message.payload.in4 = in4.getValue();
+        pak.message.payload.in5 = in5.getValue();
+        u8* data = Protocol::pack(pak);
+        UART::write(MY_UART, data, sizeof(pak));
+      }
     }
 
   return 0;

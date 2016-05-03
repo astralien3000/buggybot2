@@ -18,7 +18,7 @@ class PortClient : public QObject {
 
 private:
   QSerialPort& _port;
-  Protocol::Parser<1, 128> parser;
+  Protocol::Parser<5, 128> parser;
   QTimer _watchdog;
   QTimer _monitor;
   bool _sync = false;
@@ -28,12 +28,20 @@ private:
   zmq::socket_t in {ctx, ZMQ_PUB};
   zmq::socket_t out{ctx, ZMQ_SUB};
 
+  zmq::socket_t gp2_in {ctx, ZMQ_PUB};
+  zmq::socket_t bumper_in {ctx, ZMQ_PUB};
+
+  zmq::socket_t pwm_out{ctx, ZMQ_SUB};
+
 public:
   PortClient(QSerialPort& port);
   ~PortClient();
 
 public:
   void onServoAngle(Actuator::ServoPosition& payload);
+
+  void onGP2(Sensor::GP2& payload);
+  void onBumpers(Sensor::Bumpers& payload);
 
 public slots:
   void onReadyRead(void);

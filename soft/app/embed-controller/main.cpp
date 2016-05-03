@@ -15,6 +15,7 @@
 #include <protocol/parser.hpp>
 
 #include <messages/servo_action.hpp>
+#include <messages/id_value.hpp>
 
 #include "port_client.hpp"
 
@@ -22,6 +23,21 @@ using namespace std;
 
 using PortList = QList<QSerialPortInfo>;
 using Port = QSerialPortInfo;
+
+template<typename T>
+void send(zmq::socket_t& sock_pub, T& sa) {
+  stringstream oss;
+
+  {
+    cereal::BinaryOutputArchive ar(oss);
+    ar(sa);
+  }
+
+  zmq::message_t msg(oss.str().size());
+  oss.str().copy((char*)msg.data(), msg.size());
+
+  sock_pub.send(msg, ZMQ_NOBLOCK);
+}
 
 ostream& operator<<(ostream& out, QString&& str) {
   return out << str.toStdString();
@@ -66,12 +82,31 @@ PortClient::PortClient(QSerialPort& port)
                       handler_binder<Actuator::ServoPosition>([this](Actuator::ServoPosition& a) { this->onServoAngle(a); })
                     ));
 
+  parser.addHandler(Protocol::DefaultHandler<Protocol::Message, Sensor::GP2>(
+                      handler_binder<Sensor::GP2>([this](Sensor::GP2& a) { this->onGP2(a); })
+                    ));
+
+  parser.addHandler(Protocol::DefaultHandler<Protocol::Message, Sensor::Bumpers>(
+                      handler_binder<Sensor::Bumpers>([this](Sensor::Bumpers& a) { this->onBumpers(a); })
+                    ));
+
   in.bind("ipc://embed.in");
   out.bind("ipc://embed.out");
   out.setsockopt(ZMQ_SUBSCRIBE, 0, 0);
 
+
+  gp2_in.bind("ipc://embed.gp2.in");
+  bumper_in.bind("ipc://embed.bumper.in");
+
+  pwm_out.bind("ipc://embed.pwm.out");
+  pwm_out.setsockopt(ZMQ_SUBSCRIBE, 0, 0);
+
   config_sock(out);
   config_sock(in);
+
+  config_sock(gp2_in);
+  config_sock(bumper_in);
+  config_sock(pwm_out);
 
 }
 
@@ -95,41 +130,94 @@ void PortClient::onError(void) {
 }
 
 void PortClient::onMonitor(void) {
-  zmq::message_t msg;
-  out.recv(&msg, ZMQ_NOBLOCK);
-  if(_sync) {
-      if(msg.size()) {
-          std::stringstream ss;
-          ss.write((char*)msg.data(), msg.size());
+  {
+    zmq::message_t msg;
+    if(pwm_out.recv(&msg, ZMQ_NOBLOCK)) {
+        std::stringstream ss;
+        ss.write((char*)msg.data(), msg.size());
 
-          vector<HardwareServoAction> hsas;
+        IdValue iv;
 
-          {
-            cereal::BinaryInputArchive ar(ss);
-            ar(hsas);
-          }
-
-          for(auto it = hsas.begin() ; it != hsas.end() ; it++) {
-              HardwareServoAction& hsa = *it;
-
-              if(0 <= hsa.position && hsa.position <= 1024) {
-                  {
-                    Protocol::Pack<Protocol::Message, Actuator::ServoPosition> pak;
-                    pak.message.payload.id = hsa.id;
-                    pak.message.payload.enabled = hsa.enable;
-                    pak.message.payload.position = hsa.position;
-                    u8* data = Protocol::pack(pak);
-                    _port.write((char*)data, sizeof(pak));
-                  }
-                }
-              else {
-                  cout << "Invalid servo_" << (u16)hsa.id << " command ->" << hsa.position << endl;
-                }
-            }
+        {
+          cereal::BinaryInputArchive ar(ss);
+          ar(iv);
         }
-    }
+
+        Protocol::Pack<Protocol::Message, Actuator::PWM> pak;
+        pak.message.payload.id = iv.id;
+        pak.message.payload.value = iv.value;
+        u8* data = Protocol::pack(pak);
+        _port.write((char*)data, sizeof(pak));
+     }
+  }
+
+
+  {
+    zmq::message_t msg;
+    out.recv(&msg, ZMQ_NOBLOCK);
+    if(_sync) {
+        if(msg.size()) {
+            std::stringstream ss;
+            ss.write((char*)msg.data(), msg.size());
+
+            vector<HardwareServoAction> hsas;
+
+            {
+              cereal::BinaryInputArchive ar(ss);
+              ar(hsas);
+            }
+
+            for(auto it = hsas.begin() ; it != hsas.end() ; it++) {
+                HardwareServoAction& hsa = *it;
+
+                if(0 <= hsa.position && hsa.position <= 1024) {
+                    {
+                      Protocol::Pack<Protocol::Message, Actuator::ServoPosition> pak;
+                      pak.message.payload.id = hsa.id;
+                      pak.message.payload.enabled = hsa.enable;
+                      pak.message.payload.position = hsa.position;
+                      u8* data = Protocol::pack(pak);
+                      _port.write((char*)data, sizeof(pak));
+                    }
+                  }
+                else {
+                    cout << "Invalid servo_" << (u16)hsa.id << " command ->" << hsa.position << endl;
+                  }
+              }
+          }
+      }
+  }
 }
 
+void PortClient::onGP2(Sensor::GP2& payload) {
+  //cout << (int)payload.id << "\t" << payload.value << endl;
+
+  IdValue iv;
+  iv.id = payload.id;
+  iv.value = payload.value;
+
+  send(gp2_in, iv);
+}
+
+void PortClient::onBumpers(Sensor::Bumpers& payload) {
+  /*
+  cout << (int)payload.in1 << "\t";
+  cout << (int)payload.in2 << "\t";
+  cout << (int)payload.in3 << "\t";
+  cout << (int)payload.in4 << "\t";
+  cout << (int)payload.in5 << "\t";
+  cout << endl;
+  */
+
+  vector<bool> bumpers;
+  bumpers.push_back(payload.in1);
+  bumpers.push_back(payload.in2);
+  bumpers.push_back(payload.in3);
+  bumpers.push_back(payload.in4);
+  bumpers.push_back(payload.in5);
+
+  send(bumper_in, bumpers);
+}
 
 void PortClient::onServoAngle(Actuator::ServoPosition& payload) {
   std::stringstream ss;

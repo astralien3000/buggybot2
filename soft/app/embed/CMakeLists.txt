@@ -21,6 +21,7 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../lib")
 include_directories("/usr/avr/include")
 
 file(GLOB_RECURSE PROTOCOL "${CMAKE_CURRENT_SOURCE_DIR}/../../lib/protocol/*")
+file(GLOB_RECURSE DEVICE "${CMAKE_CURRENT_SOURCE_DIR}/../../lib/device/*")
 
 set(SOURCE
   ${SOURCE_CPP}
@@ -33,6 +34,7 @@ set(SOURCE
   ${INCLUDE_H}
 
   ${PROTOCOL}
+  ${DEVICE}
   )
 
 add_executable(${NAME} ${SOURCE})

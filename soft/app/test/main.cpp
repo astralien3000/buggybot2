@@ -20,6 +20,7 @@
 #include <messages/servo_action.hpp>
 #include <messages/endpoint_action.hpp>
 #include <messages/optoforce_data.hpp>
+#include <messages/id_value.hpp>
 
 #include <filter/average.hpp>
 #include <filter/limiter.hpp>
@@ -189,9 +190,19 @@ int main(int, char**) {
   sock_opto_in.connect("ipc://ik.opto.in");
   sock_opto_in.setsockopt(ZMQ_SUBSCRIBE, 0, 0);
 
+  zmq::socket_t sock_gp2_in(ctx, ZMQ_SUB);
+  sock_gp2_in.connect("ipc://embed.gp2.in");
+  sock_gp2_in.setsockopt(ZMQ_SUBSCRIBE, 0, 0);
+
+  zmq::socket_t sock_bumper_in(ctx, ZMQ_SUB);
+  sock_bumper_in.connect("ipc://embed.bumper.in");
+  sock_bumper_in.setsockopt(ZMQ_SUBSCRIBE, 0, 0);
+
   config_sock(sock_ik_out);
   config_sock(sock_servo_out);
   config_sock(sock_opto_in);
+  config_sock(sock_gp2_in);
+  config_sock(sock_bumper_in);
 
   WalkConfig cfg;
 
@@ -226,6 +237,43 @@ int main(int, char**) {
   map<string, OptoforceData> opto;
 
   while(1) {
+
+      {
+        zmq::message_t msg;
+        if(sock_gp2_in.recv(&msg, ZMQ_NOBLOCK)) {
+             IdValue iv;
+
+            std::stringstream ss;
+            ss.write((char*)msg.data(), msg.size());
+
+            {
+              cereal::BinaryInputArchive ar(ss);
+              ar(iv);
+            }
+
+            //cout << iv.id << " \t" << iv.value << endl;
+          }
+      }
+
+      {
+        zmq::message_t msg;
+        if(sock_bumper_in.recv(&msg, ZMQ_NOBLOCK)) {
+            std::vector<bool> bumpers;
+
+            std::stringstream ss;
+            ss.write((char*)msg.data(), msg.size());
+
+            {
+              cereal::BinaryInputArchive ar(ss);
+              ar(bumpers);
+            }
+
+//            for(int i = 0 ; i < bumpers.size() ; i++) {
+//                cout << bumpers[i] << " \t";
+//              }
+//            cout << endl;
+          }
+      }
 
       {
         zmq::message_t msg;
