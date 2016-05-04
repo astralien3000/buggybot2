@@ -17,8 +17,8 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../lib/cereal/include")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 file(GLOB_RECURSE MSG "${CMAKE_CURRENT_SOURCE_DIR}/../../lib/messages/*.hpp")
-file(GLOB_RECURSE HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
-file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+file(GLOB HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
+file(GLOB SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
 add_executable(buggytest ${HEADERS} ${SOURCES} ${MSG})
 target_link_libraries(buggytest Qt5::Core Qt5::SerialPort Qt5::Widgets)

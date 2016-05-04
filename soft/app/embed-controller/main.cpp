@@ -133,22 +133,24 @@ void PortClient::onMonitor(void) {
   {
     zmq::message_t msg;
     if(pwm_out.recv(&msg, ZMQ_NOBLOCK)) {
-        std::stringstream ss;
-        ss.write((char*)msg.data(), msg.size());
+        if(_sync) {
+            std::stringstream ss;
+            ss.write((char*)msg.data(), msg.size());
 
-        IdValue iv;
+            IdValue iv;
 
-        {
-          cereal::BinaryInputArchive ar(ss);
-          ar(iv);
-        }
+            {
+              cereal::BinaryInputArchive ar(ss);
+              ar(iv);
+            }
 
-        Protocol::Pack<Protocol::Message, Actuator::PWM> pak;
-        pak.message.payload.id = iv.id;
-        pak.message.payload.value = iv.value;
-        u8* data = Protocol::pack(pak);
-        _port.write((char*)data, sizeof(pak));
-     }
+            Protocol::Pack<Protocol::Message, Actuator::PWM> pak;
+            pak.message.payload.id = iv.id;
+            pak.message.payload.value = iv.value;
+            u8* data = Protocol::pack(pak);
+            _port.write((char*)data, sizeof(pak));
+          }
+      }
   }
 
 

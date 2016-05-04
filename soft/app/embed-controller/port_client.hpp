@@ -23,7 +23,7 @@ private:
   QTimer _monitor;
   bool _sync = false;
 
-  zmq::context_t ctx {1};
+  zmq::context_t ctx {5};
 
   zmq::socket_t in {ctx, ZMQ_PUB};
   zmq::socket_t out{ctx, ZMQ_SUB};

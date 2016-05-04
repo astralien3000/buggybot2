@@ -27,141 +27,15 @@
 #include <filter/integral.hpp>
 #include <filter/derivate.hpp>
 
+#include "robot_state.hpp"
+
+#include "anim_walk.hpp"
+#include "anim_stand.hpp"
+
 using namespace std;
 
-template<typename T>
-void send(zmq::socket_t& sock_pub, T& ea) {
-  stringstream oss;
+zmq::socket_t* Animation::sock_ik_out = 0;
 
-  {
-    cereal::BinaryOutputArchive ar(oss);
-    ar(ea);
-  }
-
-  zmq::message_t msg(oss.str().size());
-  oss.str().copy((char*)msg.data(), msg.size());
-
-  sock_pub.send(msg, ZMQ_NOBLOCK);
-}
-
-struct WalkConfig {
-  double offset_x = -10 - 20;
-  double half_esp_x = 120;
-
-  double offset_y = 0;
-  double half_esp_y = 120;
-
-  double default_z = -180;
-  double delta_z = 40;
-
-  double period = 2;
-
-  double step_up_ratio = 0.25;
-  double move_ratio = 0.2;
-
-  double step_size = 40;
-};
-
-struct LegConfig {
-  double default_x;
-  double default_y;
-  double default_z;
-};
-
-double add_mod(double val, double add, double mod) {
-  if(val + add > mod) {
-      return val+add-mod;
-    }
-  return val+add;
-}
-
-double Kp2 = -0.0 / 50.0;
-double Kp1 = -8.0 / 10.0;
-Filter::Integral<double> avg1(0);
-Filter::Integral<double> avg2(0);
-Filter::Limiter<double> lim(-70, 70);
-
-Filter::Average<double, 10> a1(0);
-Filter::Derivate<double> d1(0);
-Filter::Integral<double> i1(0);
-
-void get_walk_pos_1(WalkConfig& cfg, LegConfig& leg, map<string, OptoforceData>& opto, double t, double& x, double& y, double& z) {
-
-  double t_step1_middle = cfg.period / 4.0;
-  double t_step2_middle = cfg.period * 3.0 / 4.0;
-
-  double dt_half_step = cfg.period / 4.0;
-
-  y = leg.default_y;
-
-  if(abs(t - t_step1_middle) < dt_half_step * cfg.move_ratio) {
-      double t2 = (t - t_step1_middle) / (dt_half_step * cfg.move_ratio);
-      x = leg.default_x + t2*cfg.step_size/2.0;
-    }
-  else if(abs(t - t_step2_middle) < dt_half_step * cfg.move_ratio) {
-      double t2 = (t - t_step2_middle) / (dt_half_step * cfg.move_ratio);
-      x = leg.default_x - t2*cfg.step_size/2.0;
-    }
-  else if(abs(t - cfg.period/2.0) < dt_half_step) {
-      x = leg.default_x + cfg.step_size/2.0;
-    }
-  else if(abs(t - cfg.period/2.0) > dt_half_step) {
-      x = leg.default_x - cfg.step_size/2.0;
-    }
-  else {
-      x = leg.default_x;
-    }
-
-  if(abs(t - t_step1_middle) < dt_half_step * cfg.step_up_ratio) {
-      z = leg.default_z+cfg.delta_z;
-    }
-  else if(abs(t - t_step2_middle) < dt_half_step * cfg.step_up_ratio) {
-      z = leg.default_z;
-    }
-  else {
-      z = leg.default_z;
-    }
-
-}
-
-void get_walk_pos_2(WalkConfig& cfg, LegConfig& leg, map<string, OptoforceData>& opto, double t, double& x, double& y, double& z) {
-
-  double t_step1_middle = cfg.period / 4.0;
-  double t_step2_middle = cfg.period * 3.0 / 4.0;
-
-  double dt_half_step = cfg.period / 4.0;
-
-  y = leg.default_y;
-
-  if(abs(t - t_step1_middle) < dt_half_step * cfg.move_ratio) {
-      double t2 = (t - t_step1_middle) / (dt_half_step * cfg.move_ratio);
-      x = leg.default_x - t2*cfg.step_size/2.0;
-    }
-  else if(abs(t - t_step2_middle) < dt_half_step * cfg.move_ratio) {
-      double t2 = (t - t_step2_middle) / (dt_half_step * cfg.move_ratio);
-      x = leg.default_x + t2*cfg.step_size/2.0;
-    }
-  else if(abs(t - cfg.period/2.0) < dt_half_step) {
-      x = leg.default_x - cfg.step_size/2.0;
-    }
-  else if(abs(t - cfg.period/2.0) > dt_half_step) {
-      x = leg.default_x + cfg.step_size/2.0;
-    }
-  else {
-      x = leg.default_x;
-    }
-
-  if(abs(t - t_step1_middle) < dt_half_step * cfg.step_up_ratio) {
-      z = leg.default_z;
-    }
-  else if(abs(t - t_step2_middle) < dt_half_step * cfg.step_up_ratio) {
-      z = leg.default_z+cfg.delta_z;
-    }
-  else {
-      z = leg.default_z;
-    }
-
-}
 
 void config_sock(zmq::socket_t& sock) {
   int hwm = 1;
@@ -171,20 +45,104 @@ void config_sock(zmq::socket_t& sock) {
   sock.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
 }
 
+#define GP2_MIN 280
+#define GP2_MAX 320
+bool detect_helper(bool prev, uint32_t cur) {
+  if(prev) {
+      if(cur < GP2_MIN) return false;
+      else return true;
+    }
+  else {
+      if(cur > GP2_MAX) return true;
+      else return false;
+    }
+}
 
-void opto() {
+bool detect(uint32_t left, uint32_t right) {
+  static bool prev_left = false;
+  static bool prev_right = false;
 
+
+  prev_left = detect_helper(prev_left, left);
+  prev_right = detect_helper(prev_right, right);
+
+  return prev_left || prev_right;
+}
+
+int match(bool tirette) {
+  static bool last_tirette = false;
+  static struct timeval t1 = {0,0};
+  static struct timeval t2 = {0,0};
+
+  int ret = false;
+
+  if(!tirette) {
+      if(last_tirette == true) {
+          gettimeofday(&t1, NULL);
+        }
+
+      gettimeofday(&t2, NULL);
+
+
+      const uint32_t match_time = 90;
+      const uint32_t walk_time = 15;
+
+      int32_t time = t2.tv_sec - t1.tv_sec;
+      //cout << time << endl;
+      if(0 <= time && time <= walk_time) {
+          ret = 1;
+        }
+      else if(match_time < time && time <= match_time+5) {
+          ret = 2;
+        }
+      else {
+          ret = 0;
+        }
+    }
+  else {
+      ret = -1;
+    }
+  last_tirette = tirette;
+  return ret;
+}
+
+void update_servo(zmq::socket_t& sock_pwm_out, int cur_match_state) {
+
+  static struct timeval t1 = {0,0};
+  static struct timeval t2 = {0,0};
+
+  gettimeofday(&t2, NULL);
+  if(abs(t2.tv_usec - t1.tv_usec) > 1000000 / freq * 3) {
+      t1.tv_sec = t2.tv_sec;
+      t1.tv_usec = t2.tv_usec;
+
+      if(cur_match_state == 2) {
+          IdValue iv;
+          iv.id = 1;
+          iv.value = 50;
+          send(sock_pwm_out, iv);
+        }
+      else {
+          IdValue iv;
+          iv.id = 1;
+          iv.value = 100;
+          send(sock_pwm_out, iv);
+        }
+    }
 }
 
 int main(int, char**) {
   // IO config
-  zmq::context_t ctx(5);
+  zmq::context_t ctx(6);
 
   zmq::socket_t sock_ik_out(ctx, ZMQ_PUB);
   sock_ik_out.connect("ipc://ik.out");
 
   zmq::socket_t sock_servo_out(ctx, ZMQ_PUB);
   sock_servo_out.connect("ipc://servo.out");
+
+  zmq::socket_t sock_pwm_out(ctx, ZMQ_PUB);
+  sock_pwm_out.connect("ipc://embed.pwm.out");
 
   zmq::socket_t sock_opto_in(ctx, ZMQ_SUB);
   sock_opto_in.connect("ipc://ik.opto.in");
@@ -200,48 +158,55 @@ int main(int, char**) {
 
   config_sock(sock_ik_out);
   config_sock(sock_servo_out);
+  config_sock(sock_pwm_out);
   config_sock(sock_opto_in);
   config_sock(sock_gp2_in);
   config_sock(sock_bumper_in);
 
-  WalkConfig cfg;
+  Animation::sock_ik_out = &sock_ik_out;
 
-  LegConfig lf = {
-    cfg.half_esp_x+cfg.offset_x,
-    cfg.half_esp_y+cfg.offset_y,
-    cfg.default_z
-  };
-
-  LegConfig rf = {
-    cfg.half_esp_x+cfg.offset_x,
-    -cfg.half_esp_y+cfg.offset_y,
-    cfg.default_z
-  };
-
-  LegConfig lb = {
-    -cfg.half_esp_x+cfg.offset_x,
-    cfg.half_esp_y+cfg.offset_y,
-    cfg.default_z
-  };
-
-  LegConfig rb = {
-    -cfg.half_esp_x+cfg.offset_x,
-    -cfg.half_esp_y+cfg.offset_y,
-    cfg.default_z
-  };
-
-  double t = 0;
-  double freq = 30; // hz
-  struct timeval t1 = {0,0}, t2 = {0,0};
+  AnimWalk walk;
+  AnimStand stand;
 
   map<string, OptoforceData> opto;
 
+  RobotState robot_state;
+
+  int prev_match_state = 0;
+  int cur_match_state = 0;
+
   while(1) {
+
+      cur_match_state = match(robot_state.tirette);
+      if(prev_match_state != cur_match_state) {
+          if(cur_match_state == -1) {
+              cout << "tirette" << endl;
+            }
+          if(cur_match_state == 0) {
+              cout << "none" << endl;
+            }
+          if(cur_match_state == 1) {
+              cout << "match" << endl;
+            }
+          if(cur_match_state == 2) {
+              cout << "funny" << endl;
+            }
+        }
+      prev_match_state = cur_match_state;
+
+      update_servo(sock_pwm_out, cur_match_state);
+      if(cur_match_state != 1 ||
+         detect(robot_state.left_gp2, robot_state.right_gp2)) {
+          stand.update();
+        }
+      else {
+          walk.update();
+        }
 
       {
         zmq::message_t msg;
         if(sock_gp2_in.recv(&msg, ZMQ_NOBLOCK)) {
-             IdValue iv;
+            IdValue iv;
 
             std::stringstream ss;
             ss.write((char*)msg.data(), msg.size());
@@ -252,6 +217,12 @@ int main(int, char**) {
             }
 
             //cout << iv.id << " \t" << iv.value << endl;
+            if(iv.id == 1) {
+                robot_state.right_gp2 = iv.value;
+              }
+            if(iv.id == 2) {
+                robot_state.left_gp2 = iv.value;
+              }
           }
       }
 
@@ -268,10 +239,11 @@ int main(int, char**) {
               ar(bumpers);
             }
 
-            for(int i = 0 ; i < bumpers.size() ; i++) {
-                cout << bumpers[i] << " \t";
-              }
-            cout << endl;
+            robot_state.tirette = (bumpers[4] == false);
+            //            for(int i = 0 ; i < bumpers.size() ; i++) {
+            //                cout << bumpers[i] << " \t";
+            //              }
+            //            cout << endl;
           }
       }
 
@@ -295,43 +267,6 @@ int main(int, char**) {
           }
       }
 
-      gettimeofday(&t2, NULL);
-      if(abs(t2.tv_usec - t1.tv_usec) > 1000000 / freq) {
-          t1.tv_sec = t2.tv_sec;
-          t1.tv_usec = t2.tv_usec;
-
-          //t = 7.5;
-          t = add_mod(t, 1.0/freq, cfg.period);
-          EndpointAction ea;
-          vector<EndpointAction> eas;
-
-          ea.label = "LF";
-          ea.enable = true;
-          get_walk_pos_1(cfg, lf, opto, t, ea.x, ea.y, ea.z);
-          //send(sock_ik_out, ea);
-          eas.push_back(ea);
-
-          ea.label = "RF";
-          ea.enable = true;
-          get_walk_pos_2(cfg, rf, opto, t, ea.x, ea.y, ea.z);
-          //send(sock_ik_out, ea);
-          eas.push_back(ea);
-
-          ea.label = "LB";
-          ea.enable = true;
-          get_walk_pos_2(cfg, lb, opto, t, ea.x, ea.y, ea.z);
-          //send(sock_ik_out, ea);
-          eas.push_back(ea);
-
-          ea.label = "RB";
-          ea.enable = true;
-          get_walk_pos_1(cfg, rb, opto, t, ea.x, ea.y, ea.z);
-          //send(sock_ik_out, ea);
-          eas.push_back(ea);
-
-          //cout << ea.x << " " << ea.y << " " << ea.z << endl;
-          send(sock_ik_out, eas);
-        }
     }
 
   return 0;
