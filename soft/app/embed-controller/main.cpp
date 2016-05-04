@@ -70,7 +70,7 @@ PortClient::PortClient(QSerialPort& port)
   QObject::connect(&port, SIGNAL(error(QSerialPort::SerialPortError)), this, SLOT(onError()));
   QObject::connect(&_watchdog, SIGNAL(timeout()), this, SLOT(onTimeout()));
 
-  _watchdog.setInterval(1000);
+  _watchdog.setInterval(1500);
   _watchdog.start();
 
   _monitor.setInterval(1);

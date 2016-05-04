@@ -268,10 +268,10 @@ int main(int, char**) {
               ar(bumpers);
             }
 
-//            for(int i = 0 ; i < bumpers.size() ; i++) {
-//                cout << bumpers[i] << " \t";
-//              }
-//            cout << endl;
+            for(int i = 0 ; i < bumpers.size() ; i++) {
+                cout << bumpers[i] << " \t";
+              }
+            cout << endl;
           }
       }
 
