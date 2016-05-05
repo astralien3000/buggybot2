@@ -29,7 +29,7 @@ u16 i = 0;
 SCSwitcher sc;
 //auto& sc = sc2;
 
-Container::Buffer<128, char> inbuff;
+Container::Buffer<512, char> inbuff;
 
 void flush_inbuff(void) {
   while(!inbuff.isEmpty()) {
@@ -41,6 +41,7 @@ void flush_inbuff(void) {
 
 bool toggle1 = false;
 bool toggle2 = false;
+bool toggle3 = false;
 
 int main(int, char**) {
   wdt_enable(WDTO_120MS);
@@ -89,7 +90,10 @@ int main(int, char**) {
   UART::setHandler(MY_UART, UART::Event::RX_COMPLETE, [](){
       char c = UART::getChar(MY_UART);
       //parser.parse((u8*)&c, 1);
-      inbuff.enqueue(c);
+      if(!inbuff.enqueue(c)) {
+          led3.setValue(toggle3 = !toggle3);
+          inbuff.flush();
+        }
     });
 
   pwm1.setValue(100);

@@ -7,7 +7,7 @@
 using namespace std;
 
 double t = 0;
-double freq = 20; // hz
+double freq = 30; // hz
 
 struct WalkConfig {
   double offset_x = -10 - 20;

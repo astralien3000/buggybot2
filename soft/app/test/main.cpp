@@ -112,7 +112,7 @@ void update_servo(zmq::socket_t& sock_pwm_out, int cur_match_state) {
   static struct timeval t2 = {0,0};
 
   gettimeofday(&t2, NULL);
-  if(abs(t2.tv_usec - t1.tv_usec) > 1000000/2) {
+  if(abs(t2.tv_usec - t1.tv_usec) > 1000000/4) {
       t1.tv_sec = t2.tv_sec;
       t1.tv_usec = t2.tv_usec;
 
