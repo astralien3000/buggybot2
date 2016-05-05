@@ -39,6 +39,9 @@ void flush_inbuff(void) {
     }
 }
 
+bool toggle1 = false;
+bool toggle2 = false;
+
 int main(int, char**) {
   wdt_enable(WDTO_120MS);
 
@@ -49,6 +52,7 @@ int main(int, char**) {
   settings.word_size = 8;
 
   parser.addHandler(Protocol::DefaultHandler<Protocol::Message, Actuator::ServoPosition>([](const void* msg){
+      led1.setValue(toggle1 = !toggle1);
       wdt_reset();
       auto pak = *(Protocol::Pack<Protocol::Message, Actuator::ServoPosition>*)msg;
       if(pak.message.payload.enabled) {
@@ -64,6 +68,7 @@ int main(int, char**) {
     }));
 
   parser.addHandler(Protocol::DefaultHandler<Protocol::Message, Actuator::PWM>([](const void* msg) {
+      led2.setValue(toggle2 = !toggle2);
       wdt_reset();
       auto pak = *(Protocol::Pack<Protocol::Message, Actuator::PWM>*)msg;
       if(pak.message.payload.id == 1) {
