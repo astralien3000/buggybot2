@@ -31,6 +31,11 @@
 
 #include "anim_walk.hpp"
 #include "anim_stand.hpp"
+#include "anim_turn.hpp"
+
+#include "anim_walk3.hpp"
+
+#include "anim_door.hpp"
 
 using namespace std;
 
@@ -85,12 +90,15 @@ int match(bool tirette) {
 
 
       const uint32_t match_time = 90;
-      const uint32_t walk_time = 15;
+      const uint32_t door_time = 7;
 
       int32_t time = t2.tv_sec - t1.tv_sec;
       //cout << time << endl;
-      if(0 <= time && time <= walk_time) {
+      if(0 <= time && time <= match_time-5-door_time) {
           ret = 1;
+        }
+      else if(match_time - 5 - door_time <= time && time <= match_time-5) {
+          ret = 3;
         }
       else if(match_time < time && time <= match_time+5) {
           ret = 2;
@@ -167,6 +175,11 @@ int main(int, char**) {
 
   AnimWalk walk;
   AnimStand stand;
+  AnimTurn turn;
+
+  AnimWalk3 walk3;
+
+  AnimDoor door;
 
   map<string, OptoforceData> opto;
 
@@ -191,16 +204,24 @@ int main(int, char**) {
           if(cur_match_state == 2) {
               cout << "funny" << endl;
             }
+          if(cur_match_state == 3) {
+              cout << "door" << endl;
+            }
         }
       prev_match_state = cur_match_state;
 
       update_servo(sock_pwm_out, cur_match_state);
-      if(cur_match_state != 1 ||
-         detect(robot_state.left_gp2, robot_state.right_gp2)) {
-          stand.update();
+      if(match(robot_state.tirette) == 1) {
+          walk3.setSpeed(0.25, 0.09, -0.0002);
+          walk3.update();
+        }
+      else if(match(robot_state.tirette) == 3) {
+          //if(detect(robot_state.left_gp2, robot_state.right_gp2)) {
+          door.update();
         }
       else {
-          walk.update();
+          //if(detect(robot_state.left_gp2, robot_state.right_gp2)) {
+          stand.update();
         }
 
       {
