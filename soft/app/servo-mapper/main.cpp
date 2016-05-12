@@ -224,6 +224,8 @@ int main(int argc, char* argv[]) {
                 configs[hsa.id].id = hsa.id;
               }
 
+	    send_json(sock_embed_json_in, hsa);
+
             try {
               ServoConfig& config = configs[hsa.id];
               stringstream oss;
@@ -243,11 +245,10 @@ int main(int argc, char* argv[]) {
 
               sock_servo_in.send(msg, ZMQ_NOBLOCK);
 
-              //send_json(sock_embed_json_in, hsa);
-              //send_json(sock_servo_json_in, action);
+              send_json(sock_servo_json_in, action);
             }
             catch(const char* msg) {
-              //cout << "servo[" << (uint16_t)id << "] : " << msg << endl;
+	      cout << "ERROR : " << msg << endl;
             }
           }
       }
