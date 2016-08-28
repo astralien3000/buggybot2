@@ -46,8 +46,9 @@ int main(int, char**) {
 
   zmq::socket_t sock_teleopt_out(ctx, ZMQ_PUB);
   //sock_teleopt_out.connect("ipc://teleopt.out");
-  sock_teleopt_out.connect("tcp://buggybot.local:3333");
-  sock_teleopt_out.connect("tcp://192.168.1.33:3333");
+  //sock_teleopt_out.connect("tcp://buggybot.local:3333");
+  //sock_teleopt_out.connect("tcp://192.168.1.33:3333");
+  sock_teleopt_out.connect("tcp://localhost:3333");
 
   config_sock(sock_teleopt_out);
 

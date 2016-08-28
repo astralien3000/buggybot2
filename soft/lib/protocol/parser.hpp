@@ -6,7 +6,7 @@
 #include <container/list.hpp>
 #include <base/array.hpp>
 
-#define min(a, b) ((a < b) ? a : b)
+#define my_min(a, b) ((a < b) ? a : b)
 
 namespace Protocol {
 
@@ -103,7 +103,7 @@ namespace Protocol {
     u32 fillBuffer(const u8* buffer, u32 size) {
       u32 ret = 0;
       size += _size;
-      while(_size < min(MAX_BUFFER_SIZE, size)) {
+      while(_size < my_min(MAX_BUFFER_SIZE, size)) {
         _buffer[_size++] = *(buffer++);
         ret++;
       }

@@ -297,6 +297,7 @@ int main(int argc, char* argv[]) {
         if(!port.open(QIODevice::ReadWrite)) {
             if(ret == 4) show = false;
             else ret = 4;
+            cout << port.errorString() << endl;
             throw "Can't open port";
           }
 
