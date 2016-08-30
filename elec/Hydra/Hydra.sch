@@ -1,0 +1,496 @@
+EESchema Schematic File Version 2
+LIBS:power
+LIBS:device
+LIBS:transistors
+LIBS:conn
+LIBS:linear
+LIBS:regul
+LIBS:74xx
+LIBS:cmos4000
+LIBS:adc-dac
+LIBS:memory
+LIBS:xilinx
+LIBS:microcontrollers
+LIBS:dsp
+LIBS:microchip
+LIBS:analog_switches
+LIBS:motorola
+LIBS:texas
+LIBS:intel
+LIBS:audio
+LIBS:interface
+LIBS:digital-audio
+LIBS:philips
+LIBS:display
+LIBS:cypress
+LIBS:siliconi
+LIBS:opto
+LIBS:atmel
+LIBS:contrib
+LIBS:valves
+LIBS:embed-cache
+EELAYER 25 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 17
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Sheet
+S 7650 1550 550  1400
+U 56E720E2
+F0 "Com" 60
+F1 "Com.sch" 60
+F2 "GND" I L 7650 1850 60 
+F3 "TX1" I L 7650 2000 60 
+F4 "RX1" O L 7650 2100 60 
+F5 "TX2" I L 7650 2250 60 
+F6 "RX2" O L 7650 2350 60 
+F7 "SCL" I L 7650 2750 60 
+F8 "SDA" B L 7650 2850 60 
+F9 "+5V" I L 7650 1650 60 
+F10 "TX3" I L 7650 2500 60 
+F11 "RX3" O L 7650 2600 60 
+F12 "+7.5V" I L 7650 1750 60 
+$EndSheet
+$Sheet
+S 7650 3300 550  400 
+U 56E73C19
+F0 "GP2_1" 60
+F1 "GP2.sch" 60
+F2 "+5V" I L 7650 3400 60 
+F3 "GND" I L 7650 3500 60 
+F4 "Signal" O L 7650 3600 60 
+$EndSheet
+$Sheet
+S 7650 3900 550  400 
+U 56E745E7
+F0 "GP2_2" 60
+F1 "GP2.sch" 60
+F2 "+5V" I L 7650 4000 60 
+F3 "GND" I L 7650 4100 60 
+F4 "Signal" O L 7650 4200 60 
+$EndSheet
+$Sheet
+S 7650 4500 550  400 
+U 56E74A24
+F0 "GP2_3" 60
+F1 "GP2.sch" 60
+F2 "+5V" I L 7650 4600 60 
+F3 "GND" I L 7650 4700 60 
+F4 "Signal" O L 7650 4800 60 
+$EndSheet
+$Sheet
+S 7650 5100 550  400 
+U 56E74A29
+F0 "GP2_4" 60
+F1 "GP2.sch" 60
+F2 "+5V" I L 7650 5200 60 
+F3 "GND" I L 7650 5300 60 
+F4 "Signal" O L 7650 5400 60 
+$EndSheet
+$Sheet
+S 2850 4700 550  400 
+U 56E7A6CD
+F0 "Servo1" 60
+F1 "Servo.sch" 60
+F2 "GND" I R 3400 4900 60 
+F3 "+5V" I R 3400 4800 60 
+F4 "PWM" I R 3400 5000 60 
+$EndSheet
+$Sheet
+S 2850 5300 550  400 
+U 56E7FB11
+F0 "Servo2" 60
+F1 "Servo.sch" 60
+F2 "GND" I R 3400 5500 60 
+F3 "+5V" I R 3400 5400 60 
+F4 "PWM" I R 3400 5600 60 
+$EndSheet
+$Sheet
+S 2850 5900 550  400 
+U 56E7FE3A
+F0 "Servo3" 60
+F1 "Servo.sch" 60
+F2 "GND" I R 3400 6100 60 
+F3 "+5V" I R 3400 6000 60 
+F4 "PWM" I R 3400 6200 60 
+$EndSheet
+$Sheet
+S 2850 6500 550  400 
+U 56E7FE3F
+F0 "Servo4" 60
+F1 "Servo.sch" 60
+F2 "GND" I R 3400 6700 60 
+F3 "+5V" I R 3400 6600 60 
+F4 "PWM" I R 3400 6800 60 
+$EndSheet
+$Sheet
+S 2850 1550 550  400 
+U 56E778EA
+F0 "SwitchInput1" 60
+F1 "SwitchInput.sch" 60
+F2 "+5V" I R 3400 1650 60 
+F3 "GND" I R 3400 1750 60 
+F4 "Signal" O R 3400 1850 60 
+$EndSheet
+$Sheet
+S 2850 2150 550  400 
+U 56E80075
+F0 "SwitchInput2" 60
+F1 "SwitchInput.sch" 60
+F2 "+5V" I R 3400 2250 60 
+F3 "GND" I R 3400 2350 60 
+F4 "Signal" O R 3400 2450 60 
+$EndSheet
+$Sheet
+S 2850 2750 550  400 
+U 56E8038C
+F0 "SwitchInput3" 60
+F1 "SwitchInput.sch" 60
+F2 "+5V" I R 3400 2850 60 
+F3 "GND" I R 3400 2950 60 
+F4 "Signal" O R 3400 3050 60 
+$EndSheet
+$Sheet
+S 2850 3350 550  400 
+U 56E80391
+F0 "SwitchInput4" 60
+F1 "SwitchInput.sch" 60
+F2 "+5V" I R 3400 3450 60 
+F3 "GND" I R 3400 3550 60 
+F4 "Signal" O R 3400 3650 60 
+$EndSheet
+$Sheet
+S 2850 3950 550  400 
+U 56E805FD
+F0 "SwitchInput5" 60
+F1 "SwitchInput.sch" 60
+F2 "+5V" I R 3400 4050 60 
+F3 "GND" I R 3400 4150 60 
+F4 "Signal" O R 3400 4250 60 
+$EndSheet
+$Sheet
+S 5550 1150 700  750 
+U 56ECA5DC
+F0 "Power" 60
+F1 "Power.sch" 60
+F2 "+5Vlog" O L 5550 1250 60 
+F3 "GND" O L 5550 1550 60 
+F4 "+7.5V" O L 5550 1450 60 
+F5 "+5VADM" I L 5550 1700 60 
+F6 "RegulEnable" I L 5550 1800 60 
+F7 "+5Vpower" O L 5550 1350 60 
+$EndSheet
+Wire Wire Line
+	5550 1250 5450 1250
+Wire Wire Line
+	5550 1350 5450 1350
+Wire Wire Line
+	5550 1450 5450 1450
+Wire Wire Line
+	5550 1550 5450 1550
+Text Label 5450 1250 2    60   ~ 0
++5Vlog
+Text Label 5450 1350 2    60   ~ 0
++5Vpower
+Text Label 5450 1450 2    60   ~ 0
++7.5V
+Text Label 5450 1550 2    60   ~ 0
+GND
+Wire Wire Line
+	3400 1650 3500 1650
+Wire Wire Line
+	3400 1750 3500 1750
+Text Label 3500 1650 0    60   ~ 0
++5Vlog
+Text Label 3500 1750 0    60   ~ 0
+GND
+Wire Wire Line
+	3400 2250 3500 2250
+Wire Wire Line
+	3400 2350 3500 2350
+Text Label 3500 2250 0    60   ~ 0
++5Vlog
+Text Label 3500 2350 0    60   ~ 0
+GND
+Wire Wire Line
+	3400 2850 3500 2850
+Wire Wire Line
+	3400 2950 3500 2950
+Text Label 3500 2850 0    60   ~ 0
++5Vlog
+Text Label 3500 2950 0    60   ~ 0
+GND
+Wire Wire Line
+	3400 3450 3500 3450
+Wire Wire Line
+	3400 3550 3500 3550
+Text Label 3500 3450 0    60   ~ 0
++5Vlog
+Text Label 3500 3550 0    60   ~ 0
+GND
+Wire Wire Line
+	3400 4050 3500 4050
+Wire Wire Line
+	3400 4150 3500 4150
+Text Label 3500 4050 0    60   ~ 0
++5Vlog
+Text Label 3500 4150 0    60   ~ 0
+GND
+Wire Wire Line
+	3400 4800 3500 4800
+Wire Wire Line
+	3400 4900 3500 4900
+Text Label 3500 4800 0    60   ~ 0
++5Vpower
+Text Label 3500 4900 0    60   ~ 0
+GND
+Wire Wire Line
+	3400 5400 3500 5400
+Wire Wire Line
+	3400 5500 3500 5500
+Text Label 3500 5400 0    60   ~ 0
++5Vpower
+Text Label 3500 5500 0    60   ~ 0
+GND
+Wire Wire Line
+	3400 6000 3500 6000
+Wire Wire Line
+	3400 6100 3500 6100
+Text Label 3500 6000 0    60   ~ 0
++5Vpower
+Text Label 3500 6100 0    60   ~ 0
+GND
+Wire Wire Line
+	3400 6600 3500 6600
+Wire Wire Line
+	3400 6700 3500 6700
+Text Label 3500 6600 0    60   ~ 0
++5Vpower
+Text Label 3500 6700 0    60   ~ 0
+GND
+Wire Wire Line
+	7650 1650 7550 1650
+Wire Wire Line
+	7650 1750 7550 1750
+Wire Wire Line
+	5100 2800 5000 2800
+Text Label 7550 1650 2    60   ~ 0
++5Vlog
+Text Label 7550 1750 2    60   ~ 0
++7.5V
+Text Label 5000 2800 2    60   ~ 0
+GND
+Wire Wire Line
+	7550 3400 7650 3400
+Wire Wire Line
+	7550 3500 7650 3500
+Text Label 7550 3400 2    60   ~ 0
++5Vlog
+Text Label 7550 3500 2    60   ~ 0
+GND
+Wire Wire Line
+	7550 4000 7650 4000
+Wire Wire Line
+	7550 4100 7650 4100
+Text Label 7550 4000 2    60   ~ 0
++5Vlog
+Text Label 7550 4100 2    60   ~ 0
+GND
+Wire Wire Line
+	7550 4600 7650 4600
+Wire Wire Line
+	7550 4700 7650 4700
+Text Label 7550 4600 2    60   ~ 0
++5Vlog
+Text Label 7550 4700 2    60   ~ 0
+GND
+Wire Wire Line
+	7550 5200 7650 5200
+Wire Wire Line
+	7550 5300 7650 5300
+Text Label 7550 5200 2    60   ~ 0
++5Vlog
+Text Label 7550 5300 2    60   ~ 0
+GND
+$Sheet
+S 5100 2700 1150 1600
+U 5707BA3E
+F0 "Arduino" 60
+F1 "Arduino.sch" 60
+F2 "RegulEnable" O L 5100 2900 60 
+F3 "GP2_0" I R 6250 3900 60 
+F4 "GP2_1" I R 6250 4000 60 
+F5 "GP2_2" I R 6250 4100 60 
+F6 "GP2_3" I R 6250 4200 60 
+F7 "Input0" I L 5100 3200 60 
+F8 "Input1" I L 5100 3300 60 
+F9 "Input2" I L 5100 3400 60 
+F10 "Input3" I L 5100 3500 60 
+F11 "Input4" I L 5100 3600 60 
+F12 "GND" I L 5100 2800 60 
+F13 "SDA" B R 6250 3650 60 
+F14 "SCL" O R 6250 3550 60 
+F15 "RX1" I R 6250 2900 60 
+F16 "TX1" O R 6250 2800 60 
+F17 "RX2" I R 6250 3150 60 
+F18 "TX2" O R 6250 3050 60 
+F19 "RX3" I R 6250 3400 60 
+F20 "TX3" O R 6250 3300 60 
+F21 "PWM0" O L 5100 3800 60 
+F22 "PWM1" O L 5100 3900 60 
+F23 "PWM2" O L 5100 4000 60 
+F24 "PWM3" O L 5100 4100 60 
+F25 "+5VADM" O L 5100 3000 60 
+$EndSheet
+Wire Wire Line
+	6250 2800 6600 2800
+Wire Wire Line
+	6600 2800 6600 2000
+Wire Wire Line
+	6600 2000 7650 2000
+Wire Wire Line
+	6250 2900 6650 2900
+Wire Wire Line
+	6650 2900 6650 2100
+Wire Wire Line
+	6650 2100 7650 2100
+Wire Wire Line
+	6250 3050 6700 3050
+Wire Wire Line
+	6700 3050 6700 2250
+Wire Wire Line
+	6700 2250 7650 2250
+Wire Wire Line
+	6250 3150 6750 3150
+Wire Wire Line
+	6750 3150 6750 2350
+Wire Wire Line
+	6750 2350 7650 2350
+Wire Wire Line
+	6250 3300 6800 3300
+Wire Wire Line
+	6800 3300 6800 2500
+Wire Wire Line
+	6800 2500 7650 2500
+Wire Wire Line
+	6250 3400 6850 3400
+Wire Wire Line
+	6850 3400 6850 2600
+Wire Wire Line
+	6850 2600 7650 2600
+Wire Wire Line
+	6250 3550 6900 3550
+Wire Wire Line
+	6900 3550 6900 2750
+Wire Wire Line
+	6900 2750 7650 2750
+Wire Wire Line
+	6250 3650 6950 3650
+Wire Wire Line
+	6950 3650 6950 2850
+Wire Wire Line
+	6950 2850 7650 2850
+Wire Wire Line
+	6250 3900 7050 3900
+Wire Wire Line
+	7050 3900 7050 3600
+Wire Wire Line
+	7050 3600 7650 3600
+Wire Wire Line
+	6250 4000 7050 4000
+Wire Wire Line
+	7050 4000 7050 4200
+Wire Wire Line
+	7050 4200 7650 4200
+Wire Wire Line
+	6250 4100 7000 4100
+Wire Wire Line
+	7000 4100 7000 4800
+Wire Wire Line
+	7000 4800 7650 4800
+Wire Wire Line
+	6250 4200 6950 4200
+Wire Wire Line
+	6950 4200 6950 5400
+Wire Wire Line
+	6950 5400 7650 5400
+Wire Wire Line
+	5100 3800 4400 3800
+Wire Wire Line
+	4400 3800 4400 5000
+Wire Wire Line
+	4400 5000 3400 5000
+Wire Wire Line
+	3400 5600 4450 5600
+Wire Wire Line
+	4450 5600 4450 3900
+Wire Wire Line
+	4450 3900 5100 3900
+Wire Wire Line
+	5100 4000 4500 4000
+Wire Wire Line
+	4500 4000 4500 6200
+Wire Wire Line
+	4500 6200 3400 6200
+Wire Wire Line
+	3400 6800 4550 6800
+Wire Wire Line
+	4550 6800 4550 4100
+Wire Wire Line
+	4550 4100 5100 4100
+Wire Wire Line
+	3400 4250 4250 4250
+Wire Wire Line
+	4250 4250 4250 3600
+Wire Wire Line
+	4250 3600 5100 3600
+Wire Wire Line
+	4200 3650 4200 3500
+Wire Wire Line
+	4200 3500 5100 3500
+Wire Wire Line
+	3400 3050 4200 3050
+Wire Wire Line
+	4200 3050 4200 3400
+Wire Wire Line
+	4200 3400 5100 3400
+Wire Wire Line
+	3400 2450 4250 2450
+Wire Wire Line
+	4250 2450 4250 3300
+Wire Wire Line
+	4250 3300 5100 3300
+Wire Wire Line
+	3400 1850 4300 1850
+Wire Wire Line
+	4300 1850 4300 3200
+Wire Wire Line
+	4300 3200 5100 3200
+Wire Wire Line
+	5100 2900 4700 2900
+Wire Wire Line
+	4700 2900 4700 1800
+Wire Wire Line
+	4700 1800 5550 1800
+Wire Wire Line
+	5550 1700 4650 1700
+Wire Wire Line
+	4650 1700 4650 3000
+Wire Wire Line
+	4650 3000 5100 3000
+Wire Wire Line
+	3400 3650 4200 3650
+Wire Wire Line
+	7650 1850 7550 1850
+Text Label 7550 1850 2    60   ~ 0
+GND
+$EndSCHEMATC
