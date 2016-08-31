@@ -1,4 +1,0 @@
-(fp_lib_table
-  (lib (name teensy)(type KiCad)(uri /home/astralien3000/eirbot2015/buggybot2/elec/mod/teensy.pretty)(options "")(descr ""))
-  (lib (name pololu)(type KiCad)(uri /home/astralien3000/eirbot2015/buggybot2/elec/mod/pololu.pretty)(options "")(descr ""))
-)
