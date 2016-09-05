@@ -18,12 +18,14 @@ private:
     ss << "embed/" << hsa.id;
     ServoConfig config = n.param(ss.str(), default_config);
 
-    ServoAction sa;
-    sa.label = config.label;
-    sa.enable = false;
-    sa.angle = config.pos2angle(hsa.position);
+    if(config.ok()) {
+      ServoAction sa;
+      sa.label = config.label;
+      sa.enable = false;
+      sa.angle = config.pos2angle(hsa.position);
 
-    pub_servo_in.publish(sa);
+      pub_servo_in.publish(sa);
+    }
   }
 
 public:
@@ -45,14 +47,16 @@ private:
     ss << "servo/" << sa.label;
     ServoConfig config = n.param(ss.str(), default_config);
 
-    HardwareServoAction hsa;
-    hsa.id = config.id;
-    hsa.enable= sa.enable;
-    hsa.position = config.angle2pos(sa.angle);
-
-    pub_embed_out.publish(hsa);
+    if(config.ok()) {
+      HardwareServoAction hsa;
+      hsa.id = config.id;
+      hsa.enable= sa.enable;
+      hsa.position = config.angle2pos(sa.angle);
+      
+      pub_embed_out.publish(hsa);
+    }
   }
-
+  
 public:
   Servo2EmbedManager(ros::NodeHandle& n)
     : n(n),

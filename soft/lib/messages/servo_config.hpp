@@ -30,6 +30,21 @@ struct ServoConfig {
     ar(CEREAL_NVP(min_angle), CEREAL_NVP(max_angle));
   }
 
+  bool ok(void) {
+    const double p1 = calib1.position;
+    const double p2 = calib2.position;
+    const double a1 = calib1.angle;
+    const double a2 = calib2.angle;
+
+    if((p2-p1) == 0) {
+      return false;
+    }
+    if((a2-a1) == 0) {
+      return false;
+    }
+    return true;
+  }
+  
   double pos2angle(uint16_t pos) {
     const double p = pos;
     const double p1 = calib1.position;
@@ -38,8 +53,8 @@ struct ServoConfig {
     const double a2 = calib2.angle;
 
     if((p2-p1) == 0) {
-        throw("configuration error !");
-      }
+      return 0;
+    }
 
     return ((p-p1)/(p2-p1))*(a2-a1)+a1;
   }
@@ -52,8 +67,8 @@ struct ServoConfig {
     const double a2 = calib2.angle;
 
     if((a2-a1) == 0) {
-        throw("configuration error !");
-      }
+      return 0;
+    }
 
     return (uint16_t)(((a-a1)/(a2-a1))*(p2-p1)+p1);
   }
