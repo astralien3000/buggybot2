@@ -1,19 +1,8 @@
 #ifndef FAKEROS__ROS_HPP
 #define FAKEROS__ROS_HPP
 
-#include <zmq.hpp>
-
 namespace ros {
 
-  namespace Private {
-
-    zmq::context_t& get_zmq_context(void) {
-      static zmq::context_t ctx(5);
-      return ctx;
-    }
-    
-  }
-  
   void init(int& argc, char** argv, const std::string& name) {}
 
   struct Publisher {
