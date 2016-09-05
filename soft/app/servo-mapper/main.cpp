@@ -4,19 +4,47 @@
 #include <ros/ros.h>
 
 #include <sstream>
+#include <map>
 
-ServoConfig default_config;
+class ServoConfigManager {
+private:
+  ros::NodeHandle& n;
+  std::vector<ServoConfig> _configs;
+  
+public:
+  ServoConfigManager(ros::NodeHandle& n)
+    : n(n) {
+    n.getParam("configs", _configs);
+  }
+  
+  ServoConfig get(int id) {
+    for(auto it = _configs.begin() ; it != _configs.end() ; it++) {
+      if(it->id == id) {
+	return *it;
+      }
+    }
+    return ServoConfig();
+  }
+  
+  ServoConfig get(std::string label) {
+    for(auto it = _configs.begin() ; it != _configs.end() ; it++) {
+      if(it->label == label) {
+	return *it;
+      }
+    }
+    return ServoConfig();
+  }
+};
 
 class Embed2ServoManager {
 private:
   ros::NodeHandle& n;
+  ServoConfigManager& configs;
   ros::Subscriber sub_embed_in;
   ros::Publisher  pub_servo_in;
 
   void callback(const HardwareServoAction& hsa) {
-    std::stringstream ss;
-    ss << "embed/" << hsa.id;
-    ServoConfig config = n.param(ss.str(), default_config);
+    ServoConfig config = configs.get(hsa.id);
 
     if(config.ok()) {
       ServoAction sa;
@@ -29,8 +57,8 @@ private:
   }
 
 public:
-  Embed2ServoManager(ros::NodeHandle& n)
-    : n(n),
+  Embed2ServoManager(ros::NodeHandle& n, ServoConfigManager& configs)
+    : n(n), configs(configs),
       sub_embed_in(n.subscribe("embed/in", 1, &Embed2ServoManager::callback, this)),
       pub_servo_in(n.advertize<ServoAction>("servo/in", 1)) {
   }
@@ -39,13 +67,12 @@ public:
 class Servo2EmbedManager {
 private:
   ros::NodeHandle& n;
+  ServoConfigManager& configs;
   ros::Subscriber sub_servo_out;
   ros::Publisher  pub_embed_out;
 
   void callback(const ServoAction& sa) {
-    std::stringstream ss;
-    ss << "servo/" << sa.label;
-    ServoConfig config = n.param(ss.str(), default_config);
+    ServoConfig config = configs.get(sa.label);
 
     if(config.ok()) {
       HardwareServoAction hsa;
@@ -58,8 +85,8 @@ private:
   }
   
 public:
-  Servo2EmbedManager(ros::NodeHandle& n)
-    : n(n),
+  Servo2EmbedManager(ros::NodeHandle& n, ServoConfigManager& configs)
+    : n(n), configs(configs),
       sub_servo_out(n.subscribe("servo/out", 1, &Servo2EmbedManager::callback, this)),
       pub_embed_out(n.advertize<HardwareServoAction>("embed/out", 1)) {
   }
@@ -69,9 +96,10 @@ int main(int argc, char* argv[]) {
   ros::init(argc, argv, "servo-mapper");
 
   ros::NodeHandle n;
+  ServoConfigManager configs(n);
 
-  Embed2ServoManager e2s(n);
-  Servo2EmbedManager s2e(n);
+  Embed2ServoManager e2s(n, configs);
+  Servo2EmbedManager s2e(n, configs);
   
   ros::Rate loop_rate(30);
 

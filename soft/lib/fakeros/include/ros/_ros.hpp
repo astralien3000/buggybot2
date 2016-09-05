@@ -46,18 +46,15 @@ namespace ros {
 
     map<string, string> _p;
     
-    template<typename T> T param(const std::string& name, const T& param_default) {
-      if(_p.count(name) == 0) {
-	stringstream ss;
-	{
-	  cereal::JSONOutputArchive ar(ss);
-	  ar(param_default);
-	}
-	_p[name] = ss.str();
-	cout << ss.str() << endl;
-      }
-      return param_default;
+    template<typename T> bool getParam(const std::string& name, const T& param) {
+      return false;
     }
+
+    template<typename T> bool getCachedParam(const std::string& name, const T& param) {
+      return false;
+    }
+
+    template<typename T> void setParam(const std::string& name, const T& param) {}
 
   };
 
