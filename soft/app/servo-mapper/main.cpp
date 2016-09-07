@@ -4,32 +4,54 @@
 #include <ros/ros.h>
 
 #include <sstream>
-#include <map>
+#include <vector>
 
 class ServoConfigManager {
 private:
   ros::NodeHandle& n;
-  std::vector<ServoConfig> _configs;
+  std::vector<int> index;
+
+  void addToIndex(int id) {
+    for(uint32_t i = 0 ; i < index.size() ; i++) {
+      if(index[i] == id) {
+	return;
+      }
+    }
+
+    index.push_back(id);
+    n.setParam("configs", index);
+  }
+
+  std::string paramName(int id) {
+    std::stringstream ss;
+    ss << "configs/" << id;
+    return ss.str();
+  }
   
 public:
   ServoConfigManager(ros::NodeHandle& n)
     : n(n) {
-    n.getParam("configs", _configs);
+    n.getCachedParam("configs", index);
   }
   
   ServoConfig get(int id) {
-    for(auto it = _configs.begin() ; it != _configs.end() ; it++) {
-      if(it->id == id) {
-	return *it;
-      }
+    ServoConfig ret;
+    std::string pname = paramName(id);
+    n.getCachedParam(pname, ret);
+    if(ret.id != id) {
+      ret.id = id;
+      n.setParam(pname, ret);
+      addToIndex(id);
     }
-    return ServoConfig();
+    return ret;
   }
   
   ServoConfig get(std::string label) {
-    for(auto it = _configs.begin() ; it != _configs.end() ; it++) {
-      if(it->label == label) {
-	return *it;
+    for(uint32_t i = 0 ; i < index.size() ; i++) {
+      ServoConfig tmp;
+      n.getCachedParam(paramName(index[i]), tmp);
+      if(tmp.label == label) {
+	return tmp;
       }
     }
     return ServoConfig();
