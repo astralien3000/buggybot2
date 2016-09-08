@@ -7,20 +7,27 @@
 #include <msg.h>
 #include <xtimer.h>
 
+#define MAIN_MSG_QUEUE_SIZE (8)
+
 char ros_thread_stack[THREAD_STACKSIZE_MAIN];
-msg_t main_msg_queue[8];
+msg_t main_msg_queue[MAIN_MSG_QUEUE_SIZE];
 
 extern "C" int _netif_config(int argc, char** argv);
 
 void* ros_thread_func(void*) {
   printf("ROS Thread !\n");
-  msg_init_queue(main_msg_queue, 8);
+  msg_init_queue(main_msg_queue, MAIN_MSG_QUEUE_SIZE);
 
   puts("Waiting for address autoconf...");
   xtimer_sleep(3);
 
   puts("configured interfaces : ");
   _netif_config(0, NULL);
+
+  coap_add_endpoint("test/lool", COAP_METHOD_GET, handle_hello);
+  coap_add_endpoint("test/miew", COAP_METHOD_GET, handle_hello);
+  coap_add_endpoint("test/test", COAP_METHOD_GET, handle_hello);
+  coap_add_endpoint("test/erf", COAP_METHOD_GET, handle_hello);
 
   microcoap_server_loop();    
   return NULL;

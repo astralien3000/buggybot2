@@ -9,6 +9,8 @@
 #include <coap.h>
 #include <string.h>
 
+#define COAP_MAX_ENDPOINTS (50)
+
 #define MAX_RESPONSE_LEN 500
 static uint8_t response[MAX_RESPONSE_LEN] = { 0 };
 
@@ -17,32 +19,15 @@ static int handle_get_well_known_core(coap_rw_buffer_t *scratch,
                                       coap_packet_t *outpkt,
                                       uint8_t id_hi, uint8_t id_lo);
 
-static int handle_get_riot_board(coap_rw_buffer_t *scratch,
-                                 const coap_packet_t *inpkt,
-                                 coap_packet_t *outpkt,
-                                 uint8_t id_hi, uint8_t id_lo);
+coap_endpoint_path_t endpoint_paths[COAP_MAX_ENDPOINTS] = {
+  { 2, { ".well-known", "core" } },
+  {0, {0} }
+};
 
-static const coap_endpoint_path_t path_well_known_core =
-        { 2, { ".well-known", "core" } };
-
-static const coap_endpoint_path_t path_riot_board =
-        { 2, { "riot", "board" } };
-
-static const coap_endpoint_path_t path1 =
-        { 2, { "config", "1" } };
-
-static const coap_endpoint_path_t path2 =
-        { 2, { "config", "33" } };
-
-coap_endpoint_t endpoints[] =
+coap_endpoint_t endpoints[COAP_MAX_ENDPOINTS] =
 {
     { COAP_METHOD_GET,	handle_get_well_known_core,
-        &path_well_known_core, "ct=40" },
-    { COAP_METHOD_GET,	handle_get_riot_board,
-        &path_riot_board,	   "ct=0"  },
-    { COAP_METHOD_GET,	handle_get_riot_board,
-        &path2,	   "ct=0"  },
-    /* marks the end of the endpoints array: */
+        &endpoint_paths[0], "ct=40" },
     { (coap_method_t)0, NULL, NULL, NULL }
 };
 
@@ -96,18 +81,56 @@ static int handle_get_well_known_core(coap_rw_buffer_t *scratch,
                               COAP_CONTENTTYPE_APPLICATION_LINKFORMAT);
 }
 
-static int handle_get_riot_board(coap_rw_buffer_t *scratch,
+int handle_hello(coap_rw_buffer_t *scratch,
         const coap_packet_t *inpkt, coap_packet_t *outpkt,
         uint8_t id_hi, uint8_t id_lo)
 {
-    const char *riot_name = RIOT_BOARD;
-    int len = strlen(RIOT_BOARD);
+    const char *riot_name = "Hello World !";
+    int len = strlen(riot_name);
 
     memcpy(response, riot_name, len);
-
-    endpoints[2].path = &path1;
 
     return coap_make_response(scratch, outpkt, (const uint8_t *)response, len,
                               id_hi, id_lo, &inpkt->tok, COAP_RSPCODE_CONTENT,
                               COAP_CONTENTTYPE_TEXT_PLAIN);
+}
+
+coap_endpoint_t* coap_get_endpoint_sentinel(void) {
+  for(int i = 0 ; i < COAP_MAX_ENDPOINTS ; i++) {
+    if(endpoints[i].method == 0) {
+      return &endpoints[i];
+    }
+  }
+  return NULL;
+}
+
+void coap_add_endpoint(const char* path, coap_method_t method, coap_endpoint_func func) {
+  coap_endpoint_t* endpoint = coap_get_endpoint_sentinel();
+  (endpoint+1)->method = (coap_method_t)0;
+
+  endpoint->method = method;
+  endpoint->handler = func;
+  endpoint->core_attr = "ct=0";
+
+  coap_endpoint_path_t* ep = (coap_endpoint_path_t*)malloc(sizeof(coap_endpoint_path_t));
+  ep->count = 0;
+  
+  uint32_t slash_pos = 0;
+  for(uint32_t i = 0 ; i < strlen(path) ; i++) {
+    if(path[i] == '/') {
+      char* e = (char*)malloc(sizeof(char) * (i+1));
+      memcpy(e, path, i);
+      e[i] = '\0';
+      slash_pos = i+1;
+      ep->elems[ep->count] = e;
+      ep->count++;
+    }
+  }
+  char* e = (char*)malloc(sizeof(char) * strlen(path)-slash_pos);
+  memcpy(e, path+slash_pos, strlen(path)-slash_pos);
+  e[strlen(path)-slash_pos] = '\0';
+  ep->elems[ep->count] = e;
+  ep->count++;
+
+  endpoint->path = ep;
 }
