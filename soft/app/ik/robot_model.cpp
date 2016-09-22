@@ -12,22 +12,22 @@ struct Leg {
 };
 
 struct LF : Leg<LF> {
-  using endpoint = ik_export::objects::armature::bones::forearm_left_front::endpoint;
+  using endpoint = ik_export::objects::robot_armature::bones::joint_forearm_lf::endpoint;
   using Chain = ChainFromIKExport<endpoint>::ChainBuilder::Chain;
 };
 
 struct RF : Leg<RF> {
-  using endpoint = ik_export::objects::armature::bones::forearm_right_front::endpoint;
+  using endpoint = ik_export::objects::robot_armature::bones::joint_forearm_rf::endpoint;
   using Chain = ChainFromIKExport<endpoint>::ChainBuilder::Chain;
 };
 
 struct LB : Leg<LB> {
-  using endpoint = ik_export::objects::armature::bones::forearm_left_back::endpoint;
+  using endpoint = ik_export::objects::robot_armature::bones::joint_forearm_lb::endpoint;
   using Chain = ChainFromIKExport<endpoint>::ChainBuilder::Chain;
 };
 
 struct RB : Leg<RB> {
-  using endpoint = ik_export::objects::armature::bones::forearm_right_back::endpoint;
+  using endpoint = ik_export::objects::robot_armature::bones::joint_forearm_rb::endpoint;
   using Chain = ChainFromIKExport<endpoint>::ChainBuilder::Chain;
 };
 
