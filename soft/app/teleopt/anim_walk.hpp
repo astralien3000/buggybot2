@@ -10,19 +10,19 @@ double t = 0;
 double freq = 30; // hz
 
 struct WalkConfig {
-  double offset_x = -10 - 20;
+  double offset_x = 0;
   double half_esp_x = 120;
 
   double offset_y = 0;
-  double half_esp_y = 120;
+  double half_esp_y = 90;
 
-  double default_z = -180;
-  double delta_z = 40;
+  double default_z = -190;
+  double delta_z = 10;
 
-  double period = 2;
+  double period = 1;
 
-  double step_up_ratio = 0.25;
-  double move_ratio = 0.2;
+  double step_up_ratio = 0.5;
+  double move_ratio = 0.4;
 
   double step_size = 40;
 };

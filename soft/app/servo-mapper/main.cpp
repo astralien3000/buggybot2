@@ -248,7 +248,7 @@ int main(int argc, char* argv[]) {
               send_json(sock_servo_json_in, action);
             }
             catch(const char* msg) {
-	      cout << "ERROR : " << msg << endl;
+	      //cout << "ERROR : " << msg << endl;
             }
           }
       }

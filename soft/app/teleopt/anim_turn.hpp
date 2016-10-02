@@ -17,9 +17,9 @@ class AnimTurn : public Animation {
 
 public:
   AnimTurn() {
-    cfg.step_up_ratio = 0.15;
-    cfg.move_ratio = 0.125;
-    cfg.offset_y = -5;
+    cfg.step_up_ratio = 0.5;
+    cfg.move_ratio = 0.4;
+    cfg.offset_y = 0;
   }
 
   LegConfig lf = {
