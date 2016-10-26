@@ -270,10 +270,12 @@ int main(int, char**) {
 
   zmq::socket_t sock_servo_in(ctx, ZMQ_SUB);
   sock_servo_in.connect("ipc://servo.in");
+  sock_servo_in.bind("ipc://debug.servo.in");
   sock_servo_in.setsockopt(ZMQ_SUBSCRIBE, 0, 0);
 
   zmq::socket_t sock_servo_out(ctx, ZMQ_PUB);
   sock_servo_out.connect("ipc://servo.out");
+  sock_servo_out.bind("ipc://debug.servo.out");
 
   zmq::socket_t sock_ik_in(ctx, ZMQ_PUB);
   sock_ik_in.bind("ipc://ik.in");
