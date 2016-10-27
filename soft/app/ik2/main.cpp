@@ -123,7 +123,7 @@ int main(int, char**) {
   map<string, ServoUpdate> servo_update;
 
   // Model config
-  RobotModel bot(0.0175, 12000000, -1);
+  RobotModel bot(0.003, 100, 1);
   AnglesConverter ac(bot);
 
   ac.setAngleConvertion(RobotModel::Leg::LF, 2, 0, -1);
@@ -135,6 +135,11 @@ int main(int, char**) {
   ac.setAngleConvertion(RobotModel::Leg::LB, 0, 0, -1);
 
   ac.setAngleConvertion(RobotModel::Leg::RB, 1, 0, -1);
+
+  ac.setAngle(RobotModel::Leg::LF, 2, 3.1415/2);
+  ac.setAngle(RobotModel::Leg::RF, 2, 3.1415/2);
+  ac.setAngle(RobotModel::Leg::LB, 2, 3.1415/2);
+  ac.setAngle(RobotModel::Leg::RB, 2, 3.1415/2);
 
   // IO config
   zmq::context_t ctx(6);
@@ -173,7 +178,7 @@ int main(int, char**) {
     try {
       zmq::message_t msg;
       if(sock_servo_in.recv(&msg, ZMQ_NOBLOCK)) {
-	cout << "SERVO_IN" << endl;
+	//cout << "SERVO_IN" << endl;
 	std::stringstream ss;
 	ss.write((char*)msg.data(), msg.size());
 	cereal::BinaryInputArchive ar(ss);
@@ -196,7 +201,7 @@ int main(int, char**) {
     {
       zmq::message_t msg;
       if(sock_ik_out.recv(&msg, ZMQ_NOBLOCK)) {
-	cout << "IK_OUT" << endl;
+	//cout << "IK_OUT" << endl;
 	std::stringstream ss;
 	ss.write((char*)msg.data(), msg.size());
 	cereal::BinaryInputArchive ar(ss);
