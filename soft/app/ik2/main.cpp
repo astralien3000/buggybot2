@@ -123,7 +123,7 @@ int main(int, char**) {
   map<string, ServoUpdate> servo_update;
 
   // Model config
-  RobotModel bot(0.00325, 100, 1);
+  RobotModel bot(0.0175, 12000000, -1);
   AnglesConverter ac(bot);
 
   ac.setAngleConvertion(RobotModel::Leg::LF, 2, 0, -1);

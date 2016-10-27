@@ -34,10 +34,10 @@ void robot_armature_joint_forearm_rb_endpoint::forward_kinematics(double q0, dou
 
 double robot_armature_joint_forearm_rb_endpoint::distance_from_target(const matrix<4, 1>& target, double q0_io, double q1_io, double q2_io, matrix<4, 1>& dist_out) {
   forward_kinematics(q0_io, q1_io, q2_io, dist_out);
-  dist_out[0] = dist_out[0] - target[0];
-  dist_out[1] = dist_out[1] - target[1];
-  dist_out[2] = dist_out[2] - target[2];
-  dist_out[3] = dist_out[3] - target[3];
+  dist_out[0] = target[0] - dist_out[0];
+  dist_out[1] = target[1] - dist_out[1];
+  dist_out[2] = target[2] - dist_out[2];
+  dist_out[3] = target[3] - dist_out[3];
   const double ret = sqrt(dist_out[0]*dist_out[0] + dist_out[1]*dist_out[1] + dist_out[2]*dist_out[2] + dist_out[3]*dist_out[3]);
   return ret;
 }
