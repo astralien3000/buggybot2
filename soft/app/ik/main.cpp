@@ -249,7 +249,7 @@ int main(int, char**) {
   map<string, ServoUpdate> servo_update;
 
   // Model config
-  RobotModel bot(0.00325, 100, 1);
+  RobotModel bot(0.003, 100, 1);
   AnglesConverter ac(bot);
 
   ac.setAngleConvertion(RobotModel::Leg::LF, 2, 0, -1);
@@ -261,6 +261,11 @@ int main(int, char**) {
   ac.setAngleConvertion(RobotModel::Leg::LB, 0, 0, -1);
 
   ac.setAngleConvertion(RobotModel::Leg::RB, 1, 0, -1);
+
+  ac.setAngle(RobotModel::Leg::LF, 2, 3.1415/2);
+  ac.setAngle(RobotModel::Leg::RF, 2, 3.1415/2);
+  ac.setAngle(RobotModel::Leg::LB, 2, 3.1415/2);
+  ac.setAngle(RobotModel::Leg::RB, 2, 3.1415/2);
 
   // Opto config
   OptoCorrection correction;

@@ -13,7 +13,7 @@ void robot_armature_joint_forearm_lf_endpoint::forward_kinematics(double q0, dou
   double tmp8 = tmp2*tmp7;
   double tmp9 = tmp5*tmp7;
   double tmp10 = sin(q2);
-  double tmp11 = 8.89999961853027*tmp10;
+  double tmp11 = 8.89999961855555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555553027*tmp10;
   double tmp12 = 8.88178366760567e-15*tmp0 + 9.99999940395355*tmp1 + 8.11379212921999e-16*tmp4 + 5.29617938182592e-17*tmp6 - 5.29617938182592e-17*tmp8 + 8.11379212921999e-16*tmp9 - 3.94430429100619e-30;
   double tmp13 = cos(q2);
   double tmp14 = 9.5367431640625e-7*tmp13;
@@ -51,9 +51,6 @@ double robot_armature_joint_forearm_lf_endpoint::distance_from_target(const matr
   const double ret = sqrt(dist_out[0]*dist_out[0] + dist_out[1]*dist_out[1] + dist_out[2]*dist_out[2] + dist_out[3]*dist_out[3]);
   return ret;
 }
-
-#include <iostream>
-using namespace std;
 
 void robot_armature_joint_forearm_lf_endpoint::inverse_kinematics_step(const matrix<4, 1>& target, double& q0_io, double& q1_io, double& q2_io, double coeff) {
   matrix<4, 1> dist;
@@ -127,9 +124,6 @@ void robot_armature_joint_forearm_lf_endpoint::inverse_kinematics_step(const mat
   delta[1] = dist[0]*(-tmp11*tmp40 + tmp14*tmp40 + tmp15*tmp41 + tmp17*tmp41 - 1.64364342936096e-6*tmp35 + 7.00000095367433*tmp36 - 7.00000095367433*tmp38 - 1.64364342936096e-6*tmp39) + dist[1]*(-tmp11*tmp49 + tmp14*tmp49 + tmp15*tmp48 + tmp17*tmp48 - 7.00000095367433*tmp43 - 1.64364342936096e-6*tmp44 - 1.64364342936096e-6*tmp46 + 7.00000095367433*tmp47) + dist[2]*(-tmp11*tmp56 + tmp14*tmp56 + tmp15*tmp57 + tmp17*tmp57 - 1.64364342936096e-6*tmp51 + 7.00000095367433*tmp52 - 7.00000095367433*tmp54 - 1.64364342936096e-6*tmp55);
   delta[2] = dist[0]*(-tmp11*tmp59 + tmp14*tmp59 - tmp15*tmp58 - tmp17*tmp58) + dist[1]*(-tmp11*tmp61 + tmp14*tmp61 - tmp15*tmp60 - tmp17*tmp60) + dist[2]*(-tmp11*tmp63 + tmp14*tmp63 - tmp15*tmp62 - tmp17*tmp62);
   const double delta_norm = sqrt(delta[0]*delta[0] + delta[1]*delta[1] + delta[2]*delta[2]);
-  //cout << delta[0] << " ";
-  //cout << delta[1] << " ";
-  //cout << delta[2] << endl;
   if(delta_norm != 0) {
     const double gain = coeff*dist_norm/delta_norm;
     q0_io = q0_io+(delta[0]*gain);
@@ -138,6 +132,8 @@ void robot_armature_joint_forearm_lf_endpoint::inverse_kinematics_step(const mat
   }
 }
 
+#include <iostream>
+using namespace std;
 
 bool robot_armature_joint_forearm_lf_endpoint::inverse_kinematics(const matrix<4, 1>& target, double& q0_io, double& q1_io, double& q2_io, double coeff, double stop_dist, int max_iter) {
   matrix<4, 1> tmp;
@@ -146,12 +142,11 @@ bool robot_armature_joint_forearm_lf_endpoint::inverse_kinematics(const matrix<4
   }
   for(int i = 0 ; i < max_iter ; i++) {
     inverse_kinematics_step(target, q0_io, q1_io, q2_io, coeff);
-    //cout << distance_from_target(target, q0_io, q1_io, q2_io, tmp) << endl;
     if(stop_dist >= distance_from_target(target, q0_io, q1_io, q2_io, tmp)) {
       cout << "OK " << i << endl;
       return true;
     }
   }
-  cout << "MAX_ITER" << endl;
+  cout << "MAX_ITER " << max_iter << endl;
   return false;
 }

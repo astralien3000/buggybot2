@@ -31,10 +31,13 @@ struct RB : Leg<RB> {
   using Chain = ChainFromIKExport<endpoint>::ChainBuilder::Chain;
 };
 
+#include <iostream>
+using namespace std;
+
 template<typename Chain>
-bool gradient_method(Matrix<double, 4,1> target, Matrix<double, 3, 1>& angles, double gain, uint16_t max_iter, double stop_dist) {
+bool gradient_method(Matrix<double, 4,1> target, Matrix<double, 3, 1>& angles, double gain, int max_iter, double stop_dist) {
   auto position = Chain::forward(angles);
-  uint16_t count = 0;
+  int count = 0;
 
   while(norm(target-position) > stop_dist && count < max_iter) {
       auto dangles = Chain::inverseStep(target,angles);
@@ -46,6 +49,7 @@ bool gradient_method(Matrix<double, 4,1> target, Matrix<double, 3, 1>& angles, d
       count++;
     }
 
+  cout << "END " << count << endl;
   return norm(target-position) <= stop_dist;
 }
 
