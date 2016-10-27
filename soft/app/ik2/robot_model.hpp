@@ -6,7 +6,7 @@
 class RobotModel {
 private:
   double _gain;
-  uint16_t _max_iter;
+  int _max_iter;
   double _stop_dist;
   double _angles[12];
 
@@ -19,7 +19,7 @@ public:
     NONE = 4
   };
 
-  inline RobotModel(double gain, uint16_t max_iter, double stop_dist)
+  inline RobotModel(double gain, int max_iter, double stop_dist)
     : _gain(gain), _max_iter(max_iter), _stop_dist(stop_dist) {
   }
 
@@ -31,11 +31,11 @@ public:
     _gain = gain;
   }
 
-  inline uint16_t getGradientMethodMaxIterations(void) {
+  inline int getGradientMethodMaxIterations(void) {
     return _max_iter;
   }
 
-  inline void setGradientMethodMaxIterations(uint16_t max) {
+  inline void setGradientMethodMaxIterations(int max) {
     _max_iter = max;
   }
 

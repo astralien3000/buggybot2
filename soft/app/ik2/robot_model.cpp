@@ -60,7 +60,7 @@ bool RobotModel::setEndpoint(Leg leg, Matrix<double, 3,1> pos) {
     double q0 = getAngle(Leg::LF, 0);
     double q1 = getAngle(Leg::LF, 1);
     double q2 = getAngle(Leg::LF, 2);
-    LF::inverse_kinematics_step(hpos, q0,q1,q2, _gain);
+    LF::inverse_kinematics(hpos, q0,q1,q2, _gain, _stop_dist, _max_iter);
     setAngle(Leg::LF, 0, q0);
     setAngle(Leg::LF, 1, q1);
     setAngle(Leg::LF, 2, q2);
@@ -69,7 +69,7 @@ bool RobotModel::setEndpoint(Leg leg, Matrix<double, 3,1> pos) {
     double q0 = getAngle(Leg::RF, 0);
     double q1 = getAngle(Leg::RF, 1);
     double q2 = getAngle(Leg::RF, 2);
-    RF::inverse_kinematics_step(hpos, q0,q1,q2, _gain);
+    RF::inverse_kinematics(hpos, q0,q1,q2, _gain, _stop_dist, _max_iter);
     setAngle(Leg::RF, 0, q0);
     setAngle(Leg::RF, 1, q1);
     setAngle(Leg::RF, 2, q2);
@@ -78,7 +78,7 @@ bool RobotModel::setEndpoint(Leg leg, Matrix<double, 3,1> pos) {
     double q0 = getAngle(Leg::LB, 0);
     double q1 = getAngle(Leg::LB, 1);
     double q2 = getAngle(Leg::LB, 2);
-    LB::inverse_kinematics_step(hpos, q0,q1,q2, _gain);
+    LB::inverse_kinematics(hpos, q0,q1,q2, _gain, _stop_dist, _max_iter);
     setAngle(Leg::LB, 0, q0);
     setAngle(Leg::LB, 1, q1);
     setAngle(Leg::LB, 2, q2);
@@ -87,7 +87,7 @@ bool RobotModel::setEndpoint(Leg leg, Matrix<double, 3,1> pos) {
     double q0 = getAngle(Leg::RB, 0);
     double q1 = getAngle(Leg::RB, 1);
     double q2 = getAngle(Leg::RB, 2);
-    RB::inverse_kinematics_step(hpos, q0,q1,q2, _gain);
+    RB::inverse_kinematics(hpos, q0,q1,q2, _gain, _stop_dist, _max_iter);
     setAngle(Leg::RB, 0, q0);
     setAngle(Leg::RB, 1, q1);
     setAngle(Leg::RB, 2, q2);

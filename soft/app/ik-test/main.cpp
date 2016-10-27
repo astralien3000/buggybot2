@@ -79,34 +79,80 @@ int main(int, char**) {
     "RB0", "RB1", "RB2", 
   };
 
-  const double angles[] = {
-    1, 0, 0,
+  double angles[] = {
+    0, 0, 0,
     0, 0, 0,
     0, 0, 0,
     0, 0, 0,
   };
+
+  vector<EndpointAction> eas;
+  EndpointAction cmd;
+  cmd.label = "LF";
+  cmd.enable = true;
+  cmd.x = 90;
+  cmd.y = 90;
+  cmd.z = -150;
+  eas.push_back(cmd);
+
+  send(sock_ik_out, eas);
+  debug("send", eas);
+
+  {
+    zmq::message_t msg;
+    sock_servo_out.recv(&msg);
+    std::stringstream ss;
+    ss.write((char*)msg.data(), msg.size());
+    vector<ServoAction> sas;
+    
+    cereal::BinaryInputArchive ar(ss);
+    ar(sas);
+    debug("recv", sas);
+
+    for(auto it = sas.begin() ; it != sas.end() ; it++) {
+      ServoAction& sa = *it;
+      for(int i = 0 ; i < 12 ; i++) {
+	if(sa.label == lbls[i]) {
+	  angles[i] = sa.angle;
+	}
+      }
+    }
+  }
 
   ServoAction action;
   action.enable = true;
 
   for(int i = 0 ; i < 12 ; i++) {
     action.label = lbls[i];
-    action.angle = angles[i] * 90;
+    action.angle = angles[i];
     send(sock_servo_in, action);
     debug("send", action);
   }
+
+  EndpointAction res;
 
   for(int i = 0 ; i < 4 ; i++) {
     zmq::message_t msg;
     sock_ik_in.recv(&msg);
     std::stringstream ss;
     ss.write((char*)msg.data(), msg.size());
-    EndpointAction eas;
+    EndpointAction ea;
     
     cereal::BinaryInputArchive ar(ss);
-    ar(eas);
-    debug("recv", eas);
+    ar(ea);
+    debug("recv", ea);
+
+    if(ea.label == "LF") {
+      res = ea;
+    }
   }
-  
+
+  cout << endl;
+  cout << endl;
+  cout << "ACT : " << "\t" << angles[0] << "\t" << angles[1] << "\t" << angles[2] << endl;
+  cout << endl;
+  cout << "CMD : " << "\t" << cmd.x << "\t" << cmd.y << "\t" << cmd.z << endl;
+  cout << "RES : " << "\t" << res.x << "\t" << res.y << "\t" << res.z << endl;
+  cout << endl;
   return 0;
 }
