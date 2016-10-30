@@ -1,31 +1,6 @@
-#include <QtSerialPort/QtSerialPort>
-#include <QtWidgets/QApplication>
-#include <QString>
-#include <iostream>
-#include <cmath>
-#include <functional>
-#include <algorithm>
-#include <array>
-
 #include <unistd.h>
-#include <sys/time.h>
-
-#include <cereal/types/vector.hpp>
-
 #include <cereal/archives/json.hpp>
-#include <cereal/archives/binary.hpp>
-
 #include <zmq.hpp>
-
-#include <messages/servo_action.hpp>
-#include <messages/endpoint_action.hpp>
-#include <messages/optoforce_data.hpp>
-#include <messages/id_value.hpp>
-
-#include <filter/average.hpp>
-#include <filter/limiter.hpp>
-#include <filter/integral.hpp>
-#include <filter/derivate.hpp>
 
 using namespace std;
 
