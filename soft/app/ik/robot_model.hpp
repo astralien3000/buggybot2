@@ -8,9 +8,16 @@ private:
   double _gain;
   int _max_iter;
   double _stop_dist;
+  double _angles[12];
 
 public:
-  enum class Leg { LF, RF, LB, RB, NONE };
+  enum class Leg {
+    LF = 0,
+    RF = 1,
+    LB = 2,
+    RB = 3,
+    NONE = 4
+  };
 
   inline RobotModel(double gain, int max_iter, double stop_dist)
     : _gain(gain), _max_iter(max_iter), _stop_dist(stop_dist) {
@@ -46,7 +53,6 @@ public:
   Matrix<double, 3,1> getEndpoint(Leg leg);
   bool setEndpoint(Leg leg, Matrix<double, 3,1> pos);
 
-  Matrix<double, 4,4> getMatrix(Leg leg);
 };
 
 #endif//ROBOT_MODEL_HPP

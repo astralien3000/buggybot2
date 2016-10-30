@@ -18,7 +18,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3")
 
 file(GLOB_RECURSE MSG "${CMAKE_CURRENT_SOURCE_DIR}/../../lib/messages/*.hpp")
 
-add_executable(ik main.cpp ik_export.hpp chain_from_ik_export.hpp robot_model.hpp robot_model.cpp angles_converter.hpp ${MSG})
+file(GLOB SOURCE_CPP "*.cpp")
+file(GLOB SOURCE_HPP "*.hpp")
+
+add_executable(ik ${SOURCE_CPP} ${SOURCE_HPP} ${MSG})
 target_link_libraries(ik Qt5::Core Qt5::SerialPort Qt5::Widgets)
 target_link_libraries(ik Aversive++)
 target_link_libraries(ik zmq)

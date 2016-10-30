@@ -1,140 +1,97 @@
 #include "robot_model.hpp"
+#include "robot_armature_joint_forearm_lf_endpoint.hpp"
+#include "robot_armature_joint_forearm_rf_endpoint.hpp"
+#include "robot_armature_joint_forearm_lb_endpoint.hpp"
+#include "robot_armature_joint_forearm_rb_endpoint.hpp"
 
-#include <chain_from_ik_export.hpp>
-#include <ik_export.hpp>
-
-template<typename Derivate>
-struct Leg {
-  static Matrix<double, 3,1>& anglesInstance(void) {
-    static Matrix<double, 3,1> ret;
-    return ret;
-  }
-};
-
-struct LF : Leg<LF> {
-  using endpoint = ik_export::objects::robot_armature::bones::joint_forearm_lf::endpoint;
-  using Chain = ChainFromIKExport<endpoint>::ChainBuilder::Chain;
-};
-
-struct RF : Leg<RF> {
-  using endpoint = ik_export::objects::robot_armature::bones::joint_forearm_rf::endpoint;
-  using Chain = ChainFromIKExport<endpoint>::ChainBuilder::Chain;
-};
-
-struct LB : Leg<LB> {
-  using endpoint = ik_export::objects::robot_armature::bones::joint_forearm_lb::endpoint;
-  using Chain = ChainFromIKExport<endpoint>::ChainBuilder::Chain;
-};
-
-struct RB : Leg<RB> {
-  using endpoint = ik_export::objects::robot_armature::bones::joint_forearm_rb::endpoint;
-  using Chain = ChainFromIKExport<endpoint>::ChainBuilder::Chain;
-};
-
-#include <iostream>
-using namespace std;
-
-template<typename Chain>
-bool gradient_method(Matrix<double, 4,1> target, Matrix<double, 3, 1>& angles, double gain, int max_iter, double stop_dist) {
-  auto position = Chain::forward(angles);
-  int count = 0;
-
-  while(norm(target-position) > stop_dist && count < max_iter) {
-      auto dangles = Chain::inverseStep(target,angles);
-
-      double coef = norm(target-position)*gain;
-      angles = angles+dangles*coef;
-
-      position = Chain::forward(angles);
-      count++;
-    }
-
-  cout << "END " << count << endl;
-  return norm(target-position) <= stop_dist;
-}
-
+namespace LF = robot_armature_joint_forearm_lf_endpoint;
+namespace RF = robot_armature_joint_forearm_rf_endpoint;
+namespace LB = robot_armature_joint_forearm_lb_endpoint;
+namespace RB = robot_armature_joint_forearm_rb_endpoint;
 
 double RobotModel::getAngle(Leg leg, int id) {
-  if(leg == Leg::LF) {
-      return LF::anglesInstance()(id, 0);
-    }
-  else if(leg == Leg::RF) {
-      return RF::anglesInstance()(id, 0);
-    }
-  else if(leg == Leg::LB) {
-      return LB::anglesInstance()(id, 0);
-    }
-  else if(leg == Leg::RB) {
-      return RB::anglesInstance()(id, 0);
-    }
-
+  if(leg != Leg::NONE) {
+    return _angles[((int)leg)*3+id];
+  }
   return 0;
 }
-
+  
 void RobotModel::setAngle(Leg leg, int id, double angle) {
-  if(leg == Leg::LF) {
-      LF::anglesInstance()(id, 0) = angle;
-    }
-  else if(leg == Leg::RF) {
-      RF::anglesInstance()(id, 0) = angle;
-    }
-  else if(leg == Leg::LB) {
-      LB::anglesInstance()(id, 0) = angle;
-    }
-  else if(leg == Leg::RB) {
-      RB::anglesInstance()(id, 0) = angle;
-    }
+  if(leg != Leg::NONE) {
+    _angles[((int)leg)*3+id] = angle;
+  }
 }
 
 Matrix<double, 3,1> RobotModel::getEndpoint(Leg leg) {
-  Matrix<double, 4,1> ret(0.0,0.0,0.0,1.0);
+  LF::matrix<4,1> ret {0.0,0.0,0.0,1.0};
 
   if(leg == Leg::LF) {
-      ret = LF::Chain::forward(LF::anglesInstance());
-    }
+    const double q0 = getAngle(Leg::LF, 0);
+    const double q1 = getAngle(Leg::LF, 1);
+    const double q2 = getAngle(Leg::LF, 2);
+    LF::forward_kinematics(q0,q1,q2, ret);
+  }
   else if(leg == Leg::RF) {
-      ret = RF::Chain::forward(RF::anglesInstance());
-    }
+    const double q0 = getAngle(Leg::RF, 0);
+    const double q1 = getAngle(Leg::RF, 1);
+    const double q2 = getAngle(Leg::RF, 2);
+    RF::forward_kinematics(q0,q1,q2, ret);
+  }
   else if(leg == Leg::LB) {
-      ret = LB::Chain::forward(LB::anglesInstance());
-    }
+    const double q0 = getAngle(Leg::LB, 0);
+    const double q1 = getAngle(Leg::LB, 1);
+    const double q2 = getAngle(Leg::LB, 2);
+    LB::forward_kinematics(q0,q1,q2, ret);
+  }
   else if(leg == Leg::RB) {
-      ret = RB::Chain::forward(RB::anglesInstance());
-    }
+    const double q0 = getAngle(Leg::RB, 0);
+    const double q1 = getAngle(Leg::RB, 1);
+    const double q2 = getAngle(Leg::RB, 2);
+    RB::forward_kinematics(q0,q1,q2, ret);
+  }
 
-  return Matrix<double, 3,1>(ret(0,0), ret(1,0), ret(2,0));
+  return Matrix<double, 3,1>(ret[0], ret[1], ret[2]);
 }
 
 bool RobotModel::setEndpoint(Leg leg, Matrix<double, 3,1> pos) {
-  Matrix<double, 4,1> hpos(pos(0,0),pos(1,0),pos(2,0),1.0);
+  LF::matrix<4,1> hpos {pos(0,0),pos(1,0),pos(2,0),1.0};
 
   if(leg == Leg::LF) {
-      return gradient_method<LF::Chain>(hpos, LF::anglesInstance(), _gain, _max_iter, _stop_dist);
-    }
+    double q0 = getAngle(Leg::LF, 0);
+    double q1 = getAngle(Leg::LF, 1);
+    double q2 = getAngle(Leg::LF, 2);
+    LF::inverse_kinematics(hpos, q0,q1,q2, _gain, _stop_dist, _max_iter);
+    setAngle(Leg::LF, 0, q0);
+    setAngle(Leg::LF, 1, q1);
+    setAngle(Leg::LF, 2, q2);
+  }
   else if(leg == Leg::RF) {
-      return gradient_method<RF::Chain>(hpos, RF::anglesInstance(), _gain, _max_iter, _stop_dist);
-    }
+    double q0 = getAngle(Leg::RF, 0);
+    double q1 = getAngle(Leg::RF, 1);
+    double q2 = getAngle(Leg::RF, 2);
+    RF::inverse_kinematics(hpos, q0,q1,q2, _gain, _stop_dist, _max_iter);
+    setAngle(Leg::RF, 0, q0);
+    setAngle(Leg::RF, 1, q1);
+    setAngle(Leg::RF, 2, q2);
+  }
   else if(leg == Leg::LB) {
-      return gradient_method<LB::Chain>(hpos, LB::anglesInstance(), _gain, _max_iter, _stop_dist);
-    }
+    double q0 = getAngle(Leg::LB, 0);
+    double q1 = getAngle(Leg::LB, 1);
+    double q2 = getAngle(Leg::LB, 2);
+    LB::inverse_kinematics(hpos, q0,q1,q2, _gain, _stop_dist, _max_iter);
+    setAngle(Leg::LB, 0, q0);
+    setAngle(Leg::LB, 1, q1);
+    setAngle(Leg::LB, 2, q2);
+  }
   else if(leg == Leg::RB) {
-      return gradient_method<RB::Chain>(hpos, RB::anglesInstance(), _gain, _max_iter, _stop_dist);
-    }
+    double q0 = getAngle(Leg::RB, 0);
+    double q1 = getAngle(Leg::RB, 1);
+    double q2 = getAngle(Leg::RB, 2);
+    RB::inverse_kinematics(hpos, q0,q1,q2, _gain, _stop_dist, _max_iter);
+    setAngle(Leg::RB, 0, q0);
+    setAngle(Leg::RB, 1, q1);
+    setAngle(Leg::RB, 2, q2);
+  }
 
   return false;
-}
-
-Matrix<double, 4,4> RobotModel::getMatrix(Leg leg) {
-  if(leg == Leg::LF) {
-      return LF::Chain::matrix(LF::anglesInstance());
-    }
-  else if(leg == Leg::RF) {
-      return RF::Chain::matrix(RF::anglesInstance());
-    }
-  else if(leg == Leg::LB) {
-      return LB::Chain::matrix(LB::anglesInstance());
-    }
-  else if(leg == Leg::RB) {
-      return RB::Chain::matrix(RB::anglesInstance());
-    }
 }
