@@ -1,8 +1,3 @@
-#include <QtSerialPort/QtSerialPort>
-#include <QtWidgets/QApplication>
-#include <QString>
-#include <QMatrix4x4>
-
 #include <iostream>
 #include <cmath>
 #include <functional>
@@ -22,8 +17,6 @@
 #include <messages/optoforce_data.hpp>
 
 #include <sys/time.h>
-
-#include <cas/function.hpp>
 
 using namespace std;
 
