@@ -1,6 +1,3 @@
-#include <QtSerialPort/QtSerialPort>
-#include <QtWidgets/QApplication>
-#include <QString>
 #include <iostream>
 #include <cmath>
 #include <functional>
