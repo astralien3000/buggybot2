@@ -5,6 +5,8 @@
 
 #define PACKED __attribute__((packed))
 
+using namespace Aversive::Base;
+
 namespace Actuator {
 
   struct Actuator {

@@ -8,6 +8,9 @@
 
 #define my_min(a, b) ((a < b) ? a : b)
 
+using namespace Aversive::Base;
+using namespace Aversive;
+
 namespace Protocol {
 
   typedef bool (*predicate_func_t)(const void*);

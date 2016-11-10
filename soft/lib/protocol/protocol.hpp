@@ -4,6 +4,9 @@
 #include <base/integer.hpp>
 
 #define PACKED __attribute__((packed))
+
+using namespace Aversive::Base;
+
 AP_HPP
 namespace Protocol {
   constexpr u16 SYNC = 0xA572;

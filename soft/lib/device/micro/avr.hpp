@@ -1,18 +1,18 @@
 /*
-    Aversive++                                                           
-    Copyright (C) 2014 Eirbot                                            
-                                                                         
-    This program is free software: you can redistribute it and/or modify 
-    it under the terms of the GNU General Public License as published by 
-    the Free Software Foundation, either version 3 of the License, or    
-    (at your option) any later version.                                  
-                                                                         
-    This program is distributed in the hope that it will be useful,      
-    but WITHOUT ANY WARRANTY; without even the implied warranty of       
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        
-    GNU General Public License for more details.                         
-                                                                         
-    You should have received a copy of the GNU General Public License    
+    Aversive++
+    Copyright (C) 2014 Eirbot
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
@@ -21,9 +21,9 @@
 
 //! \class AVR avr.hpp <micro/avr.hpp>
 //! \brief Class providing meta-data for AVR microcontrollers.
-class AVR {
+class avr {
   //! \brief Private default constructor to prevent instanciation.
-  AVR();
+  avr();
 
 public:
   //! \brief Give the API's ID of the pin on the given port at the given bit.

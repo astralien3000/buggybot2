@@ -3,9 +3,16 @@
 
 #include <device/input.hpp>
 #include <device/output.hpp>
+#include <base/integer.hpp>
+#include <avr/io.h>
+
+using namespace Aversive::Base;
 
 template<typename Derived>
-class _ServoBase : public Device::Input<u32, _ServoBase<Derived>>, public Device::Output<u32, _ServoBase<Derived>> {};
+class _ServoBase :
+  public Aversive::Device::Input<u32, _ServoBase<Derived>>,
+  public Aversive::Device::Output<u32, _ServoBase<Derived>> {
+};
 
 template<u32 PIN_ID>
 class Servo : public _ServoBase<Servo<PIN_ID>> {
@@ -31,6 +38,7 @@ public:
 #define SERVO_IMPL_HPP
 
 #include <device/hal/output_digital_pin.hpp>
+
 #include "board/adm2560.hpp"
 
 ////////////////////////////////////////////////////////////////

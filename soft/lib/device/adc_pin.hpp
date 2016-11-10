@@ -3,9 +3,12 @@
 
 #include <device/input.hpp>
 #include "board/adm2560.hpp"
+#include <avr/io.h>
+
+using namespace Aversive::Base;
 
 template<u32 ID>
-class ADCPin : public Device::Input<u16, ADCPin<ID>> {
+class ADCPin : public Aversive::Device::Input<u16, ADCPin<ID>> {
 public:
   ADCPin(void) {
     static_assert(ID == -1, "ADC IN invalid");
@@ -17,7 +20,7 @@ public:
 };
 
 template<>
-class ADCPin<ADM2560::Pinmap::A0> : public Device::Input<u16, ADCPin<ADM2560::Pinmap::A0>> {
+class ADCPin<ADM2560::Pinmap::A0> : public Aversive::Device::Input<u16, ADCPin<ADM2560::Pinmap::A0>> {
 public:
   ADCPin(void) {
   }
@@ -40,7 +43,7 @@ public:
 };
 
 template<>
-class ADCPin<ADM2560::Pinmap::A1> : public Device::Input<u16, ADCPin<ADM2560::Pinmap::A1>> {
+class ADCPin<ADM2560::Pinmap::A1> : public Aversive::Device::Input<u16, ADCPin<ADM2560::Pinmap::A1>> {
 public:
   ADCPin(void) {
   }
@@ -63,7 +66,7 @@ public:
 };
 
 template<>
-class ADCPin<ADM2560::Pinmap::A2> : public Device::Input<u16, ADCPin<ADM2560::Pinmap::A2>> {
+class ADCPin<ADM2560::Pinmap::A2> : public Aversive::Device::Input<u16, ADCPin<ADM2560::Pinmap::A2>> {
 public:
   ADCPin(void) {
   }
@@ -86,7 +89,7 @@ public:
 };
 
 template<>
-class ADCPin<ADM2560::Pinmap::A3> : public Device::Input<u16, ADCPin<ADM2560::Pinmap::A3>> {
+class ADCPin<ADM2560::Pinmap::A3> : public Aversive::Device::Input<u16, ADCPin<ADM2560::Pinmap::A3>> {
 public:
   ADCPin(void) {
   }
@@ -110,7 +113,7 @@ public:
 
 
 template<>
-class ADCPin<ADM2560::Pinmap::A8> : public Device::Input<u16, ADCPin<ADM2560::Pinmap::A8>> {
+class ADCPin<ADM2560::Pinmap::A8> : public Aversive::Device::Input<u16, ADCPin<ADM2560::Pinmap::A8>> {
 public:
   ADCPin(void) {
   }
@@ -133,7 +136,7 @@ public:
 };
 
 template<>
-class ADCPin<ADM2560::Pinmap::A9> : public Device::Input<u16, ADCPin<ADM2560::Pinmap::A9>> {
+class ADCPin<ADM2560::Pinmap::A9> : public Aversive::Device::Input<u16, ADCPin<ADM2560::Pinmap::A9>> {
 public:
   ADCPin(void) {
   }
@@ -156,7 +159,7 @@ public:
 };
 
 template<>
-class ADCPin<ADM2560::Pinmap::A10> : public Device::Input<u16, ADCPin<ADM2560::Pinmap::A10>> {
+class ADCPin<ADM2560::Pinmap::A10> : public Aversive::Device::Input<u16, ADCPin<ADM2560::Pinmap::A10>> {
 public:
   ADCPin(void) {
   }
@@ -179,7 +182,7 @@ public:
 };
 
 template<>
-class ADCPin<ADM2560::Pinmap::A11> : public Device::Input<u16, ADCPin<ADM2560::Pinmap::A11>> {
+class ADCPin<ADM2560::Pinmap::A11> : public Aversive::Device::Input<u16, ADCPin<ADM2560::Pinmap::A11>> {
 public:
   ADCPin(void) {
   }

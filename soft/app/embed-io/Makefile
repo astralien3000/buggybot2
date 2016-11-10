@@ -1,9 +1,13 @@
-AVERSIVE_ROOT=/usr/local/AversivePlusPlus
-MCU=atmega2560
+AVERSIVE_ROOT ?= $(PWD)/../../../../AversivePlusPlus
+CONAN ?= $(AVERSIVE_ROOT)/tools/bin/conan
+BIN= embed-io
 
-NAME=embed
-
-TOOLCHAIN=$(shell find $(AVERSIVE_ROOT) -name "$(MCU).cmake")
+TARGET ?= "atmega2560"
 
 all:
-	mkdir -p build && cd build && cmake .. -DAVERSIVE_ROOT=$(AVERSIVE_ROOT) -DCMAKE_TOOLCHAIN_FILE=$(TOOLCHAIN) -DNAME=$(NAME) && make
+	@mkdir -p build && cd build && $(CONAN) install -s compiler=avr-gcc -s compiler.version=4.9 -s target=mcu -s target.mcu=$(TARGET) .. --build
+	@cd build && $(CONAN) build ..
+
+flash:
+	@avr-objcopy -O ihex build/bin/${BIN} ${BIN}.hex
+	@sudo avrdude -cwiring -p$(MCU) -P /dev/ttyACM0 -U flash:w:${BIN}.hex -D

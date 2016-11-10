@@ -1,7 +1,7 @@
 #include "test.hpp"
 
-Stream::HAL::UARTStream<SCSettings2> scio2;
-Feetech::SC<decltype(scio2)> sc2(scio2);
+Aversive::Stream::HAL::UARTStream<SCSettings2> scio2;
+Aversive::Feetech::SC<decltype(scio2)> sc2(scio2);
 
 #include <hdl/avr/m2560.hpp>
 
