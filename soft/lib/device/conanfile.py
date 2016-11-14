@@ -3,7 +3,7 @@ from conans import ConanFile, CMake
 class AversivePlusPlusModuleConan(ConanFile):
     name = "device-buggybot-adm2560"
     version = "0.1"
-    require = (
+    requires = (
         "device/0.1@AversivePlusPlus/dev",
         "device-hal/0.1@AversivePlusPlus/dev",
         )
