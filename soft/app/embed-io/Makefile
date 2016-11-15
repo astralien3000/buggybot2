@@ -5,7 +5,7 @@ BIN= embed-io
 TARGET ?= "atmega2560"
 
 all:
-	@mkdir -p build && cd build && $(CONAN) install -s compiler=avr-gcc -s compiler.version=4.9 -s target=mcu -s target.mcu=$(TARGET) .. --build
+	@mkdir -p build && cd build && $(CONAN) install -s compiler=avr-gcc -s compiler.version=4.9 -s target=$(TARGET) .. --build
 	@cd build && $(CONAN) build ..
 
 flash:
