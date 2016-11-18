@@ -76,8 +76,8 @@ class AnimDoor : public Animation {
   double up_ratio = 0.7;
   double delta_y = 15;
   double delta_x = 15;
-  Filter::Average<double, 30> avg_y {0};
-  Filter::Average<double, 30> avg_x {0};
+  Aversive::Filter::Average<double, 30> avg_y {0};
+  Aversive::Filter::Average<double, 30> avg_x {0};
 
   void get_pos(int id, double t, double& x, double& y, double& z) {
 

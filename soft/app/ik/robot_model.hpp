@@ -3,6 +3,8 @@
 
 #include <base/matrix.hpp>
 
+using namespace Aversive::Base;
+
 class RobotModel {
 private:
   double _gain;

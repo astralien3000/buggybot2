@@ -1,19 +1,25 @@
-cmake_minimum_required(VERSION 3.0.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
-project(teleopt)
+set(NAME teleopt)
+project(${NAME})
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-include_directories("/usr/local/AversivePlusPlus/include")
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../lib")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../lib/")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../lib/cereal/include")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-file(GLOB_RECURSE MSG "${CMAKE_CURRENT_SOURCE_DIR}/../../lib/messages/*.hpp")
-file(GLOB HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
-file(GLOB SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup()
 
-add_executable(teleopt ${HEADERS} ${SOURCES} ${MSG})
-target_link_libraries(teleopt zmq)
+link_directories("${CONAN_LIB_DIRS}")
+include_directories("${CONAN_INCLUDE_DIRS}")
+
+add_executable(${NAME} main.cpp)
+target_link_libraries(${NAME} zmq)
+
+if(CONAN_LIBS)
+  target_link_libraries(${NAME} ${CONAN_LIBS})
+endif()

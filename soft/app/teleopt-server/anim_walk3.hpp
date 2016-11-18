@@ -76,13 +76,13 @@ class AnimWalk3 : public Animation {
   double up_ratio = 0.1;
   double delta_y = 25;
   double delta_x = 25;
-  Filter::Average<double, 40> avg_y {0};
-  Filter::Average<double, 40> avg_x {0};
+  Aversive::Filter::Average<double, 40> avg_y {0};
+  Aversive::Filter::Average<double, 40> avg_x {0};
 
-  Filter::Average<double, 10> _avg_z[4] {0,0,0,0};
-  Filter::Integral<double> _ispe_x[4] = {0,0,0,0};
-  Filter::Integral<double> _ispe_y[4] = {0,0,0,0};
-  Filter::Integral<double> _ispe_a[4] = {0,0,0,0};
+  Aversive::Filter::Average<double, 10> _avg_z[4] {0,0,0,0};
+  Aversive::Filter::Integral<double> _ispe_x[4] = {0,0,0,0};
+  Aversive::Filter::Integral<double> _ispe_y[4] = {0,0,0,0};
+  Aversive::Filter::Integral<double> _ispe_a[4] = {0,0,0,0};
 
   double spe_x = 0;
   double spe_y = 0;
@@ -99,9 +99,9 @@ public:
 
     LegConfig& leg = _leg[id];
     double t_step_middle = _t_step_middle[id];
-    Filter::Integral<double>& ispe_x = _ispe_x[id];
-    Filter::Integral<double>& ispe_y = _ispe_y[id];
-    Filter::Integral<double>& ispe_a = _ispe_a[id];
+    Aversive::Filter::Integral<double>& ispe_x = _ispe_x[id];
+    Aversive::Filter::Integral<double>& ispe_y = _ispe_y[id];
+    Aversive::Filter::Integral<double>& ispe_a = _ispe_a[id];
     auto& avg_z = _avg_z[id];
 
     x = leg.default_x + cfg.offset_x;
