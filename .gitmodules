@@ -1,3 +1,6 @@
 [submodule "soft/lib/cereal"]
 	path = soft/lib/cereal
 	url = https://github.com/USCiLab/cereal.git
+[submodule "soft/lib/coap--"]
+	path = soft/lib/coap--
+	url = https://github.com/astralien3000/coap--.git
