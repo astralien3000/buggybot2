@@ -1,7 +1,7 @@
 AVERSIVEPLUSPLUS_ROOT ?= $(PWD)/../../../../AversivePlusPlus
 CONAN ?= $(AVERSIVEPLUSPLUS_ROOT)/tools/bin/conan
 
-EXE=_test
+EXE=teleopt-iotlab
 
 all: build build/bin/$(EXE)
 	@touch build/bin/$(EXE)

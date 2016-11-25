@@ -193,11 +193,11 @@ void dump(const coap::PacketReader& pack) {
 #define PORT 5683
 
 #ifndef RDV_ADDR
-//#define RDV_ADDR "2001:660:3207:102::4"
-#define RDV_ADDR "::1"
+#define RDV_ADDR "2001:660:3207:102::4"
+//#define RDV_ADDR "::1"
 #endif
-//#define RDV_PORT 5683
-#define RDV_PORT 3334
+#define RDV_PORT 5683
+//#define RDV_PORT 3334
 
 void send_alive(void)
 {
