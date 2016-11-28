@@ -14,3 +14,5 @@ soft_homologation
 *.ps
 
 *.blend1
+
+.DS_Store

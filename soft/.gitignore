@@ -3,3 +3,8 @@
 *.o
 build
 *.pyc
+*.user
+*.creator
+*.files
+*.includes
+*.config
