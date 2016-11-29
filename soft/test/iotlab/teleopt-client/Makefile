@@ -1,4 +1,4 @@
-AVERSIVEPLUSPLUS_ROOT ?= $(PWD)/../../../../AversivePlusPlus
+AVERSIVEPLUSPLUS_ROOT ?= $(PWD)/../../../../../AversivePlusPlus
 CONAN ?= $(AVERSIVEPLUSPLUS_ROOT)/tools/bin/conan
 
 EXE=teleopt-iotlab

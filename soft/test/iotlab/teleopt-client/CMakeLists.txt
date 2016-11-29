@@ -10,7 +10,7 @@ conan_basic_setup()
 
 link_directories("${CONAN_LIB_DIRS}")
 include_directories("${CONAN_INCLUDE_DIRS}")
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../lib/cereal/include")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../../lib/cereal/include")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
