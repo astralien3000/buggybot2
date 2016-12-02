@@ -9,6 +9,7 @@ class AversivePlusPlusProjectConan(ConanFile):
         "stream-riot/0.1@AversivePlusPlus/dev",
         "toolchain-switch/0.1@AversivePlusPlus/dev",
         "coap--/0.1@AversivePlusPlus/dev",
+        "feetech/0.1@AversivePlusPlus/dev",
         )
     default_options = "riot:modules=\"gnrc_netdev_default auto_init_gnrc_netif gnrc_ipv6_router_default gnrc_udp gnrc_rpl gnrc_icmpv6_echo gnrc_sock_udp shell_commands\""
     generators = "cmake", "txt"
