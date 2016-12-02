@@ -6,7 +6,7 @@
 #include <stdio.h>
 
 static RIOT::UARTStream<> _sc_uart(1, 1000000);
-static Aversive::Feetech::SC<decltype(_sc_uart)> _sc(_sc_uart);
+Aversive::Feetech::SC<RIOT::UARTStream<>> sc(_sc_uart);
 static const char* _prefix = "feetech";
 
 enum class ServoReg {
@@ -120,7 +120,7 @@ static T _to_int(const uint8_t* str, size_t len) {
   return ret;
 }
 
-coap::Error DummyHandler::handle(const coap::PacketReader& req, coap::PacketBuilder& res) {
+coap::Error ServoHandler::handle(const coap::PacketReader& req, coap::PacketBuilder& res) {
   uint8_t id = 0;
   ServoReg sreg = ServoReg::NONE;
   coap::Method method = coap::Method::GET;
@@ -132,22 +132,22 @@ coap::Error DummyHandler::handle(const coap::PacketReader& req, coap::PacketBuil
     }
     else if(sreg == ServoReg::POSITION) {
       if(method == coap::Method::GET) {
-        return _content(req, res, _sc.getPosition(id));
+        return _content(req, res, sc.getPosition(id));
       }
       else if(method == coap::Method::PUT) {
         uint16_t val = _to_int<uint16_t>(req.getPayload(), req.getPayloadLength());
-        _sc.setPosition(id, val);
+        sc.setPosition(id, val);
         return _changed(req, res, (uint16_t)val);
       }
     }
     else if(sreg == ServoReg::TORQUE_EN) {
       if(method == coap::Method::GET) {
-        return _content(req, res, (uint8_t)_sc.isTorqueEnabled(id));
+        return _content(req, res, (uint8_t)sc.isTorqueEnabled(id));
       }
       else if(method == coap::Method::PUT) {
         uint8_t val = _to_int<uint8_t>(req.getPayload(), req.getPayloadLength());
-        if(val == 1) _sc.enableTorque(id);
-        else _sc.disableTorque(id);
+        if(val == 1) sc.enableTorque(id);
+        else sc.disableTorque(id);
         return _changed(req, res, (uint8_t)val);
       }
     }
@@ -174,14 +174,11 @@ static bool _try_add_page(char* &cur, size_t size, uint8_t i, const char* page) 
 }
 
 namespace coap {
-size_t SimpleDiscoveryInputStream<DummyHandler>::read(uint8_t* buffer, size_t size) {
+size_t SimpleDiscoveryInputStream<ServoHandler>::read(uint8_t* buffer, size_t size) {
   char* cur = (char*)buffer;
   
-  Aversive::Stream::StringStream<64> ss;
-  Aversive::Stream::FormattedStreamDecorator<decltype(ss)> fss(ss);
-  
   for(uint8_t i = 0 ; i < 15 ; i++) {
-    if(_sc.ping(i)) {
+    if(sc.ping(i)) {
       if(!_try_add_page(cur, size, i, "id")) {
         return (size_t)((uint8_t*)cur - buffer);
       }

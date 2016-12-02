@@ -6,14 +6,17 @@
 
 #include <coap/coap.hpp>
 #include "servo_handler.hpp"
+#include "anim_handler.hpp"
 
 #define COAP_SERVER_PORT    (5683)
 
-DummyHandler dummy;
-coap::SimpleDiscoveryHandler<decltype(dummy)> discov(dummy);
-coap::ChainHandler<decltype(discov), decltype(dummy)> handler(discov, dummy);
-coap::Parser<decltype(handler)> parser(handler);
-uint8_t buf_raw[1024];
+static ServoHandler servo;
+static AnimHandler anim;
+static coap::ChainHandler<AnimHandler, ServoHandler> root(anim, servo);
+static coap::SimpleDiscoveryHandler<decltype(root)> discov(root);
+static coap::ChainHandler<decltype(discov), decltype(root)> handler(discov, root);
+static coap::Parser<decltype(handler)> parser(handler);
+static uint8_t buf_raw[1024];
 
 static void _clean_buf(void) {
   for(size_t i = 0 ; i < sizeof(buf_raw) ; i++) {

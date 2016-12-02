@@ -1,15 +1,15 @@
 #include <coap/coap.hpp>
 
-class ServoHandler {
+class AnimHandler {
 public:
-  inline ServoHandler(void) {}
+  inline AnimHandler(void) {}
 
   coap::Error handle(const coap::PacketReader& req, coap::PacketBuilder& res);
 };
 
 namespace coap {
 template<>
-class SimpleDiscoveryInputStream<ServoHandler> : ServoHandler {
+class SimpleDiscoveryInputStream<AnimHandler> : AnimHandler {
 public:
   size_t read(uint8_t* buffer, size_t size);
 };
