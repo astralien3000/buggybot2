@@ -5,6 +5,8 @@
 #include <stream/formatted_stream.hpp>
 #include <stdio.h>
 
+#include <xtimer.h>
+
 extern Aversive::Feetech::SC<RIOT::UARTStream<>> sc;
 
 static bool _is_uri_path(coap::OptionReader& opt) {
@@ -51,7 +53,9 @@ coap::Error AnimHandler::handle(const coap::PacketReader& req, coap::PacketBuild
         uint16_t* servo = (uint16_t*)req.getPayload();
         for(size_t i = 0 ; i < 12 ; i++) {
           sc.enableTorque(map[i]);
+          xtimer_usleep(200);
           sc.setPosition(map[i], servo[i]);
+          xtimer_usleep(200);
         }
         return res.makeResponse(req, coap::ResponseCode::CHANGED);
       }

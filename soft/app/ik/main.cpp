@@ -20,7 +20,7 @@
 
 using namespace std;
 
-void test(RobotModel& bot, AnglesConverter& ac, RobotModel::Leg leg, int id, double val) {
+void fwd(RobotModel& bot, AnglesConverter& ac, RobotModel::Leg leg, int id, double val) {
   ac.setAngle(leg, id, val);
   //bot.setEndpoint(leg, Matrix<double, 3,1>(50.0, 50.0, -150.0));
 

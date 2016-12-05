@@ -2,6 +2,7 @@
 *.hex
 *.o
 build
+bin
 *.pyc
 *.user
 *.creator

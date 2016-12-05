@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-set(NAME teleopt-iotlab)
+set(NAME embed-io)
 project(${NAME} CXX C ASM)
 
 set(CMAKE_CXX_STANDARD 11)
