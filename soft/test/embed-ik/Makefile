@@ -1,9 +1,44 @@
-AVERSIVE_ROOT=/usr/local/AversivePlusPlus
-MCU ?= native
+AVERSIVEPLUSPLUS_ROOT ?= $(PWD)/../../../../AversivePlusPlus
+CONAN ?= $(AVERSIVEPLUSPLUS_ROOT)/tools/bin/conan
 
-NAME=embed
+BIN=embed-io
 
-TOOLCHAIN=$(shell find $(AVERSIVE_ROOT) -name "$(MCU).cmake")
+SETTINGS_AVR_CC=-s compiler=avr-gcc -s compiler.version=4.9
+SETTINGS_NATIVE_CC=
+SETTINGS_ARM_CC=-s compiler=arm-none-eabi-gcc -s compiler.version=5.4
 
-all:
-	mkdir -p build && cd build && cmake .. -DAVERSIVE_ROOT=$(AVERSIVE_ROOT) -DCMAKE_TOOLCHAIN_FILE=$(TOOLCHAIN) -DNAME=$(NAME) && make
+SETTINGS_ADM2560=$(SETTINGS_AVR_CC) -s target=arduino-mega2560
+SETTINGS_NATIVE=$(SETTINGS_NATIVE_CC) -s target=native32
+SETTINGS_SAMR21=$(SETTINGS_ARM_CC) -s target=samr21-xpro
+
+.PHONY: all adm2560 native samr21 compile clean
+
+all: samr21
+
+adm2560: export SETTINGS=$(SETTINGS_ADM2560)
+adm2560: compile
+
+native: export SETTINGS=$(SETTINGS_NATIVE)
+native: compile
+
+samr21: export SETTINGS=$(SETTINGS_SAMR21)
+samr21: compile
+
+compile: build build/install
+	@cd build && $(CONAN) build ..
+
+build/install:
+	@cd build && $(CONAN) install $(SETTINGS) .. --build
+	@touch build/install
+
+build:
+	@mkdir build
+
+clean:
+	@rm -rf build
+  
+flash: all
+	@make -f Makefile.RIOT flash
+
+term:
+	@make -f Makefile.RIOT term

@@ -1,13 +1,15 @@
 #ifndef IK_ROBOT_ARMATURE_JOINT_FOREARM_LF_ENDPOINT_HPP
 #define IK_ROBOT_ARMATURE_JOINT_FOREARM_LF_ENDPOINT_HPP
 
+#include "trigo.hpp"
+
 namespace robot_armature_joint_forearm_lf_endpoint {
 
-template<int r, int c> using matrix = double[r*c];
-void forward_kinematics(double q0, double q1, double q2, matrix<4, 1>& matrix_out);
-double distance_from_target(const matrix<4, 1>& target, double q0_io, double q1_io, double q2_io, matrix<4, 1>& dist_out);
-void inverse_kinematics_step(const matrix<4, 1>& target, double& q0_io, double& q1_io, double& q2_io, double coeff);
-bool inverse_kinematics(const matrix<4, 1>& target, double& q0_io, double& q1_io, double& q2_io, double coeff, double stop_dist, int max_iter);
+template<int r, int c> using matrix = real[r*c];
+void forward_kinematics(real q0, real q1, real q2, matrix<4, 1>& matrix_out);
+real distance_from_target(const matrix<4, 1>& target, real q0_io, real q1_io, real q2_io, matrix<4, 1>& dist_out);
+void inverse_kinematics_step(const matrix<4, 1>& target, real& q0_io, real& q1_io, real& q2_io, real coeff);
+int inverse_kinematics(const matrix<4, 1>& target, real& q0_io, real& q1_io, real& q2_io, real coeff, real stop_dist, int max_iter);
 
 }
 

@@ -2,12 +2,13 @@
 #include "trigo.hpp"
 #include <base/integer.hpp>
 #include <base/array.hpp>
-#include "devices.hpp"
+
+static constexpr double PI = 3.1415;
 
 namespace FlashTrigo {
 
   namespace Private {
-    template<template<int ...A> class List, array_t N, int ...ARGS>
+    template<template<int ...A> class List, int N, int ...ARGS>
     struct ListBuilder {
       using Value = typename ListBuilder<List, N-2, N-2, N-1, ARGS...>::Value;
     };
@@ -23,12 +24,12 @@ namespace FlashTrigo {
     };
   }
 
-  template<s32 SUBDIV>
+  template<int SUBDIV>
   class CosTable {
     template<int ...VAL>
     struct Helper {
-      double table[SUBDIV] = {
-        cos(((double)VAL/(double)SUBDIV)*(PI/2.0))...
+      real table[SUBDIV] = {
+        __builtin_cosf(((float)VAL/(float)SUBDIV)*(PI/2.0))...
       };
     };
 
@@ -43,9 +44,8 @@ namespace FlashTrigo {
 namespace MyCos {
   constexpr FlashTrigo::CosTable<1024>::Type test;
 
-  double cos(double val) {
-    int index = (int)(fmod(val*2048/PI));
-    //cout << val << " :: " << fmod(val, PI) << " :: " << index << endl;
+  real cos(real val) {
+    int index = (int)(val*2048/PI);
 
     if(0 <= index) {
       if(index < 1024) {
@@ -67,7 +67,7 @@ namespace MyCos {
     return -1;
   }
 
-  double sin(double val) {
+  real sin(real val) {
     return cos(val-(PI/2));
   }
 }

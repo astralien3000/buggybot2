@@ -1,47 +1,22 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
 
+set(NAME embed-io)
 project(${NAME} CXX C ASM)
 
-if(NOT AVERSIVE_TOOLCHAIN_TARGET)
-  message(FATAL_ERROR "AVERSIVE_TOOLCHAIN_TARGET undefined")
-endif()
+set(CMAKE_CXX_STANDARD 11)
 
-file(GLOB_RECURSE SOURCE_CPP "src/*.cpp")
-file(GLOB_RECURSE SOURCE_HPP "src/*.hpp")
-file(GLOB_RECURSE SOURCE_C "src/*.c")
-file(GLOB_RECURSE SOURCE_H "src/*.h")
-file(GLOB_RECURSE SOURCE_S "src/*.s")
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup()
 
-file(GLOB_RECURSE INCLUDE_HPP "include/*.hpp")
-file(GLOB_RECURSE INCLUDE_H "include/*.h")
+link_directories("${CONAN_LIB_DIRS}")
+include_directories("${CONAN_INCLUDE_DIRS}")
 
-link_directories("${AVERSIVE_ROOT}/lib/${AVERSIVE_TOOLCHAIN_TARGET}")
-include_directories("${AVERSIVE_ROOT}/include")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-if(AVERSIVE_TOOLCHAIN_AVR)
-include_directories("/usr/avr/include")
-endif()
+file(GLOB_RECURSE SOURCES "src/*.cpp")
 
-set(SOURCE
-  ${SOURCE_CPP}
-  ${SOURCE_HPP}
-  ${SOURCE_C}
-  ${SOURCE_H}
-  ${SOURCE_S}
+add_executable(${NAME} ${SOURCES})
 
-  ${INCLUDE_HPP}
-  ${INCLUDE_H}
-
-  ${PROTOCOL}
-  ${DEVICE}
-  )
-
-add_executable(${NAME} ${SOURCE})
-
-target_link_libraries(${NAME} Aversive++ -Wl,-whole-archive startup -Wl,-no-whole-archive)
-
-if(AVERSIVE_TOOLCHAIN_SASIAE)
-  find_package(Qt5 COMPONENTS Core)
-  include_directories(${Qt5Core_INCLUDE_DIRS})
-  target_link_libraries(${NAME} Qt5Core)
+if(CONAN_LIBS)
+  target_link_libraries(${NAME} ${CONAN_LIBS})
 endif()
