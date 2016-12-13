@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-set(NAME embed-io)
+set(NAME fwd)
 project(${NAME} CXX C ASM)
 
 set(CMAKE_CXX_STANDARD 11)
@@ -10,11 +10,14 @@ conan_basic_setup()
 
 link_directories("${CONAN_LIB_DIRS}")
 include_directories("${CONAN_INCLUDE_DIRS}")
+include_directories("${CMAKE_SOURCE_DIR}/../../../lib/cereal/include")
+include_directories("${CMAKE_SOURCE_DIR}/../../../lib")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-add_executable(${NAME} main.c fwd.cpp)
+add_executable(${NAME} main.cpp)
 
 if(CONAN_LIBS)
   target_link_libraries(${NAME} ${CONAN_LIBS})
 endif()
+target_link_libraries(${NAME} zmq)
