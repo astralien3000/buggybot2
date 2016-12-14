@@ -25,10 +25,10 @@ static bool _is_uri_path(coap::OptionReader& opt, const char* str) {
       strncmp(str, (const char*)opt.getValue(), opt.getLength()) == 0;
 }
 
-static bool _get_request_params(const coap::PacketReader& req, uint8_t& id_out, ServoReg& reg_out, coap::Method& method_out) {
+static bool _get_request_params(const coap::PacketReader& req, uint8_t& id_out, ServoReg& reg_out, coap::MethodCode& method_out) {
   int state = 0;
   
-  method_out = (coap::Method)req.getCode();
+  method_out = req.getMethodCode();
   for(auto it = req.getOptionsBegin() ; it != req.getOptionsEnd() ; it++) {
     auto opt = *it;
     if(state == 0) {
@@ -79,33 +79,13 @@ static bool _get_request_params(const coap::PacketReader& req, uint8_t& id_out, 
 }
 
 template<typename T>
-static coap::Error _content(const coap::PacketReader& req, coap::PacketBuilder& res, T content) {
+static coap::Error _content(const coap::PacketReader& req, coap::PacketBuilder& res, coap::ResponseCode code, T content) {
   Aversive::Stream::StringStream<16> ss;
   Aversive::Stream::FormattedStreamDecorator<decltype(ss)> fss(ss);
-  
-  fss << content;
-  
-  return res.makeResponse(
-        req,
-        coap::ResponseCode::CONTENT,
-        coap::ContentType::TEXT_PLAIN,
-        ss
-        );
-}
 
-template<typename T>
-static coap::Error _changed(const coap::PacketReader& req, coap::PacketBuilder& res, T content) {
-  Aversive::Stream::StringStream<16> ss;
-  Aversive::Stream::FormattedStreamDecorator<decltype(ss)> fss(ss);
-  
   fss << content;
-  
-  return res.makeResponse(
-        req,
-        coap::ResponseCode::CHANGED,
-        coap::ContentType::TEXT_PLAIN,
-        ss
-        );
+
+  return res.makeResponse(req, code, coap::ContentType::TEXT_PLAIN, ss);
 }
 
 template<typename T>
@@ -120,40 +100,89 @@ static T _to_int(const uint8_t* str, size_t len) {
   return ret;
 }
 
-coap::Error ServoHandler::handle(const coap::PacketReader& req, coap::PacketBuilder& res) {
+coap::ReturnCode ServoHandler::handle(const coap::PacketReader& req, coap::PacketBuilder& res) {
   uint8_t id = 0;
   ServoReg sreg = ServoReg::NONE;
-  coap::Method method = coap::Method::GET;
+  coap::MethodCode method = coap::MethodCode::GET;
   if(_get_request_params(req, id, sreg, method)) {
     if(sreg == ServoReg::ID) {
-      if(method == coap::Method::GET) {
-        return _content(req, res, id);
+      if(method == coap::MethodCode::GET) {
+        if(_content(req, res, coap::ResponseCode::CONTENT, id) == coap::Error::NONE) {
+          return coap::ReturnCode::SEND;
+        }
+        else {
+          return coap::ReturnCode::ERROR;
+        }
+      }
+      else {
+        if(res.makeResponse(req, coap::ResponseCode::METHOD_NOT_ALLOWED) == coap::Error::NONE) {
+          return coap::ReturnCode::SEND;
+        }
+        else {
+          return coap::ReturnCode::ERROR;
+        }
       }
     }
     else if(sreg == ServoReg::POSITION) {
-      if(method == coap::Method::GET) {
-        return _content(req, res, sc.getPosition(id));
+      if(method == coap::MethodCode::GET) {
+        if(_content(req, res, coap::ResponseCode::CONTENT, sc.getPosition(id)) == coap::Error::NONE) {
+          return coap::ReturnCode::SEND;
+        }
+        else {
+          return coap::ReturnCode::ERROR;
+        }
       }
-      else if(method == coap::Method::PUT) {
+      else if(method == coap::MethodCode::PUT) {
         uint16_t val = _to_int<uint16_t>(req.getPayload(), req.getPayloadLength());
         sc.setPosition(id, val);
-        return _changed(req, res, (uint16_t)val);
+        if(_content(req, res, coap::ResponseCode::CHANGED, val) == coap::Error::NONE) {
+          return coap::ReturnCode::SEND;
+        }
+        else {
+          return coap::ReturnCode::ERROR;
+        }
+      }
+      else {
+        if(res.makeResponse(req, coap::ResponseCode::METHOD_NOT_ALLOWED) == coap::Error::NONE) {
+          return coap::ReturnCode::SEND;
+        }
+        else {
+          return coap::ReturnCode::ERROR;
+        }
       }
     }
     else if(sreg == ServoReg::TORQUE_EN) {
-      if(method == coap::Method::GET) {
-        return _content(req, res, (uint8_t)sc.isTorqueEnabled(id));
+      if(method == coap::MethodCode::GET) {
+        if(_content(req, res, coap::ResponseCode::CONTENT, (uint8_t)sc.isTorqueEnabled(id)) == coap::Error::NONE) {
+          return coap::ReturnCode::SEND;
+        }
+        else {
+          return coap::ReturnCode::ERROR;
+        }
       }
-      else if(method == coap::Method::PUT) {
+      else if(method == coap::MethodCode::PUT) {
         uint8_t val = _to_int<uint8_t>(req.getPayload(), req.getPayloadLength());
         if(val == 1) sc.enableTorque(id);
         else sc.disableTorque(id);
-        return _changed(req, res, (uint8_t)val);
+        if(_content(req, res, coap::ResponseCode::CHANGED, val) == coap::Error::NONE) {
+          return coap::ReturnCode::SEND;
+        }
+        else {
+          return coap::ReturnCode::ERROR;
+        }
+      }
+      else {
+        if(res.makeResponse(req, coap::ResponseCode::METHOD_NOT_ALLOWED) == coap::Error::NONE) {
+          return coap::ReturnCode::SEND;
+        }
+        else {
+          return coap::ReturnCode::ERROR;
+        }
       }
     }
   }
   
-  return coap::Error::UNSUPPORTED;
+  return coap::ReturnCode::NEXT_HANDLER;
 }
 
 static bool _try_add_page(char* &cur, size_t size, uint8_t i, const char* page) {

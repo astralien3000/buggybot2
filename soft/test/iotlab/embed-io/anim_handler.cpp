@@ -35,20 +35,20 @@ static bool _opt_uri(const coap::PacketReader& req, const char* uri) {
 
 static uint8_t map[12] = {2,3,4,5,6,7,8,9,10,11,12,13};
 
-coap::Error AnimHandler::handle(const coap::PacketReader& req, coap::PacketBuilder& res) {
+coap::ReturnCode AnimHandler::handle(const coap::PacketReader& req, coap::PacketBuilder& res) {
   if(_opt_uri(req, "map")) {
-    if((coap::Method)req.getCode() == coap::Method::POST) {
+    if(req.getMethodCode() == coap::MethodCode::POST) {
       if(sizeof(map) == req.getPayloadLength()) {
         for(size_t i = 0 ; i < 12 ; i++) {
           map[i] = req.getPayload()[i];
         }
-        return res.makeResponse(req, coap::ResponseCode::CHANGED);
+        return coap::ReturnCode::NOSEND;
       }
     }
   }
 
   if(_opt_uri(req, "anim")) {
-    if((coap::Method)req.getCode() == coap::Method::POST) {
+    if(req.getMethodCode() == coap::MethodCode::POST) {
       if(sizeof(uint16_t[12]) == req.getPayloadLength()) {
         uint16_t* servo = (uint16_t*)req.getPayload();
         for(size_t i = 0 ; i < 12 ; i++) {
@@ -57,12 +57,12 @@ coap::Error AnimHandler::handle(const coap::PacketReader& req, coap::PacketBuild
           sc.setPosition(map[i], servo[i]);
           xtimer_usleep(200);
         }
-        return res.makeResponse(req, coap::ResponseCode::CHANGED);
+        return coap::ReturnCode::NOSEND;
       }
     }
   }
   
-  return coap::Error::UNSUPPORTED;
+  return coap::ReturnCode::NEXT_HANDLER;
 }
 
 static bool _try_add_page(char* &cur, size_t size, const char* page) {

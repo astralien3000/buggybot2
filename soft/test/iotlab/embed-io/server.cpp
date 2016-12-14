@@ -39,10 +39,9 @@ void microcoap_server_loop(void) {
     coap::Buffer buf {buf_raw,sizeof(buf_raw)};
     
     DEBUG("Waiting for incoming UDP packet...\n");
-    rc = sock_udp_recv(&sock, (char *)buf.data, buf.len,
-                       SOCK_NO_TIMEOUT, &remote);
+    rc = sock_udp_recv(&sock, (char *)buf.data, buf.len, SOCK_NO_TIMEOUT, &remote);
     if (rc < 0) {
-      DEBUG("Error in conn_udp_recvfrom(). rc=%u\n", rc);
+      DEBUG("Error in sock_udp_recv(). rc=%u\n", rc);
       continue;
     }
     
@@ -55,19 +54,20 @@ void microcoap_server_loop(void) {
       //dump(pack);
     }
 
-    coap::ReadOnlyBuffer res = parser.parse(coap::ParserInput{{buf.data, n}, {buf.data, buf.len}});
+    coap::ParserOutput out = parser.parse(coap::ParserInput{{buf.data, n}, {buf.data, buf.len}});
 
-    if(res.data != NULL) {
+    if(out.res.data != NULL) {
       DEBUG("--- RESPONSE ---\n");
       //cout << endl << "--- RESPONSE ---" << endl;
       //coap::PacketReader pack(res.data, res.len);
       //dump(pack);
     }
 
-    /* send reply via UDP */
-    rc = sock_udp_send(&sock, res.data, res.len, &remote);
-    if (rc < 0) {
-      DEBUG("Error sending CoAP reply via udp; %u\n", rc);
+    if(out.rc == coap::ReturnCode::SEND) {
+      rc = sock_udp_send(&sock, out.res.data, out.res.len, &remote);
+      if (rc < 0) {
+        DEBUG("Error sending CoAP reply via udp; %u\n", rc);
+      }
     }
   }
 }

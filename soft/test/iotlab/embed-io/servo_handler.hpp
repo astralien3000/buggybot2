@@ -4,7 +4,7 @@ class ServoHandler {
 public:
   inline ServoHandler(void) {}
 
-  coap::Error handle(const coap::PacketReader& req, coap::PacketBuilder& res);
+  coap::ReturnCode handle(const coap::PacketReader& req, coap::PacketBuilder& res);
 };
 
 namespace coap {
