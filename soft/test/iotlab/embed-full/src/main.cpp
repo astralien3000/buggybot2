@@ -2,7 +2,8 @@
 #include <msg.h>
 #include <xtimer.h>
 
-void microcoap_server_loop(void);
+extern void view_loop(void);
+extern void control_loop(void);
 
 extern "C" int _netif_config(int argc, char **argv);
 
@@ -16,7 +17,8 @@ int main(void)
     puts("Configured network interfaces:");
     _netif_config(0, NULL);
 
-    microcoap_server_loop();
+    //view_loop();
+    control_loop();
 
     return 0;
 }

@@ -8,18 +8,21 @@
 #include "servo_collection/servo_handler.hpp"
 #include "servo_collection/anim_handler.hpp"
 #include "servo_mapper/label_handler.hpp"
+#include "servo_mapper/config_handler.hpp"
 
 #define COAP_SERVER_PORT    (5683)
 
 static ServoHandler servo;
 static AnimHandler anim;
 static LabelHandler label;
-static coap::ChainHandler<AnimHandler, ServoHandler> tmp1(anim, servo);
-static coap::ChainHandler<decltype(tmp1), decltype(label)> root(tmp1, label);
-static coap::SimpleDiscoveryHandler<decltype(root)> discov(root);
+static ConfigHandler config;
+static coap::ChainHandler<decltype(anim), decltype(servo)> tmp1(anim, servo);
+static coap::ChainHandler<decltype(label), decltype(config)> tmp2(label, config);
+static coap::ChainHandler<decltype(tmp1), decltype(tmp2)> root(tmp1, tmp2);
+static coap::SimpleDiscoveryHandler<decltype(servo)> discov(servo);
 static coap::ChainHandler<decltype(discov), decltype(root)> handler(discov, root);
 static coap::Parser<decltype(handler)> parser(handler);
-static uint8_t buf_raw[1024];
+static uint8_t buf_raw[4096];
 
 static void _clean_buf(void) {
   for(size_t i = 0 ; i < sizeof(buf_raw) ; i++) {
@@ -27,7 +30,7 @@ static void _clean_buf(void) {
   }
 }
 
-void microcoap_server_loop(void) {
+void view_loop(void) {
   sock_udp_ep_t local = {};
   local.family = AF_INET6;
   local.port = COAP_SERVER_PORT;

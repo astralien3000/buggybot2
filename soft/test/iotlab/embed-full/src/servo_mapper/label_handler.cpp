@@ -8,13 +8,6 @@
 
 static const char* _prefix = "feetech";
 
-const char* _labels[12] = {
-  "LF0", "LF1", "LF2",
-  "RF0", "RF1", "RF2",
-  "RB0", "RB1", "RB2",
-  "LB0", "LB1", "LB2",
-};
-
 static bool _is_uri_path(coap::OptionReader& opt) {
   return opt.getNum() == coap::OptionNum::URI_PATH;
 }
@@ -104,7 +97,7 @@ coap::ReturnCode LabelHandler::handle(const coap::PacketReader& req, coap::Packe
     if(method == coap::MethodCode::GET) {
       for(int i = 0 ; i < 12 ; i++) {
         if(servo == map[i]) {
-          return _rc(res.makeResponse(req, coap::ResponseCode::CONTENT, coap::ContentType::TEXT_PLAIN, (const uint8_t*)_labels[i], strlen(_labels[i])));
+          return _rc(res.makeResponse(req, coap::ResponseCode::CONTENT, coap::ContentType::TEXT_PLAIN, (const uint8_t*)labels[i], strlen(labels[i])));
         }
       }
       return _rc(res.makeResponse(req, coap::ResponseCode::CONTENT, coap::ContentType::TEXT_PLAIN, (const uint8_t*)"", strlen("")));
@@ -114,9 +107,9 @@ coap::ReturnCode LabelHandler::handle(const coap::PacketReader& req, coap::Packe
         if(servo == map[i]) {
           map[i] = 0;
         }
-        if(strncmp(_labels[i], (const char*)req.getPayload(), req.getPayloadLength()) == 0) {
+        if(strncmp(labels[i], (const char*)req.getPayload(), req.getPayloadLength()) == 0) {
           map[i] = servo;
-          return _rc(res.makeResponse(req, coap::ResponseCode::CHANGED, coap::ContentType::TEXT_PLAIN, (const uint8_t*)_labels[i], strlen(_labels[i])));
+          return _rc(res.makeResponse(req, coap::ResponseCode::CHANGED, coap::ContentType::TEXT_PLAIN, (const uint8_t*)labels[i], strlen(labels[i])));
         }
       }
       if(strncmp("", (const char*)req.getPayload(), req.getPayloadLength()) == 0) {
