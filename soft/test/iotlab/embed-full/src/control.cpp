@@ -1,5 +1,6 @@
 #include "model.hpp"
 #include "anim_control/walk.hpp"
+#include "anim_control/turn.hpp"
 #include "ik/robot_armature_joint_forearm_lf_endpoint.hpp"
 #include "ik/robot_armature_joint_forearm_rf_endpoint.hpp"
 #include "ik/robot_armature_joint_forearm_rb_endpoint.hpp"
@@ -16,6 +17,7 @@ namespace LB { using namespace robot_armature_joint_forearm_lb_endpoint; }
 template<int r, int c> using matrix = real[r*c];
 
 AnimWalk walk;
+AnimTurn turn;
 LegAction legs[4];
 real ik_angles[12] = {0,0,1.57,0,0,1.57,0,0,1.57,0,0,1.57};
 double angles[12] = {0,0,1.57,0,0,1.57,0,0,1.57,0,0,1.57};
@@ -32,7 +34,8 @@ void control_loop(void) {
 
   while(1) {
     puts("ANIM");
-    walk.update(legs[0], legs[1], legs[2], legs[3]);
+    //walk.update(legs[0], legs[1], legs[2], legs[3]);
+    turn.update(legs[0], legs[1], legs[2], legs[3]);
     puts("I");
     LF::inverse_kinematics(matrix<4,1>{legs[0].x, legs[0].y, legs[0].z, 1}, ik_angles[0],  ik_angles[1],  ik_angles[2], coeff, stop_dist, max_iter);
     RF::inverse_kinematics(matrix<4,1>{legs[1].x, legs[1].y, legs[1].z, 1}, ik_angles[3],  ik_angles[4],  ik_angles[5], coeff, stop_dist, max_iter);

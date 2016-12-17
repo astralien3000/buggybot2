@@ -1,55 +1,21 @@
-#ifndef ANIM_WALK_HPP
-#define ANIM_WALK_HPP
+#ifndef ANIM_TURN_HPP
+#define ANIM_TURN_HPP
 
-constexpr double freq = 20; // hz
-extern double t;
+#include "walk.hpp"
 
-static inline double abs(double val) {
-  return (val > 0)?val:-val;
-}
-
-static inline double add_mod(double val, double add, double mod) {
-  if(val + add > mod) {
-      return val+add-mod;
-    }
-  return val+add;
-}
-
-struct WalkConfig {
-  double offset_x = 0;
-  double half_esp_x = 120;
-
-  double offset_y = 0;
-  double half_esp_y = 90;
-
-  double default_z = -190;
-  double delta_z = 10;
-
-  double period = 1;
-
-  double step_up_ratio = 0.5;
-  double move_ratio = 0.4;
-
-  double step_size = 40;
-};
-
-struct LegConfig {
-  double default_x;
-  double default_y;
-  double default_z;
-};
-
-struct LegAction {
-  double x;
-  double y;
-  double z;
-};
-
-class AnimWalk {
+class AnimTurn {
   double Kp2 = -0.0 / 50.0;
   double Kp1 = -8.0 / 10.0;
 
   WalkConfig cfg;
+  double _way = 1;
+
+public:
+  AnimTurn() {
+    cfg.step_up_ratio = 0.5;
+    cfg.move_ratio = 0.4;
+    cfg.offset_y = 0;
+  }
 
   LegConfig lfc = {
     cfg.half_esp_x+cfg.offset_x,
@@ -75,6 +41,17 @@ class AnimWalk {
     cfg.default_z
   };
 
+  void goLeftWay(bool left) {
+    if(left) {
+        _way = 1;
+      }
+    else {
+        _way = -1;
+      }
+  }
+
+  const double default_ray = 160;
+  const double round_divisor = 32;
 
   void get_walk_pos_1(WalkConfig& cfg, LegConfig& leg, double t, double& x, double& y, double& z);
   void get_walk_pos_2(WalkConfig& cfg, LegConfig& leg, double t, double& x, double& y, double& z);
@@ -83,4 +60,4 @@ public:
   void update(LegAction& lf, LegAction& rf, LegAction& rb, LegAction& lb);
 };
 
-#endif//ANIM_WALK_HPP
+#endif//ANIM_TURN_HPP

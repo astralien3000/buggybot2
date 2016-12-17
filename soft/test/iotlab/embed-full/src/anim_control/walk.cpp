@@ -2,17 +2,6 @@
 
 double t = 0;
 
-static double abs(double val) {
-  return (val > 0)?val:-val;
-}
-
-static double add_mod(double val, double add, double mod) {
-  if(val + add > mod) {
-      return val+add-mod;
-    }
-  return val+add;
-}
-
 void AnimWalk::get_walk_pos_1(WalkConfig& cfg, LegConfig& leg, double t, double& x, double& y, double& z) {
 
   double t_step1_middle = cfg.period / 4.0;
