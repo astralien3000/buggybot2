@@ -76,4 +76,6 @@ extern uint8_t map[12];
 extern ServoConfig config[12];
 extern Convert convert[12];
 
+extern char command;
+
 #endif//MODEL_HPP

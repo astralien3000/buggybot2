@@ -17,7 +17,7 @@ compile: build build/install
 	@cd build && $(CONAN) build ..
 
 build/install: conanfile.py
-	@cd build && $(CONAN) install $(SETTINGS) .. --build=coap--
+	@cd build && $(CONAN) install $(SETTINGS) .. --build
 	@touch build/install
 
 build:

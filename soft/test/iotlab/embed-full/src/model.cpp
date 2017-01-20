@@ -65,3 +65,5 @@ Convert convert[12] = {
   Convert{},     // LB1
   Convert{},     // LB2
 };
+
+char command;

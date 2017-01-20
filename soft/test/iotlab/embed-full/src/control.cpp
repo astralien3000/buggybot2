@@ -33,9 +33,14 @@ void control_loop(void) {
   }
 
   while(1) {
+    thread_yield();
     puts("ANIM");
-    //walk.update(legs[0], legs[1], legs[2], legs[3]);
-    turn.update(legs[0], legs[1], legs[2], legs[3]);
+    if(command == 'f') {
+      walk.update(legs[0], legs[1], legs[2], legs[3]);
+    }
+    else {
+      turn.update(legs[0], legs[1], legs[2], legs[3]);
+    }
     puts("I");
     LF::inverse_kinematics(matrix<4,1>{legs[0].x, legs[0].y, legs[0].z, 1}, ik_angles[0],  ik_angles[1],  ik_angles[2], coeff, stop_dist, max_iter);
     RF::inverse_kinematics(matrix<4,1>{legs[1].x, legs[1].y, legs[1].z, 1}, ik_angles[3],  ik_angles[4],  ik_angles[5], coeff, stop_dist, max_iter);

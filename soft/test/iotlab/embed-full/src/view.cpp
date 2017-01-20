@@ -9,6 +9,7 @@
 #include "servo_collection/anim_handler.hpp"
 #include "servo_mapper/label_handler.hpp"
 #include "servo_mapper/config_handler.hpp"
+#include "anim_control/command_handler.hpp"
 
 #define COAP_SERVER_PORT    (5683)
 
@@ -16,10 +17,10 @@ static ServoHandler servo;
 static AnimHandler anim;
 static LabelHandler label;
 static ConfigHandler config;
-static coap::ChainHandler<decltype(anim), decltype(servo)> tmp1(anim, servo);
-static coap::ChainHandler<decltype(label), decltype(config)> tmp2(label, config);
-static coap::ChainHandler<decltype(tmp1), decltype(tmp2)> root(tmp1, tmp2);
-static coap::SimpleDiscoveryHandler<decltype(servo)> discov(servo);
+static CommandHandler command;
+
+static auto& root = command;
+static coap::SimpleDiscoveryHandler<decltype(command)> discov(command);
 static coap::ChainHandler<decltype(discov), decltype(root)> handler(discov, root);
 static coap::Parser<decltype(handler)> parser(handler);
 static uint8_t buf_raw[4096];
@@ -41,6 +42,7 @@ void view_loop(void) {
   int rc = sock_udp_create(&sock, &local, NULL, 0);
   
   while (1) {
+    thread_yield();
     _clean_buf();
     coap::Buffer buf {buf_raw,sizeof(buf_raw)};
     
