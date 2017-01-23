@@ -11,7 +11,8 @@ class AversivePlusPlusProjectConan(ConanFile):
         "coap--/0.1@AversivePlusPlus/dev",
         "feetech/0.1@AversivePlusPlus/dev",
         )
-    default_options = "riot:modules=\"gnrc_netdev_default auto_init_gnrc_netif gnrc_ipv6_router_default gnrc_udp gnrc_rpl gnrc_icmpv6_echo gnrc_sock_udp shell_commands\""
+    #default_options = "riot:modules=\"gnrc_netdev_default auto_init_gnrc_netif gnrc_ipv6_router_default gnrc_udp gnrc_rpl gnrc_icmpv6_echo gnrc_sock_udp shell_commands\""
+    default_options = "riot:modules=\"gnrc_netdev_default auto_init_gnrc_netif gnrc_ipv6_router_default gnrc_udp gnrc_rpl auto_init_gnrc_rpl gnrc_pktdump gnrc_icmpv6_echo shell shell_commands ps netstats_l2 netstats_ipv6 netstats_rpl gnrc_sock_udp\""
     generators = "cmake", "txt"
 
     def imports(self):

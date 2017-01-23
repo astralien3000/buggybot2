@@ -32,7 +32,7 @@ static bool _opt_uri(const coap::PacketReader& req, const char* uri) {
 
 coap::ReturnCode CommandHandler::handle(const coap::PacketReader& req, coap::PacketBuilder& res) {
   if(_opt_uri(req, "robot")) {
-    if(req.getMethodCode() == coap::MethodCode::POST) {
+    if(req.getMethodCode() == coap::MethodCode::PUT) {
       if(sizeof(char) == req.getPayloadLength()) {
         command = req.getPayload()[0];
         if(res.makeResponse(req, coap::ResponseCode::CHANGED, coap::ContentType::TEXT_PLAIN, (uint8_t*)&command, 1) == coap::Error::NONE) {
@@ -41,6 +41,14 @@ coap::ReturnCode CommandHandler::handle(const coap::PacketReader& req, coap::Pac
         else {
           return coap::ReturnCode::ERROR;
         }
+      }
+    }
+    if(req.getMethodCode() == coap::MethodCode::GET) {
+      if(res.makeResponse(req, coap::ResponseCode::CONTENT, coap::ContentType::TEXT_PLAIN, (uint8_t*)&command, 1) == coap::Error::NONE) {
+        return coap::ReturnCode::SEND;
+      }
+      else {
+        return coap::ReturnCode::ERROR;
       }
     }
   }
