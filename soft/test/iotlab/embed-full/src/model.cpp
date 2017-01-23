@@ -66,4 +66,4 @@ Convert convert[12] = {
   Convert{},     // LB2
 };
 
-char command;
+char command = 's';

@@ -1,6 +1,7 @@
 #include "model.hpp"
 #include "anim_control/walk.hpp"
 #include "anim_control/turn.hpp"
+#include "anim_control/stand.hpp"
 #include "ik/robot_armature_joint_forearm_lf_endpoint.hpp"
 #include "ik/robot_armature_joint_forearm_rf_endpoint.hpp"
 #include "ik/robot_armature_joint_forearm_rb_endpoint.hpp"
@@ -18,6 +19,8 @@ template<int r, int c> using matrix = real[r*c];
 
 AnimWalk walk;
 AnimTurn turn;
+AnimStand stand;
+
 LegAction legs[4];
 real ik_angles[12] = {0,0,1.57,0,0,1.57,0,0,1.57,0,0,1.57};
 double angles[12] = {0,0,1.57,0,0,1.57,0,0,1.57,0,0,1.57};
@@ -38,8 +41,16 @@ void control_loop(void) {
     if(command == 'f') {
       walk.update(legs[0], legs[1], legs[2], legs[3]);
     }
-    else {
+    else if(command == 'l') {
+      turn.goLeftWay(true);
       turn.update(legs[0], legs[1], legs[2], legs[3]);
+    }
+    else if(command == 'r') {
+      turn.goLeftWay(false);
+      turn.update(legs[0], legs[1], legs[2], legs[3]);
+    }
+    else {
+      stand.update(legs[0], legs[1], legs[2], legs[3]);
     }
     puts("I");
     LF::inverse_kinematics(matrix<4,1>{legs[0].x, legs[0].y, legs[0].z, 1}, ik_angles[0],  ik_angles[1],  ik_angles[2], coeff, stop_dist, max_iter);
