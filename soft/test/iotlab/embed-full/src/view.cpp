@@ -42,7 +42,7 @@ void view_loop(void) {
   int rc = sock_udp_create(&sock, &local, NULL, 0);
   
   while (1) {
-    thread_yield();
+    //thread_yield();
     _clean_buf();
     coap::Buffer buf {buf_raw,sizeof(buf_raw)};
     
