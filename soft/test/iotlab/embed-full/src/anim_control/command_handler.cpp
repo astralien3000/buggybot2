@@ -1,6 +1,6 @@
 #include "command_handler.hpp"
 #include "../model.hpp"
-#include <stream/string_stream.hpp>
+#include <stream/buffer_stream.hpp>
 #include <stream/formatted_stream.hpp>
 #include <stdio.h>
 
@@ -56,13 +56,13 @@ coap::ReturnCode CommandHandler::handle(const coap::PacketReader& req, coap::Pac
 }
 
 static bool _try_add_page(char* &cur, size_t size, const char* page) {
-  Aversive::Stream::StringStream<64> ss;
-  Aversive::Stream::FormattedStreamDecorator<decltype(ss)> fss(ss);
+  Aversive::Stream::BufferStream<64> ss;
+  Aversive::Stream::FormattedStreamDecorator<decltype(ss)> fss = formatted(ss);
   
   fss << "<" << page << ">;ct=0,";
   uint16_t s =  ss.readable();
   if(s < size) {
-    ss.read((uint8_t*)cur, s);
+    ss.read((char*)cur, s);
     cur += s;
     size -= s;
   }
@@ -73,13 +73,13 @@ static bool _try_add_page(char* &cur, size_t size, const char* page) {
 }
 
 namespace coap {
-size_t SimpleDiscoveryInputStream<CommandHandler>::read(uint8_t* buffer, size_t size) {
+size_t SimpleDiscoveryInputStream<CommandHandler>::read(char* buffer, size_t size) {
   char* cur = (char*)buffer;
 
   if(!_try_add_page(cur, size, "/robot")) {
-    return (size_t)((uint8_t*)cur - buffer);
+    return (size_t)((char*)cur - buffer);
   }
   
-  return (size_t)((uint8_t*)cur - buffer);
+  return (size_t)((char*)cur - buffer);
 }
 }

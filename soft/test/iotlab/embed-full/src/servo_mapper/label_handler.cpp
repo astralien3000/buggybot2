@@ -1,6 +1,6 @@
 #include "label_handler.hpp"
 #include "../model.hpp"
-#include <stream/string_stream.hpp>
+#include <stream/buffer_stream.hpp>
 #include <stream/formatted_stream.hpp>
 #include <stdio.h>
 
@@ -30,10 +30,10 @@ static bool _get_request_params(const coap::PacketReader& req, uint8_t& id_out, 
     }
     else if(state == 1) {
       if(_is_uri_path(opt)) {
-        Aversive::Stream::StringStream<64> ss;
-        Aversive::Stream::FormattedStreamDecorator<decltype(ss)> fss(ss);
-        ss.write((uint8_t*)opt.getValue(), opt.getLength());
-        ss.write((uint8_t*)"\0", 1);
+        Aversive::Stream::BufferStream<64> ss;
+        Aversive::Stream::FormattedStreamDecorator<decltype(ss)>& fss = formatted(ss);
+        ss.write((const char*)opt.getValue(), opt.getLength());
+        ss.write((const char*)"\0", 1);
         fss >> id_out;
         state++;
       }
@@ -63,8 +63,8 @@ static bool _get_request_params(const coap::PacketReader& req, uint8_t& id_out, 
 
 template<typename T>
 static coap::Error _content(const coap::PacketReader& req, coap::PacketBuilder& res, coap::ResponseCode code, T content) {
-  Aversive::Stream::StringStream<16> ss;
-  Aversive::Stream::FormattedStreamDecorator<decltype(ss)> fss(ss);
+  Aversive::Stream::BufferStream<16> ss;
+  Aversive::Stream::FormattedStreamDecorator<decltype(ss)>& fss = formatted(ss);
 
   fss << content;
 
@@ -73,11 +73,11 @@ static coap::Error _content(const coap::PacketReader& req, coap::PacketBuilder& 
 
 template<typename T>
 static T _to_int(const uint8_t* str, size_t len) {
-  Aversive::Stream::StringStream<16> ss;
-  Aversive::Stream::FormattedStreamDecorator<decltype(ss)> fss(ss);
+  Aversive::Stream::BufferStream<16> ss;
+  Aversive::Stream::FormattedStreamDecorator<decltype(ss)>& fss = formatted(ss);
 
-  ss.write((uint8_t*)str, (uint16_t)len);
-  ss.write((uint8_t*)"\0", 1);
+  ss.write((const char*)str, (uint16_t)len);
+  ss.write((const char*)"\0", 1);
   T ret = 0;
   fss >> ret;
   return ret;
@@ -131,13 +131,13 @@ coap::ReturnCode LabelHandler::handle(const coap::PacketReader& req, coap::Packe
 }
 
 static bool _try_add_page(char* &cur, size_t size, uint8_t i, const char* page) {
-  Aversive::Stream::StringStream<64> ss;
-  Aversive::Stream::FormattedStreamDecorator<decltype(ss)> fss(ss);
+  Aversive::Stream::BufferStream<64> ss;
+  Aversive::Stream::FormattedStreamDecorator<decltype(ss)>& fss = formatted(ss);
 
   fss << "</" << _prefix << "/" << (uint16_t)i << "/" << page << ">;ct=0,";
   uint16_t s =  ss.readable();
   if(s < size) {
-    ss.read((uint8_t*)cur, s);
+    ss.read((char*)cur, s);
     cur += s;
     size -= s;
   }
@@ -148,18 +148,18 @@ static bool _try_add_page(char* &cur, size_t size, uint8_t i, const char* page) 
 }
 
 namespace coap {
-size_t SimpleDiscoveryInputStream<LabelHandler>::read(uint8_t* buffer, size_t size) {
+size_t SimpleDiscoveryInputStream<LabelHandler>::read(char* buffer, size_t size) {
   char* cur = (char*)buffer;
 
   for(uint8_t i = 0 ; i < 15 ; i++) {
     if(sc.ping(i)) {
       if(!_try_add_page(cur, size, i, "label")) {
-        return (size_t)((uint8_t*)cur - buffer);
+        return (size_t)((char*)cur - buffer);
       }
     }
     xtimer_usleep(200);
   }
 
-  return (size_t)((uint8_t*)cur - buffer);
+  return (size_t)((char*)cur - buffer);
 }
 }

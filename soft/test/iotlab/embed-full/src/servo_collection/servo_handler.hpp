@@ -11,6 +11,6 @@ namespace coap {
 template<>
 class SimpleDiscoveryInputStream<ServoHandler> : ServoHandler {
 public:
-  size_t read(uint8_t* buffer, size_t size);
+  size_t read(char* buffer, size_t size);
 };
 }
